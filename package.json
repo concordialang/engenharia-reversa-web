@@ -26,5 +26,8 @@
   },
   "jest": {
     "preset": "ts-jest"
+  },
+  "dependencies": {
+    "mustache": "^4.0.1"
   }
 }
