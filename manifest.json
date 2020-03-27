@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+    "name": "TCC",
+    "version": "0.1.0",
+    "background": {
+        "page": "/src/background.html"
+    },
+    "content_scripts": [
+        {
+          "matches": [
+            "<all_urls>"
+          ],
+          "js": ["/src/content.js"]
+        }
+    ],
+    "browser_action": {
+        "default_icon": "icon.png"
+    },
+    "permissions": ["tabs", "<all_urls>"]
+}
