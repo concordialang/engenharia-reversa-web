@@ -3,7 +3,7 @@
     "src"
   ],
   "exclude": [
-    "__tests__"
+    "tests"
   ],
   "compilerOptions": {
     /* Basic Options */
