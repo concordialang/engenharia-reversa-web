@@ -8,3 +8,5 @@ const template =
             
     "\nConstantes:" +
     "\n\t- 'Local' é {{local}}";
+
+//console.log("template: \n", template);
