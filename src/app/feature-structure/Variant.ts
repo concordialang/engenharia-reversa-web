@@ -1,9 +1,26 @@
 import { VariantSentence } from "./VariantSentence";
 
 export class Variant {
-    sentences: Array< VariantSentence >;
+    private name!: string;
+    private sentences !: Array< VariantSentence >;
     
-    constructor(sentences: Array< VariantSentence >) {
-        this.sentences = sentences;
+    constructor() {
+        this.sentences = [];
+    }
+
+    public setName(nome : string){
+        this.name = name;
+    }
+
+    public getName(){
+        return this.name;
+    }
+
+    public setVariantSentence(variantSentence : VariantSentence){
+        this.sentences.push(variantSentence);
+    }
+
+    public getVariant(){
+        return this.sentences;
     }
 }

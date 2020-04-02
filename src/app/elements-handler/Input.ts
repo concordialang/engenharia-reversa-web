@@ -18,7 +18,7 @@ export class Input {
         return true;
     }
 
-    public getElementAnalized () : UIElement{
+    public getUIElementInput () : UIElement{
 
         if (this.validPropertyNode(this.node.name)) {
             this.uiElm.setName(this.node.name);

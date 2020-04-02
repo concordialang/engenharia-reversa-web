@@ -15,6 +15,10 @@ export class Feature{
         this.uiElements = [];
     }
 
+    public setName(name : string){
+        this.name = name;
+    }
+
     public setUiElement(uiElement : UIElement){
         this.uiElements.push(uiElement);
     }
