@@ -6,10 +6,6 @@
   "keywords": [],
   "author": "",
   "license": "AGPL",
-  "scripts": {
-    "test": "npx jest",
-    "test:watch": "npx jest --watchAll"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://gitlab.com/dstriotto/tcc-matheus-danilo.git"
@@ -19,12 +15,18 @@
   },
   "homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
   "devDependencies": {
-    "@types/jest": "^25.1.4",
-    "jest": "^25.1.0",
+    "@types/jest": "^25.1.5",
+    "jest": "^25.2.6",
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.3"
   },
   "jest": {
     "preset": "ts-jest"
+  },
+  "scripts": {
+    "test": "npx jest",
+    "test:watch": "npx jest --watchAll",
+    "coverage": "npx jest --coverage",
+    "build": "tsc"
   }
 }
