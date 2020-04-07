@@ -29,7 +29,7 @@ export class Div {
 
                     for(let nodeDivInterna of nodeDiv.children){
                         if(nodeDivInterna.nodeName == 'INPUT'){
-                            variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', nodeDiv.id));
+                            variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', ['<#' + nodeDiv.id + '>']));
                         }
                     }
                     

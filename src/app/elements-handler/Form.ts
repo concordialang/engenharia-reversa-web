@@ -9,10 +9,10 @@ export class Form {
         this.node = node;
         this.scenarios = new Array;
 
-        //apagar
-        let teste = [];
-        teste.push(node)
-        console.log(teste);  
+        //teste
+        // let teste = [];
+        // teste.push(node)
+        // console.log(teste);  
     }
 
     public getFormName(){
