@@ -14,6 +14,10 @@
     "url": "https://gitlab.com/dstriotto/tcc-matheus-danilo/issues"
   },
   "homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
+  "dependencies": {
+    "mustache": "^4.0.1",
+    "parcel": "^1.12.4"
+  },
   "devDependencies": {
     "@types/jest": "^25.1.5",
     "jest": "^25.2.6",
@@ -26,9 +30,10 @@
     "testEnvironment": "jsdom"
   },
   "scripts": {
-    "test": "npx jest",
-    "test:watch": "npx jest --watchAll",
-    "coverage": "npx jest --coverage",
-    "build": "tsc"
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "coverage": "jest --coverage",
+    "build": "tsc",
+    "all": "npm run build && npm run test"
   }
 }
