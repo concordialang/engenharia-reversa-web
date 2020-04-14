@@ -29,9 +29,10 @@
     "mustache": "^4.0.1"
   },
   "scripts": {
-    "test": "npx jest",
-    "test:watch": "npx jest --watchAll",
-    "coverage": "npx jest --coverage",
-    "build": "tsc"
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "coverage": "jest --coverage",
+    "build": "tsc",
+    "all": "npm run build && npm run test"
   }
 }
