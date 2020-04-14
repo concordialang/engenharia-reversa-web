@@ -1,3 +1,5 @@
+//import { UIElementGenerator } from "./app/elements-handler/uielement-generator.ts";
+
 export class FeatureGenerator {
 
     // Temporary
@@ -20,5 +22,11 @@ export class FeatureGenerator {
             ]
         };
     }
+
+    // fromElement( element: HTMLElement ): any {
+    //     let uiElement = new UIElementGenerator();
+
+    //     return uiElement.generateUIElement();
+    // }
 
 }

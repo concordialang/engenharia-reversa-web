@@ -1,7 +1,7 @@
 import { Variant } from "../feature-structure/Variant";
 import { VariantSentence } from "../feature-structure/VariantSentence";
 import { VariantSentenceType } from "../feature-structure/VariantSentenceType";
-import { Input } from "./Input";
+import { UIElementGenerator } from "./uielement-generator.ts";
 
 export class Div {
     node : any;

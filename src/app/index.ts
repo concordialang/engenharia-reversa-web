@@ -1,5 +1,5 @@
 import { Feature } from "./feature-structure/Feature";
-import { Input } from "./elements-handler/Input";
+import { UIElementGenerator } from "./elements-handler/uielement-generator.ts";
 import { Form } from "./elements-handler/Form";
 
 let feature = new Feature();
@@ -13,8 +13,8 @@ document.body.querySelectorAll('*').forEach(function(node) {
     }
 
     if(node.nodeName == "INPUT"){
-        let input = new Input(node);
-        let obj = input.getUIElementInput();
+        let input = new UIElementGenerator();
+        let obj = input.generateUIElement();
         feature.setUiElement(obj);
     }
 });

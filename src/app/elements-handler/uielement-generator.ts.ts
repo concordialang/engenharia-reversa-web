@@ -1,12 +1,16 @@
 import { UIElement } from "../feature-structure/UIElement";
 import { UIProperty } from "../feature-structure/UIProperty";
 
-export class Input {
-    node : any;
-    uiElm: UIElement;
+export class UIElementGenerator {
+    node!: any;
+    uiElm!: UIElement;
     
-    constructor( node : any ){
-        this.node = node;
+    // constructor( node : any ){
+    //     this.node = node;
+    //     this.uiElm = new UIElement();
+    // }
+
+    constructor(){
         this.uiElm = new UIElement();
     }
 
@@ -18,7 +22,7 @@ export class Input {
         return true;
     }
 
-    public getUIElementInput () : UIElement{
+    public generateUIElement () : UIElement{
 
         if (this.validPropertyNode(this.node.name)) {
             this.uiElm.setName(this.node.name);
