@@ -1,18 +1,13 @@
-import { Div } from "./Div";
+import { VariantsGenerator } from "./variant-generator";
 import { Scenario } from "../feature-structure/Scenario"
 
-export class Form {
+export class ScenarioGenerator {
     node : any;
     scenarios : Array <Scenario>;
 
     constructor(node : any){
         this.node = node;
-        this.scenarios = new Array;
-
-        //teste
-        // let teste = [];
-        // teste.push(node)
-        // console.log(teste);  
+        this.scenarios = new Array; 
     }
 
     public getFormName(){
@@ -23,7 +18,7 @@ export class Form {
         return this.scenarios;
     }
 
-    public analyzeChildrenNodesForm(){
+    public generateScenarios(node : HTMLDivElement){
         for(let node of this.node.children){
             
             if(node.nodeName == "DIV"){
@@ -33,8 +28,8 @@ export class Form {
                     scenario.setName(node.innerText); 
                 }
 
-                let div = new Div(node);
-                let variants = div.analyzeChildrenNodesDiv();
+                let div = new VariantsGenerator(node);
+                let variants = div.generateVariants(<HTMLDivElement>node);
                 scenario.setVariants(variants);
                 this.scenarios.push(scenario);
             }

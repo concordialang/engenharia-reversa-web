@@ -5,6 +5,7 @@ export class UIElement {
     private properties!: Array< UIProperty >;
 
     constructor(){
+        this.name = "";
         this.properties = new Array;
     }
 
