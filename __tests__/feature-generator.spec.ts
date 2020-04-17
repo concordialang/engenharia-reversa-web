@@ -104,47 +104,36 @@ describe( 'FeatureGenerator', () => {
         form.method = "post";
         document.body.appendChild( form );
 
-        //divMain
-        const divMain = document.createElement( 'div' );
-        divMain.id = "cadastroNomeCompleto";
-        form.appendChild(divMain);
+        const h1Main = document.createElement( 'h1' );
+        h1Main.innerText = "Cadastro de Cliente";
+        form.appendChild(h1Main);
 
-        const h1 = document.createElement( 'h1' );
-        h1.innerText = "Cadastro de Nome";
-        divMain.appendChild(h1);
-
-        //div1
-        const div1 = document.createElement( 'div' );
-        div1.id = "campoNome";
-        divMain.appendChild(div1);
+        const div = document.createElement( 'div' );
+        div.id = "cadastroNomeCompleto";
+        form.appendChild(div);
 
         const label1 = document.createElement( 'label' );
         label1.innerText = "Nome:";
-        div1.appendChild(label1);
+        div.appendChild(label1);
 
         const input1 = document.createElement( 'input' );
         input1.id = "nome";
         input1.name = "nome";
         input1.type = "text";
-        div1.appendChild(input1);
-
-        //div2
-        const div2 = document.createElement( 'div' );
-        div2.id = "campoSobreNome";
-        divMain.appendChild(div2);
+        div.appendChild(input1);
 
         const label2 = document.createElement( 'label' );
         label2.innerText = "Sobrenome:";
-        div2.appendChild(label2);
+        div.appendChild(label2);
 
         const input2 = document.createElement( 'input' );
         input2.id = "sobrenome";
         input2.name = "sobrenome";
         input2.type = "text";
-        div2.appendChild(input2);
+        div.appendChild(input2);
         
-        // const feature = generator.fromElement( document.body );
-        // expect( feature?.scenario ).toHaveLength( 1 );
-        // expect( feature?.uiElements ).toHaveLength( 2 );
+        const feature = generator.fromElement( document.body );
+        expect( feature?.scenarios ).toHaveLength( 1 );
+        expect( feature?.uiElements ).toHaveLength( 2 );
     } );
 } );

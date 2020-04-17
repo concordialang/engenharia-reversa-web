@@ -4,41 +4,27 @@ import { VariantSentenceType } from "../feature-structure/VariantSentenceType";
 import { UIElementGenerator } from "./uielement-generator";
 
 export class VariantsGenerator {
-    node : any;
-    variants : Array <Variant>;
 
-    constructor(node : any){
-        this.node = node;
-        this.variants = [];
-    }
+    public generateVariants(element : any) : Array <Variant>{
 
-    public getVariantsDivs(){
-        return this.variants;
-    }
+        let variants = [];
 
-    public generateVariants(node : HTMLDivElement){
-        let variant = new Variant();
+        for(let node of element){
 
-        if(this.node.nodeName == 'DIV'){
-            
-            variant.setName(this.node.name);
+            let variant = new Variant();
 
-            for(let nodeDiv of this.node.children){
-
-                if(nodeDiv.nodeName == 'DIV'){
-
-                    for(let nodeDivInterna of nodeDiv.children){
-                        if(nodeDivInterna.nodeName == 'INPUT'){
-                            variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', ['<#' + nodeDiv.id + '>']));
-                        }
-                    }
+            if(node.nodeName == 'INPUT'){
+                
+                if(typeof node.id != undefined){
+                    let variantName = node.id.toString(); 
+                    variant.setName(variantName.charAt(0).toUpperCase() + variantName.slice(1));
                     
-                }
+                    variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', ['<#' + node.id + '>']));
+                    variants.push(variant);
+                }       
             }
-
-            this.variants.push(variant);
         }
 
-        return this.getVariantsDivs();
+        return variants;
     }
 }

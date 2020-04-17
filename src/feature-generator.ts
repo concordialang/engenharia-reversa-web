@@ -15,14 +15,13 @@ export class FeatureGenerator {
         
         element.querySelectorAll('*').forEach((node) => {
             if(node.nodeName == "FORM"){
-                let form = new ScenarioGenerator(node);
-                this.feature.setName(form.getFormName());
-                this.feature.scenarios = form.generateScenarios(<HTMLDivElement>node);
+                let scenarioGenerator = new ScenarioGenerator();
+                this.feature.setScenario(scenarioGenerator.generateScenarios(node.children));
             }
     
             if(node.nodeName == "INPUT"){
-                let uiElement = new UIElementGenerator();
-                this.feature.setUiElement(uiElement.generateUIElement(<HTMLInputElement>node));
+                let uiElementGenerator = new UIElementGenerator();
+                this.feature.setUiElement(uiElementGenerator.generateUIElement(<HTMLInputElement>node));
             }
         });
         

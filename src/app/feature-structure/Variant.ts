@@ -8,7 +8,7 @@ export class Variant {
         this.sentences = [];
     }
 
-    public setName(nome : string){
+    public setName(name : string){
         this.name = name;
     }
 
