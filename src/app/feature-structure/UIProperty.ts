@@ -1,6 +1,6 @@
-import { EditableTypes } from "./EditableTypes";
-import { DataTypes } from "./DataTypes";
-import { PropertyTypes } from "./PropertyTypes";
+import { EditableTypes } from "./types/EditableTypes";
+import { DataTypes } from "./types/DataTypes";
+import { PropertyTypes } from "./types/PropertyTypes";
 
 export class UIProperty {	 
     private name!: string;

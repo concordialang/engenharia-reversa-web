@@ -1,4 +1,4 @@
-import { VariantSentenceType } from "./VariantSentenceType";
+import { VariantSentenceType } from "./types/VariantSentenceType";
 
 export class VariantSentence {
     type: VariantSentenceType;
