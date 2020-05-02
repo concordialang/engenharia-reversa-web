@@ -36,7 +36,9 @@ describe( 'FeatureGenerator', () => {
         document.body.innerHTML = html;
         
         const feature = generator.fromElement( document.body );
-        expect( feature?.scenarios ).toHaveLength( 1 );
+        expect( feature?.scenarios ).toHaveLength( 2 );
+        expect( feature?.scenarios[0].getVariants() ).toHaveLength( 2 );
+        expect( feature?.scenarios[1].getVariants() ).toHaveLength( 2 );
         expect( feature?.uiElements ).toHaveLength( 4 );
     } );
 } );

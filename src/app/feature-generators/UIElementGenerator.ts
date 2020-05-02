@@ -1,3 +1,6 @@
+import { Feature } from "../feature-structure/Feature";
+import { GeneratorsMap } from "./GeneratorsMap";
+import { ContextGenerator } from "./ContextGenerator";
 import { UIElement } from "../feature-structure/UIElement";
 import { UIProperty } from "../feature-structure/UIProperty";
 
@@ -11,9 +14,18 @@ export class UIElementGenerator {
         return true;
     }
 
-    public generate (node : any) : UIElement{
+    private _contextualizes(context : ContextGenerator, uiElement: UIElement) : ContextGenerator {
+        context.inUIElement = true;
+        context.currentUIElement = uiElement;
+
+        return context;
+    }
+
+
+    public generate (node : HTMLInputElement, feature : Feature, generatorsMap : GeneratorsMap, context : ContextGenerator) : void {
 
         let uiElm = new UIElement();
+        context = this._contextualizes(context, uiElm);
 
         if (this._validPropertyNode(node.name)) {
             uiElm.setName(node.name);
@@ -71,6 +83,7 @@ export class UIElementGenerator {
             uiElm.setProperty(new UIProperty('format', node.pattern));
         }
 
-        return uiElm;
+        // return uiElm;
+        feature.setUiElement(uiElm);
     }
 }

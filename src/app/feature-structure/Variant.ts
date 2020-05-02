@@ -23,4 +23,8 @@ export class Variant {
     public getVariant(){
         return this.sentences;
     }
+
+    public getSentences(){
+        return this.sentences;
+    }
 }
