@@ -1,64 +1,53 @@
-var bkg = chrome.extension.getBackgroundPage();
+//const bkg : Window | null = chrome.extension.getBackgroundPage();
 
-//RECURSOS USADOS POR TODAS THREADS
-var urlInicial : String;
+let tabsAbertasPelaExtensao : Array<Number | undefined> = [];
 
-var urlJaAbertas : Array<String> = [];
-var tabsAbertasPelaExtensao : Array<Number> = [];
-
-chrome.browserAction.onClicked.addListener(function(tab : chrome.tabs.Tab) { 
-    urlInicial = new URL(tab.url);
-    bkg.console.log(tab);
-    urlJaAbertas.push(tab.url);
+chrome.browserAction.onClicked.addListener(function (tab : chrome.tabs.Tab) {
     tabsAbertasPelaExtensao.push(tab.id);
-    mandarAnalisar(tab);
+    mandarAnalisar(tab, true);
 });
 
-chrome.extension.onMessage.addListener(function(request : any){
-    if(request.acao == 'abrir-janela'){
-        abrirJanela(new URL(request.url));
-        bkg.console.log(urlJaAbertas);
+chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (request.acao == 'abrir-janela') {
+        abrirJanela(new URL(request.url),function(){});
+        //bkg.console.log(urlJaAbertas);
     }
 });
 
-chrome.extension.onMessage.addListener(function(request : any, sender : any){
-    if(request.acao == 'carregada'){
-        if(tabsAbertasPelaExtensao.indexOf(sender.tab.id) > -1){
-            bkg.console.log("foi aberta pela extensao");
+chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (request.acao == 'carregada') {
+        if (tabsAbertasPelaExtensao.indexOf(sender?.tab?.id) > -1) {
+           // bkg.console.log("foi aberta pela extensao");
             mandarAnalisar(sender.tab);
         }
-        
     }
 });
 
-function mandarAnalisar(tab : chrome.tabs.Tab){
-    chrome.tabs.sendMessage(tab.id, {acao: "analisar"},null, function() {
-        chrome.tabs.remove(tab.id);
-        removerTabId(tab.id);
-        bkg.console.log(tabsAbertasPelaExtensao);
-        if(tabsAbertasPelaExtensao.length == 0){
-            urlJaAbertas = [];
-        }
-        bkg.console.log(urlJaAbertas);
-        
+function mandarAnalisar(tab : chrome.tabs.Tab | undefined, primeiraAnalise : Boolean = false) {
+
+    let acoes : Array<String> = ["analisar"];
+    if(primeiraAnalise){
+        acoes.push("limpar-grafo");
+    }
+    let idTab = tab?.id ?? 0;
+    let options = new Object();
+    chrome.tabs.sendMessage(idTab, { acoes: acoes }, options, function () {
+        //chrome.tabs.remove(tab.id);
+        removerTabId(tab?.id);
     });
 }
 
-function abrirJanela(url : URL){
-    if(urlJaAbertas.indexOf(url.toString()) > -1 || url.hostname != urlInicial.hostname){
-        return false;
-    }
-    bkg.console.log(url);
-    urlJaAbertas.push(url.toString());
+function abrirJanela(url : URL, funcao : CallableFunction) {
     chrome.tabs.create({
         url: url.toString()
-      }, function(tab : chrome.tabs.Tab) {
+    }, function (tab : chrome.tabs.Tab) {
         tabsAbertasPelaExtensao.push(tab.id);
-      });
+        //tab.onLoad = funcao;
+    });
 }
 
 //teoricamente pode dar problema de concorrência
-function removerTabId(idTab){
+function removerTabId(idTab : Number | undefined) {
     const index = tabsAbertasPelaExtensao.indexOf(idTab);
     if (index > -1) {
         tabsAbertasPelaExtensao.splice(index, 1);
