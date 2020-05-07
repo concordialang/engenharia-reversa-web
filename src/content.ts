@@ -1,5 +1,5 @@
-import Graph from "graph-data-structure";
 import Mutex from "idb-mutex";
+import { Graph } from "./app/graph/Graph";
 const mu : Mutex = new Mutex('mylock');
 
 chrome.runtime.sendMessage({ acao: "carregada" });
@@ -98,10 +98,12 @@ function adicionarLigacao(url1 : URL,url2 : URL) : void{
 
 function obterGrafo() : Graph {
     let json : string|object|null = window.localStorage.getItem("grafo");
-    let grafo : Graph = new Graph();
+    let grafo : Graph;
     if(json){
-        json = JSON.parse(json);
-        grafo = grafo.deserialize(json);
+        grafo = new Graph(json);
+    }
+    else{
+        grafo = new Graph();
     }
     return grafo;
 }
