@@ -1,7 +1,7 @@
 //const bkg : Window | null = chrome.extension.getBackgroundPage();
 
 import { ExtensionManager } from "./app/ExtensionManager";
-import { ChromeExtension } from "./app/ChromeExtension";
+import { ChromeExtension } from "./app/extension/ChromeExtension";
 
 let extension = new ChromeExtension();
 let manager = new ExtensionManager(extension);

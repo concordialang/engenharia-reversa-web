@@ -1,4 +1,4 @@
-import { Extension } from "./Extension";
+import { Extension } from "./extension/Extension";
 
 export class ExtensionManager {
 
