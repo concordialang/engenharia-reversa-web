@@ -1,6 +1,6 @@
-import { Browser } from "./Browser";
+import { Extension } from "./Extension";
 
-export class ChromeBrowser implements Browser {
+export class ChromeExtension implements Extension {
 
     public sendMessageToTab(tabId : string, message : any) : Promise<any> {
         this.log(tabId);

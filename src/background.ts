@@ -1,10 +1,10 @@
 //const bkg : Window | null = chrome.extension.getBackgroundPage();
 
 import { ExtensionManager } from "./app/ExtensionManager";
-import { ChromeBrowser } from "./app/ChromeBrowser";
+import { ChromeExtension } from "./app/ChromeExtension";
 
-let browser = new ChromeBrowser();
-let manager = new ExtensionManager(browser);
+let extension = new ChromeExtension();
+let manager = new ExtensionManager(extension);
 
 chrome.browserAction.onClicked.addListener(function (tab : chrome.tabs.Tab) {
     manager.addOpenedTab(tab);

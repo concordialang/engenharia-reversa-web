@@ -1,4 +1,4 @@
-export interface Browser {
+export interface Extension {
 
     sendMessageToTab(tabId : string, message : any) : Promise<any>;
 
