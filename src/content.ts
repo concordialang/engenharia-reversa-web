@@ -1,6 +1,9 @@
 import Mutex from "idb-mutex";
 import { Graph } from "./app/graph/Graph";
+import { GraphStorage } from "./app/graph/GraphStorage";
 const mu : Mutex = new Mutex('mylock');
+
+let graphStorage = new GraphStorage();
 
 chrome.runtime.sendMessage({ acao: "carregada" });
 
@@ -75,9 +78,9 @@ function urlsSaoIguais(url1 : URL,url2 : URL) : boolean{
 
 function adicionarNo(url : URL) : void{
     mu.lock().then(() => {
-        var grafo = obterGrafo();
+        var grafo = graphStorage.get("grafo");
         grafo.addNode(url.toString());
-        salvarGrafo(grafo);
+        graphStorage.save("grafo",grafo);
         return mu.unlock();
     }).then(() => {
         console.log(fecharJanela);
@@ -87,34 +90,17 @@ function adicionarNo(url : URL) : void{
 
 function adicionarLigacao(url1 : URL,url2 : URL) : void{
     mu.lock().then(() => {
-        const grafo : Graph = obterGrafo();
+        const grafo : Graph = graphStorage.get("grafo");
         grafo.addEdge(url1.toString(),url2.toString());
-        salvarGrafo(grafo);
+        graphStorage.save("grafo",grafo);
         return mu.unlock();
     }).then(() => {
         if(fecharJanela === true) window.close();
     });
 }
 
-function obterGrafo() : Graph {
-    let json : string|object|null = window.localStorage.getItem("grafo");
-    let grafo : Graph;
-    if(json){
-        grafo = new Graph(json);
-    }
-    else{
-        grafo = new Graph();
-    }
-    return grafo;
-}
-
-function salvarGrafo(grafo){
-    const json = grafo.serialize();
-    window.localStorage.setItem("grafo",JSON.stringify(json));
-}
-
 function limparGrafo() : void{
-    window.localStorage.removeItem("grafo");
+    graphStorage.remove("grafo");
     window.localStorage.removeItem("urls-analisadas");
     window.localStorage.removeItem("urls-analisadas2");
 }
