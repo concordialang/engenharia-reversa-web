@@ -14,10 +14,10 @@ let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel
 communicationChannel.setMessageListener(function (request) {
     const acoes = request.acoes;
     if(acoes){
-        if(estaNoArray(acoes,"clean-graph")){
-            limparGrafo();
+        if(inArray(acoes,"clean-graph")){
+            cleanGraph();
         }
-        if(estaNoArray(acoes,"crawl")) {
+        if(inArray(acoes,"crawl")) {
             crawler.crawl();
         }
     }
@@ -25,14 +25,14 @@ communicationChannel.setMessageListener(function (request) {
 
 communicationChannel.sendMessageToAll({ action: "loaded" });
 
-function limparGrafo() : void {
+function cleanGraph() : void {
     graphStorage.remove("grafo");
     crawledUrlsStorage.removeAll("crawled-urls");
 }
 
 // OUTRAS FUNÇÕES
 
-function estaNoArray(array : Array<any> ,valor : any) : boolean {
+function inArray(array : Array<any> ,valor : any) : boolean {
     if(array.indexOf(valor) !== -1) return true;
     return false;
 }
