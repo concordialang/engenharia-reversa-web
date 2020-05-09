@@ -20,7 +20,7 @@ export class ExtensionManager {
         let _this = this;
         this.extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
             _this.addOpenedTab(tab);
-            _this.analyzeTab(tab,true);
+            _this.sendOrderToCrawlTab(tab,true);
         });
 
         //abstrair sender/request
@@ -30,7 +30,7 @@ export class ExtensionManager {
             }
             else if (sender.tab && request.acao == 'carregada') {
                 if (_this.tabWasOpenedByExtension(sender.tab)) {
-                    _this.analyzeTab(sender.tab);
+                    _this.sendOrderToCrawlTab(sender.tab);
                 }
             }
         });
@@ -46,9 +46,9 @@ export class ExtensionManager {
     }
 
     //temporaria
-    public analyzeTab(tab : chrome.tabs.Tab, firstAnalysis : Boolean = false) {
+    public sendOrderToCrawlTab(tab : chrome.tabs.Tab, firstCrawl : Boolean = false) {
         let acoes : Array<String> = ["analisar"];
-        if(firstAnalysis){
+        if(firstCrawl){
             acoes.push("limpar-grafo");
         }
         let idTab = tab?.id ?? 0;
