@@ -1,14 +1,40 @@
 import { Extension } from "./extension/Extension";
+import { CommunicationChannel } from "./comunication-channel/CommunicationChannel";
 
 export class ExtensionManager {
 
     //mudar tipo de chrome.tabs.Tab para uma classe que represente Tab de maneira mais genérica
     private openedTabs : Array<chrome.tabs.Tab>;
     private extension : Extension;
+    private communicationChannel : CommunicationChannel;
 
-    constructor(extension : Extension) {
+    constructor(extension : Extension, communicationChannel: CommunicationChannel) {
         this.openedTabs = [];
         this.extension = extension;
+        this.communicationChannel = communicationChannel;
+    }
+
+    public setup() : void {
+
+        //abstrair chrome.tabs.Tab
+        let _this = this;
+        this.extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
+            _this.addOpenedTab(tab);
+            _this.analyzeTab(tab,true);
+        });
+
+        //abstrair sender/request
+        this.communicationChannel.setMessageListener(function (request, sender) {
+            if (request.acao == 'abrir-janela') {
+                _this.openNewTab(new URL(request.url));
+            }
+            else if (sender.tab && request.acao == 'carregada') {
+                if (_this.tabWasOpenedByExtension(sender.tab)) {
+                    _this.analyzeTab(sender.tab);
+                }
+            }
+        });
+
     }
 
     public openNewTab(url : URL) : void {
@@ -58,12 +84,6 @@ export class ExtensionManager {
             }
         }
         return false;
-    }
-
-    //temporaria
-    private log(obj : any) {
-        const bkg : Window | null = chrome.extension.getBackgroundPage();
-        bkg?.console.log(obj);
     }
 
 }

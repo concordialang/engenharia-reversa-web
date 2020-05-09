@@ -7,23 +7,6 @@ import { CommunicationChannel } from "./app/comunication-channel/CommunicationCh
 import { ChromeCommunicationChannel } from "./app/comunication-channel/ChromeCommunicationChannel";
 
 let extension : Extension = new ChromeExtension();
-let manager : ExtensionManager = new ExtensionManager(extension);
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
-
-//abstrair chrome.tabs.Tab
-extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
-    manager.addOpenedTab(tab);
-    manager.analyzeTab(tab,true);
-});
-
-//abstrair sender
-communicationChannel.setMessageListener(function (request, sender) {
-    if (request.acao == 'abrir-janela') {
-        manager.openNewTab(new URL(request.url));
-    }
-    else if (sender.tab && request.acao == 'carregada') {
-        if (manager.tabWasOpenedByExtension(sender.tab)) {
-           manager.analyzeTab(sender.tab);
-        }
-    }
-});
+let manager : ExtensionManager = new ExtensionManager(extension,communicationChannel);
+manager.setup();
