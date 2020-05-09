@@ -29,7 +29,7 @@ export class ExtensionManager {
                 _this.openNewTab(new URL(request.url));
             }
             else if (sender.tab && request.acao == 'carregada') {
-                if (_this.tabWasOpenedByExtension(sender.tab)) {
+                if (_this.tabWasOpenedByThisExtension(sender.tab)) {
                     _this.sendOrderToCrawlTab(sender.tab);
                 }
             }
@@ -76,7 +76,7 @@ export class ExtensionManager {
     }
 
     //temporaria
-    public tabWasOpenedByExtension(tab : chrome.tabs.Tab) {
+    public tabWasOpenedByThisExtension(tab : chrome.tabs.Tab) {
         for(let i : number = 0;i< this.openedTabs.length;i++){
             let openedTab : chrome.tabs.Tab = this.openedTabs[i];
             if(openedTab.id == tab.id){
