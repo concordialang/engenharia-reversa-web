@@ -26,6 +26,7 @@ communicationChannel.setMessageListener(function (request) {
     }
 });
 
+//definir no protocolo de comunicação maneira para que a comunicação da extensão não interfira com a de outras extensões, e vice-versa
 communicationChannel.sendMessageToAll({ action: "loaded" });
 
 function cleanGraph() : void {
