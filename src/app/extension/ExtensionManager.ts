@@ -48,12 +48,12 @@ export class ExtensionManager {
 
     //temporaria
     public sendOrderToCrawlTab(tab : chrome.tabs.Tab, firstCrawl : Boolean = false) {
-        let acoes : Array<String> = ["crawl"];
+        let actions : Array<String> = ["crawl"];
         if(firstCrawl){
-            acoes.push("clean-graph");
+            actions.push("clean-graph");
         }
         let idTab = tab?.id ?? 0;
-        const promise : Promise<any> = this.extension.sendMessageToTab(idTab.toString(),{ acoes: acoes });
+        const promise : Promise<any> = this.extension.sendMessageToTab(idTab.toString(),{ actions: actions });
         const _this = this;
         promise.then(function(){
             _this.removeTab(tab);

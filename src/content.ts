@@ -15,12 +15,12 @@ let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,graphKey,cra
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
 
 communicationChannel.setMessageListener(function (request) {
-    const acoes = request.acoes;
-    if(acoes){
-        if(inArray(acoes,"clean-graph")){
+    const actions = request.actions;
+    if(actions){
+        if(inArray(actions,"clean-graph")){
             cleanGraph();
         }
-        if(inArray(acoes,"crawl")) {
+        if(inArray(actions,"crawl")) {
             crawler.crawl();
         }
     }
