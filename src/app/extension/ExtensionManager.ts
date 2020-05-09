@@ -1,5 +1,5 @@
-import { Extension } from "./extension/Extension";
-import { CommunicationChannel } from "./comunication-channel/CommunicationChannel";
+import { Extension } from "./Extension";
+import { CommunicationChannel } from "../comunication-channel/CommunicationChannel";
 
 export class ExtensionManager {
 
@@ -24,6 +24,7 @@ export class ExtensionManager {
         });
 
         //abstrair sender/request
+        //definir constante para acoes / criar protocolo
         this.communicationChannel.setMessageListener(function (request, sender) {
             if (request.action == 'open-tab') {
                 _this.openNewTab(new URL(request.url));

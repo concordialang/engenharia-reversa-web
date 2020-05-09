@@ -61,7 +61,8 @@ export class Crawler {
     }
 
     //refatorar função
-    private addUrlsLinkToGraph(urlFrom : URL,urlTo : URL) : void{
+    private addUrlsLinkToGraph(urlFrom : URL,urlTo : URL) : void {
+        //mutex deveria ficar dentro de GraphStorage ou em Crawler ?
         this.mutex.lock().then(() => {
             let graph : Graph = this.graphStorage.get(this.graphKey);
             graph.addEdge(urlFrom.toString(),urlTo.toString());
@@ -72,7 +73,6 @@ export class Crawler {
         });
     }
     
-    //colocar em classe separada
     private wasUrlAlreadyCrawled(url : URL) : boolean {
         return this.crawledUrlsStorage.isUrlInList(this.crawledUrlsKey,url);
     }

@@ -1,6 +1,6 @@
 //const bkg : Window | null = chrome.extension.getBackgroundPage();
 
-import { ExtensionManager } from "./app/ExtensionManager";
+import { ExtensionManager } from "./app/extension/ExtensionManager";
 import { ChromeExtension } from "./app/extension/ChromeExtension";
 import { Extension } from "./app/extension/Extension";
 import { CommunicationChannel } from "./app/comunication-channel/CommunicationChannel";
