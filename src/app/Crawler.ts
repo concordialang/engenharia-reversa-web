@@ -1,6 +1,6 @@
 import { GraphStorage } from "./graph/GraphStorage";
 import { Graph } from "./graph/Graph";
-import Mutex from "idb-mutex";
+import { Mutex } from "./mutex/Mutex";
 
 //classe deve ser refatorada
 export class Crawler {

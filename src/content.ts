@@ -1,6 +1,6 @@
-import Mutex from "idb-mutex";
 import { GraphStorage } from "./app/graph/GraphStorage";
 import { Crawler } from "./app/Crawler";
+import { Mutex } from "./app/mutex/Mutex";
 const mu : Mutex = new Mutex('mylock');
 
 let graphStorage = new GraphStorage();
