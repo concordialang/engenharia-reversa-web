@@ -1,10 +1,12 @@
 import { GraphStorage } from "./app/graph/GraphStorage";
 import { Crawler } from "./app/Crawler";
 import { Mutex } from "./app/mutex/Mutex";
+import { UrlListStorage } from "./app/UrlListStorage";
 const mu : Mutex = new Mutex('mylock');
 
 let graphStorage = new GraphStorage();
-let crawler : Crawler = new Crawler(graphStorage,mu);
+let crawledUrlsStorage = new UrlListStorage();
+let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,mu);
 
 chrome.runtime.sendMessage({ acao: "carregada" });
 
@@ -22,8 +24,7 @@ chrome.runtime.onMessage.addListener(function (request) {
 
 function limparGrafo() : void{
     graphStorage.remove("grafo");
-    window.localStorage.removeItem("urls-analisadas");
-    window.localStorage.removeItem("urls-analisadas2");
+    crawledUrlsStorage.removeAll("urls-analisadas");
 }
 
 // OUTRAS FUNÇÕES

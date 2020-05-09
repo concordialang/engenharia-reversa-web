@@ -1,19 +1,22 @@
 import { GraphStorage } from "./graph/GraphStorage";
 import { Graph } from "./graph/Graph";
 import { Mutex } from "./mutex/Mutex";
+import { UrlListStorage } from "./UrlListStorage";
 
 //classe deve ser refatorada
 export class Crawler {
 
     private graphStorage : GraphStorage;
+    private crawledUrlsStorage : UrlListStorage;
     //abstrair mutex em classe
     private mutex : Mutex;
 
     //aux variables
     private closeWindow = false;
 
-    constructor( graphStorage : GraphStorage, mutex : Mutex ){
+    constructor( graphStorage : GraphStorage, crawledUrlsStorage : UrlListStorage, mutex : Mutex ){
         this.graphStorage = graphStorage;
+        this.crawledUrlsStorage = crawledUrlsStorage;
         this.mutex = mutex;
     }
 
@@ -28,7 +31,7 @@ export class Crawler {
             this.addUrlsLinkToGraph(pageUrl,foundUrl);
             if(this.sameHostname(foundUrl,pageUrl) && !this.wasUrlAlreadyCrawled(foundUrl)){
 
-                this.setUrlAsCrawled(new URL(links[i].href));
+                this.crawledUrlsStorage.add("urls-analisadas",new URL(links[i].href));
                 chrome.runtime.sendMessage({ acao: "abrir-janela", url: links[i].href });
                 
             }
@@ -64,38 +67,10 @@ export class Crawler {
             if(this.closeWindow === true) window.close();
         });
     }
-
-    //colocar em classe separada
-    private getCrawledUrls() : Array<string> {
-        let urlsAnalisadas : string|null = window.localStorage.getItem("urls-analisadas");
-        if(urlsAnalisadas){
-            return JSON.parse(urlsAnalisadas);
-        }
-        else{
-            return [];
-        }
-    }
     
     //colocar em classe separada
     private wasUrlAlreadyCrawled(url : URL) : boolean {
-        const urlsVisitadas : Array<string> = this.getCrawledUrls();
-        for(let urlVisitada of urlsVisitadas){
-            if(this.areURLsEqual(new URL(urlVisitada),url)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    //colocar em classe separada
-    private setUrlAsCrawled(url : URL) : void {
-        let urlsAnalisadas : Array<String> = this.getCrawledUrls();
-        urlsAnalisadas.push(url.toString());
-        window.localStorage.setItem("urls-analisadas",JSON.stringify(urlsAnalisadas));
-    }
-    
-    private areURLsEqual(url1 : URL,url2 : URL) : boolean{
-        return url1.toString() == url2.toString();
+        return this.crawledUrlsStorage.isUrlInList("urls-analisadas",url);
     }
 
     private sameHostname(url1 : URL, url2 : URL) : boolean{
