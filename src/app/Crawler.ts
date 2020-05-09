@@ -31,8 +31,8 @@ export class Crawler {
             this.addUrlsLinkToGraph(pageUrl,foundUrl);
             if(this.sameHostname(foundUrl,pageUrl) && !this.wasUrlAlreadyCrawled(foundUrl)){
 
-                this.crawledUrlsStorage.add("urls-analisadas",new URL(links[i].href));
-                chrome.runtime.sendMessage({ acao: "abrir-janela", url: links[i].href });
+                this.crawledUrlsStorage.add("crawled-urls",new URL(links[i].href));
+                chrome.runtime.sendMessage({ action: "open-tab", url: links[i].href });
                 
             }
         }
@@ -70,7 +70,7 @@ export class Crawler {
     
     //colocar em classe separada
     private wasUrlAlreadyCrawled(url : URL) : boolean {
-        return this.crawledUrlsStorage.isUrlInList("urls-analisadas",url);
+        return this.crawledUrlsStorage.isUrlInList("crawled-urls",url);
     }
 
     private sameHostname(url1 : URL, url2 : URL) : boolean{

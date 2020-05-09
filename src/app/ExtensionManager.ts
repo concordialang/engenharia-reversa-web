@@ -25,10 +25,10 @@ export class ExtensionManager {
 
         //abstrair sender/request
         this.communicationChannel.setMessageListener(function (request, sender) {
-            if (request.acao == 'abrir-janela') {
+            if (request.action == 'open-tab') {
                 _this.openNewTab(new URL(request.url));
             }
-            else if (sender.tab && request.acao == 'carregada') {
+            else if (sender.tab && request.action == 'loaded') {
                 if (_this.tabWasOpenedByThisExtension(sender.tab)) {
                     _this.sendOrderToCrawlTab(sender.tab);
                 }
@@ -47,9 +47,9 @@ export class ExtensionManager {
 
     //temporaria
     public sendOrderToCrawlTab(tab : chrome.tabs.Tab, firstCrawl : Boolean = false) {
-        let acoes : Array<String> = ["analisar"];
+        let acoes : Array<String> = ["crawl"];
         if(firstCrawl){
-            acoes.push("limpar-grafo");
+            acoes.push("clean-graph");
         }
         let idTab = tab?.id ?? 0;
         const promise : Promise<any> = this.extension.sendMessageToTab(idTab.toString(),{ acoes: acoes });

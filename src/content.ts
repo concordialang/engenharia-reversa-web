@@ -14,20 +14,20 @@ let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel
 communicationChannel.setMessageListener(function (request) {
     const acoes = request.acoes;
     if(acoes){
-        if(estaNoArray(acoes,"limpar-grafo")){
+        if(estaNoArray(acoes,"clean-graph")){
             limparGrafo();
         }
-        if(estaNoArray(acoes,"analisar")) {
+        if(estaNoArray(acoes,"crawl")) {
             crawler.crawl();
         }
     }
 });
 
-communicationChannel.sendMessageToAll({ acao: "carregada" });
+communicationChannel.sendMessageToAll({ action: "loaded" });
 
 function limparGrafo() : void {
     graphStorage.remove("grafo");
-    crawledUrlsStorage.removeAll("urls-analisadas");
+    crawledUrlsStorage.removeAll("crawled-urls");
 }
 
 // OUTRAS FUNÇÕES
