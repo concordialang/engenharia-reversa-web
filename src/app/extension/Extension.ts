@@ -4,4 +4,6 @@ export interface Extension {
 
     openNewTab(url : URL) : Promise<any>;
 
+    setBrowserActionListener(action : string, callback : any) : void;
+
 }

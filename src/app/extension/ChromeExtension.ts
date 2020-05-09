@@ -25,10 +25,16 @@ export class ChromeExtension implements Extension {
         });
     }
 
+    public setBrowserActionListener(action : string, callback : any) : void{
+        chrome.browserAction[action].addListener(callback);
+    }
+
     //temporaria
     private log(obj : any) {
         const bkg : Window | null = chrome.extension.getBackgroundPage();
         bkg?.console.log(obj);
     }
+
+    
 
 }

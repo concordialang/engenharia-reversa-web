@@ -10,7 +10,8 @@ let extension : Extension = new ChromeExtension();
 let manager : ExtensionManager = new ExtensionManager(extension);
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
 
-chrome.browserAction.onClicked.addListener(function (tab : chrome.tabs.Tab) {
+//abstrair chrome.tabs.Tab
+extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
     manager.addOpenedTab(tab);
     manager.analyzeTab(tab,true);
 });
