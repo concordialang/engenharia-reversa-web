@@ -10,14 +10,18 @@ export class Crawler {
     private crawledUrlsStorage : UrlListStorage;
     //abstrair mutex em classe
     private mutex : Mutex;
+    private graphKey : string;
+    private crawledUrlsKey : string;
 
     //aux variables
     private closeWindow = false;
 
-    constructor( graphStorage : GraphStorage, crawledUrlsStorage : UrlListStorage, mutex : Mutex ){
+    constructor( graphStorage : GraphStorage, crawledUrlsStorage : UrlListStorage, graphKey : string, crawledUrlsKey : string, mutex : Mutex ){
         this.graphStorage = graphStorage;
         this.crawledUrlsStorage = crawledUrlsStorage;
         this.mutex = mutex;
+        this.graphKey = graphKey;
+        this.crawledUrlsKey = crawledUrlsKey;
     }
 
     public crawl(){
@@ -31,7 +35,7 @@ export class Crawler {
             this.addUrlsLinkToGraph(pageUrl,foundUrl);
             if(this.sameHostname(foundUrl,pageUrl) && !this.wasUrlAlreadyCrawled(foundUrl)){
 
-                this.crawledUrlsStorage.add("crawled-urls",new URL(links[i].href));
+                this.crawledUrlsStorage.add(this.crawledUrlsKey,new URL(links[i].href));
                 chrome.runtime.sendMessage({ action: "open-tab", url: links[i].href });
                 
             }
@@ -44,12 +48,12 @@ export class Crawler {
     }
 
     //refatorar função
-    private addUrlToGraph(url : URL) : void{
+    private addUrlToGraph(url : URL) : void {
         //mutex deveria ficar dentro de GraphStorage ou em Crawler ?
         this.mutex.lock().then(() => {
-            let graph : Graph = this.graphStorage.get("grafo");
+            let graph : Graph = this.graphStorage.get(this.graphKey);
             graph.addNode(url.toString());
-            this.graphStorage.save("grafo", graph);
+            this.graphStorage.save(this.graphKey, graph);
             return this.mutex.unlock();
         }).then(() => {
             if(this.closeWindow === true) window.close();
@@ -59,9 +63,9 @@ export class Crawler {
     //refatorar função
     private addUrlsLinkToGraph(urlFrom : URL,urlTo : URL) : void{
         this.mutex.lock().then(() => {
-            let graph : Graph = this.graphStorage.get("grafo");
+            let graph : Graph = this.graphStorage.get(this.graphKey);
             graph.addEdge(urlFrom.toString(),urlTo.toString());
-            this.graphStorage.save("grafo",graph);
+            this.graphStorage.save(this.graphKey,graph);
             return this.mutex.unlock();
         }).then(() => {
             if(this.closeWindow === true) window.close();
@@ -70,7 +74,7 @@ export class Crawler {
     
     //colocar em classe separada
     private wasUrlAlreadyCrawled(url : URL) : boolean {
-        return this.crawledUrlsStorage.isUrlInList("crawled-urls",url);
+        return this.crawledUrlsStorage.isUrlInList(this.crawledUrlsKey,url);
     }
 
     private sameHostname(url1 : URL, url2 : URL) : boolean{

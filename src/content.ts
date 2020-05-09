@@ -4,11 +4,14 @@ import { Mutex } from "./app/mutex/Mutex";
 import { UrlListStorage } from "./app/UrlListStorage";
 import { ChromeCommunicationChannel } from "./app/comunication-channel/ChromeCommunicationChannel";
 import { CommunicationChannel } from "./app/comunication-channel/CommunicationChannel";
+
 const mu : Mutex = new Mutex('mylock');
 
 let graphStorage : GraphStorage = new GraphStorage();
 let crawledUrlsStorage : UrlListStorage = new UrlListStorage();
-let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,mu);
+const graphKey = "graph";
+const crawledUrlsKey = "crawled-urls";
+let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,graphKey,crawledUrlsKey,mu);
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
 
 communicationChannel.setMessageListener(function (request) {
@@ -26,7 +29,7 @@ communicationChannel.setMessageListener(function (request) {
 communicationChannel.sendMessageToAll({ action: "loaded" });
 
 function cleanGraph() : void {
-    graphStorage.remove("grafo");
+    graphStorage.remove(graphKey);
     crawledUrlsStorage.removeAll("crawled-urls");
 }
 
