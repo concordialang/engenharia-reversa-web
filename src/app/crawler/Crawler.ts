@@ -1,6 +1,6 @@
-import { GraphStorage } from "./graph/GraphStorage";
-import { Graph } from "./graph/Graph";
-import { Mutex } from "./mutex/Mutex";
+import { GraphStorage } from "../graph/GraphStorage";
+import { Graph } from "../graph/Graph";
+import { Mutex } from "../mutex/Mutex";
 import { UrlListStorage } from "./UrlListStorage";
 
 //classe deve ser refatorada

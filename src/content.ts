@@ -1,6 +1,6 @@
-import { GraphStorage } from "./app/crawler/graph/GraphStorage";
+import { GraphStorage } from "./app/graph/GraphStorage";
 import { Crawler } from "./app/crawler/Crawler";
-import { Mutex } from "./app/crawler/mutex/Mutex";
+import { Mutex } from "./app/mutex/Mutex";
 import { UrlListStorage } from "./app/crawler/UrlListStorage";
 import { ChromeCommunicationChannel } from "./app/comunication-channel/ChromeCommunicationChannel";
 import { CommunicationChannel } from "./app/comunication-channel/CommunicationChannel";
