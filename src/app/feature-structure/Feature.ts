@@ -23,6 +23,10 @@ export class Feature{
         this.uiElements.push(uiElement);
     }
 
+    public setUiElements(uiElements : Array< UIElement >){
+        this.uiElements = uiElements;
+    }
+
     public setScenario(scenario : Scenario){
         this.scenarios.push(scenario);
     }

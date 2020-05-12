@@ -1,13 +1,12 @@
-import { SpecAnalyzer } from "../src/app/analysis/SpecAnalyzer";
-import { Spec } from "../src/app/analysis/Spec";
+import { FeatureGenerator } from "../src/app/feature-generators/FeatureGenerator";
 import clearElement from "../src/util/clear-element";
 
 describe( 'FeatureGenerator', () => {
 
-    let specAnalyzer: SpecAnalyzer;
+    let generator: FeatureGenerator;
 
     beforeEach( () => {
-        specAnalyzer = new SpecAnalyzer();
+        generator = new FeatureGenerator();
     } );
 
     afterEach( () => {
@@ -16,8 +15,9 @@ describe( 'FeatureGenerator', () => {
 
     it( 'detects feature', () => {
         const html = `
-            <h1>Cadastro de Cliente</h1>
             <form id="formulario" name="Cadastro" method="post">
+                <h1>Cadastro de Cliente</h1>
+
                 <div id="cadastroNomeCompleto">
                     <label for="nome">Nome:</label>
                     <input type="text" id="nome" name="nome">
@@ -34,11 +34,11 @@ describe( 'FeatureGenerator', () => {
             </form>`;
         
         document.body.innerHTML = html;
-        const spec = new Spec('pt-br');
-        const features = specAnalyzer.analyze( document.body, spec );
-        // expect( feature?.scenarios ).toHaveLength( 2 );
-        // expect( feature?.scenarios[0].getVariants() ).toHaveLength( 2 );
-        // expect( feature?.scenarios[1].getVariants() ).toHaveLength( 2 );
-        // expect( feature?.uiElements ).toHaveLength( 4 );
+        
+        const feature = generator.fromElement( document.body );
+        expect( feature?.scenarios ).toHaveLength( 2 );
+        expect( feature?.scenarios[0].getVariants() ).toHaveLength( 2 );
+        expect( feature?.scenarios[1].getVariants() ).toHaveLength( 2 );
+        expect( feature?.uiElements ).toHaveLength( 4 );
     } );
 } );

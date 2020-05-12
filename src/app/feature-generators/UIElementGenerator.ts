@@ -1,6 +1,4 @@
-import { Feature } from "../feature-structure/Feature";
-import { GeneratorsMap } from "./GeneratorsMap";
-import { ContextGenerator } from "./ContextGenerator";
+import { NodeTypes } from '../node/NodeTypes';
 import { UIElement } from "../feature-structure/UIElement";
 import { UIProperty } from "../feature-structure/UIProperty";
 
@@ -14,76 +12,74 @@ export class UIElementGenerator {
         return true;
     }
 
-    private _contextualizes(context : ContextGenerator, uiElement: UIElement) : ContextGenerator {
-        context.inUIElement = true;
-        context.currentUIElement = uiElement;
+    public createUIElementsFromForm (node : HTMLElement) : Array <UIElement> {
+        let uiElements : Array < UIElement > = [];
+        let inputs : Array < HTMLInputElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
+        
+        for(let input of inputs){
+            if (input.nodeName == NodeTypes.INPUT){
+                let uiElm = new UIElement();
+                
+                if (this._validPropertyNode(input.name)) {
+                    uiElm.setName(input.name);
+                }
 
-        return context;
-    }
+                if (this._validPropertyNode(input.id)) {
+                    
+                    // Se node nao tiver nome e tiver id, id vai passar a ser o nome tambem
+                    if(uiElm.getName() == ""){
+                        let nodeName = input.id.toString(); 
+                        uiElm.setName(nodeName.charAt(0).toUpperCase() + nodeName.slice(1));
+                    }
 
+                    uiElm.setProperty(new UIProperty('id', '#' + input.id));
+                }
 
-    public generate (node : HTMLInputElement, feature : Feature, generatorsMap : GeneratorsMap, context : ContextGenerator) : void {
+                if (this._validPropertyNode(input.type)) {
+                    uiElm.setProperty(new UIProperty('type', input.type));
+                }
 
-        let uiElm = new UIElement();
-        context = this._contextualizes(context, uiElm);
+                if (this._validPropertyNode(input.disabled)) {
+                    let editabled = !input.disabled ? true : false;
+                    uiElm.setProperty(new UIProperty('editabled', editabled));
+                }
 
-        if (this._validPropertyNode(node.name)) {
-            uiElm.setName(node.name);
-        }
+                // if (this.validPropertyNode(input.dataType)) {
+                //     uiElm.setProperty(new UIProperty('dataType', input.dataType));
+                // }
 
-        if (this._validPropertyNode(node.id)) {
-            
-            // Se node nao tiver nome e tiver id, id vai passar a ser o nome tambem
-            if(uiElm.getName() == ""){
-                let nodeName = node.id.toString(); 
-                uiElm.setName(nodeName.charAt(0).toUpperCase() + nodeName.slice(1));
+                if (this._validPropertyNode(input.value)) {
+                    uiElm.setProperty(new UIProperty('value', input.value));
+                }
+
+                if (this._validPropertyNode(input.minLength)) {
+                    if(input.minLength !== 0){
+                        uiElm.setProperty(new UIProperty('min_length', input.minLength));
+                    }
+                }
+
+                if (this._validPropertyNode(input.maxLength)) {
+                    if(input.maxLength !== 524288){
+                        uiElm.setProperty(new UIProperty('max_length', input.maxLength));
+                    }
+                }
+
+                if (this._validPropertyNode(input.min)) {
+                    uiElm.setProperty(new UIProperty('min_value', input.min));
+                }
+
+                if (this._validPropertyNode(input.max)) {
+                    uiElm.setProperty(new UIProperty('max_value', input.max));
+                }
+
+                if (this._validPropertyNode(input.pattern)) {
+                    uiElm.setProperty(new UIProperty('format', input.pattern));
+                }
+
+                uiElements.push(uiElm);
             }
-
-            uiElm.setProperty(new UIProperty('id', '#' + node.id));
         }
 
-        if (this._validPropertyNode(node.type)) {
-            uiElm.setProperty(new UIProperty('type', node.type));
-        }
-
-        if (this._validPropertyNode(node.disabled)) {
-            let editabled = !node.disabled ? true : false;
-            uiElm.setProperty(new UIProperty('editabled', editabled));
-        }
-
-        // if (this.validPropertyNode(node.dataType)) {
-        //     uiElm.setProperty(new UIProperty('dataType', node.dataType));
-        // }
-
-        if (this._validPropertyNode(node.value)) {
-            uiElm.setProperty(new UIProperty('value', node.value));
-        }
-
-        if (this._validPropertyNode(node.minLength)) {
-            if(node.minLength !== 0){
-                uiElm.setProperty(new UIProperty('min_length', node.minLength));
-            }
-        }
-
-        if (this._validPropertyNode(node.maxLength)) {
-            if(node.maxLength !== 524288){
-                uiElm.setProperty(new UIProperty('max_length', node.maxLength));
-            }
-        }
-
-        if (this._validPropertyNode(node.min)) {
-            uiElm.setProperty(new UIProperty('min_value', node.min));
-        }
-
-        if (this._validPropertyNode(node.max)) {
-            uiElm.setProperty(new UIProperty('max_value', node.max));
-        }
-
-        if (this._validPropertyNode(node.pattern)) {
-            uiElm.setProperty(new UIProperty('format', node.pattern));
-        }
-
-        // return uiElm;
-        feature.setUiElement(uiElm);
+        return uiElements;
     }
 }
