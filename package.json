@@ -23,10 +23,6 @@
     "url": "https://gitlab.com/dstriotto/tcc-matheus-danilo/issues"
   },
   "homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
-  "dependencies": {
-    "mustache": "^4.0.1",
-    "parcel": "^1.12.4"
-  },
   "devDependencies": {
     "@types/chrome": "0.0.107",
     "@types/jest": "^25.1.4",
@@ -45,6 +41,8 @@
     "testEnvironment": "jsdom"
   },
   "dependencies": {
+    "mustache": "^4.0.1",
+    "parcel": "^1.12.4",
     "graph-data-structure": "1.10.0",
     "idb-mutex": "^0.11.0",
     "@types/jest": "^25.1.5",
