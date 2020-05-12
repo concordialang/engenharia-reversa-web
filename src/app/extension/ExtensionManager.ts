@@ -1,5 +1,5 @@
 import { Extension } from "./Extension";
-import { CommunicationChannel } from "../comunication-channel/CommunicationChannel";
+import { CommunicationChannel } from "../comm/CommunicationChannel";
 
 export class ExtensionManager {
 
