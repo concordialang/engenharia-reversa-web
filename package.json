@@ -36,5 +36,9 @@
   },
   "jest": {
     "preset": "ts-jest"
+  },
+  "dependencies": {
+    "graph-data-structure": "1.10.0",
+    "idb-mutex": "^0.11.0"
   }
 }
