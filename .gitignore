@@ -1,3 +1,5 @@
 node_modules
 dist
-**/*.xml
+coverage
+.cache
+src/.cache
