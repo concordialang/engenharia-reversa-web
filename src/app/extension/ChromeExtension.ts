@@ -1,6 +1,5 @@
 import { Extension } from "./Extension";
 import { Tab } from "./Tab";
-import { ChromeTab } from "./ChromeTab";
 
 export class ChromeExtension implements Extension {
 
@@ -21,7 +20,7 @@ export class ChromeExtension implements Extension {
                 url: url.toString()
             }, function (tab : chrome.tabs.Tab) {
                 if(tab && tab.id){
-                    resolve(new ChromeTab(tab.id.toString()));
+                    resolve(new Tab(tab.id.toString()));
                 }
                 else{
                     reject();

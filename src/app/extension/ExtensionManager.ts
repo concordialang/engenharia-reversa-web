@@ -1,7 +1,6 @@
 import { Extension } from "./Extension";
 import { CommunicationChannel } from "../comm/CommunicationChannel";
 import { Tab } from "./Tab";
-import { ChromeTab } from "./ChromeTab";
 
 export class ExtensionManager {
 
@@ -22,8 +21,8 @@ export class ExtensionManager {
         let _this = this;
         this.extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
             if(tab && tab.id){
-                _this.addOpenedTab(new ChromeTab(tab.id?.toString()));
-                _this.sendOrderToCrawlTab(new ChromeTab(tab.id?.toString()),true);
+                _this.addOpenedTab(new Tab(tab.id?.toString()));
+                _this.sendOrderToCrawlTab(new Tab(tab.id?.toString()),true);
             }
         });
 
@@ -34,8 +33,8 @@ export class ExtensionManager {
                 _this.openNewTab(new URL(request.url));
             }
             else if (sender.tab && sender.tab.id && request.action == 'loaded') {
-                if (_this.tabWasOpenedByThisExtension(new ChromeTab(sender.tab.id.toString()))) {
-                    _this.sendOrderToCrawlTab(new ChromeTab(sender.tab.id.toString()));
+                if (_this.tabWasOpenedByThisExtension(new Tab(sender.tab.id.toString()))) {
+                    _this.sendOrderToCrawlTab(new Tab(sender.tab.id.toString()));
                 }
             }
         });
