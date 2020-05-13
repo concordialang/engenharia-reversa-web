@@ -1,9 +1,11 @@
 export interface Extension {
 
-    sendMessageToTab(tabId : string, message : any) : Promise<any>;
+    // substituir {} por classe que represente mensagem
+    sendMessageToTab(tabId : string, message : {}) : Promise<void>;
 
-    openNewTab(url : URL) : Promise<any>;
+    //abstrair chrome.tabs.Tab
+    openNewTab(url : URL) : Promise<chrome.tabs.Tab>;
 
-    setBrowserActionListener(action : string, callback : any) : void;
+    setBrowserActionListener(action : string, callback : CallableFunction) : void;
 
 }

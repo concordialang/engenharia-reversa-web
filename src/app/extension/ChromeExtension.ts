@@ -2,7 +2,8 @@ import { Extension } from "./Extension";
 
 export class ChromeExtension implements Extension {
 
-    public sendMessageToTab(tabId : string, message : any) : Promise<any> {
+    // substituir {} por classe que represente mensagem
+    public sendMessageToTab(tabId : string, message : {}) : Promise<void> {
         return new Promise(function (resolve,reject) {
             const options = new Object();
             chrome.tabs.sendMessage(Number(tabId), message, options, function () {
@@ -12,7 +13,8 @@ export class ChromeExtension implements Extension {
 
     }
 
-    public openNewTab(url : URL) : Promise<any> {
+    //abstrair chrome.tabs.Tab
+    public openNewTab(url : URL) : Promise<chrome.tabs.Tab> {
         return new Promise(function (resolve,reject) {
             chrome.tabs.create({
                 url: url.toString()
@@ -22,7 +24,7 @@ export class ChromeExtension implements Extension {
         });
     }
 
-    public setBrowserActionListener(action : string, callback : any) : void{
+    public setBrowserActionListener(action : string, callback : CallableFunction) : void{
         chrome.browserAction[action].addListener(callback);
     }
 

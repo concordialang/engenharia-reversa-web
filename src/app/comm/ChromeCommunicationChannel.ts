@@ -2,15 +2,23 @@ import { CommunicationChannel } from "./CommunicationChannel";
 
 export class ChromeCommunicationChannel implements CommunicationChannel {
 
-    public sendMessageToAll(message : any) : Promise <any> {
+    // substituir {} por classe que represente mensagem
+    public sendMessageToAll(message : {}) : Promise <void> {
         return new Promise(function(resolve,reject){
             chrome.runtime.sendMessage(message);
             resolve();
         });
     }
 
-    public setMessageListener(callback : any) : void{
-        chrome.runtime.onMessage.addListener(callback);
+    // substituir any por classe que represente mensagem
+    //abstrair MessageSender
+    public setMessageListener(callback : (message : any, sender: chrome.runtime.MessageSender) => void ) : void {
+
+        //criando função no formato que a interface do chrome espera
+        const cb = function(message: any, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void){
+            callback(message,sender);
+        };
+        chrome.runtime.onMessage.addListener(cb);
     }
 
 }

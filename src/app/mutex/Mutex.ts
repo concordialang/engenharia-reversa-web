@@ -8,11 +8,11 @@ class MutexClass {
         this.mutexVendor = new Mutex(id);
     }
 
-    public lock() : Promise<any> {
+    public lock() : Promise<void> {
         return this.mutexVendor.lock();
     }
 
-    public unlock() : Promise<any> {
+    public unlock() : Promise<{}> {
         return this.mutexVendor.unlock();
     }
 

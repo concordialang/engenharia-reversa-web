@@ -39,7 +39,7 @@ export class ExtensionManager {
     }
 
     public openNewTab(url : URL) : void {
-        const promise : Promise<any> = this.extension.openNewTab(url);
+        const promise : Promise<chrome.tabs.Tab> = this.extension.openNewTab(url);
         const _this = this;
         promise.then(function(tab : chrome.tabs.Tab){
             _this.openedTabs.push(tab);
@@ -53,7 +53,7 @@ export class ExtensionManager {
             actions.push("clean-graph");
         }
         let idTab = tab?.id ?? 0;
-        const promise : Promise<any> = this.extension.sendMessageToTab(idTab.toString(),{ actions: actions });
+        const promise : Promise<void> = this.extension.sendMessageToTab(idTab.toString(),{ actions: actions });
         const _this = this;
         promise.then(function(){
             _this.removeTab(tab);

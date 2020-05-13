@@ -1,7 +1,10 @@
 export interface CommunicationChannel {
 
-    sendMessageToAll(message : any) : Promise <any>;
+    // substituir {} por classe que represente mensagem
+    sendMessageToAll(message : {}) : Promise <void>;
 
-    setMessageListener(callback : any) : void;
+    // substituir any por classe que represente mensagem
+    //abstrair MessageSender
+    setMessageListener(callback : (message : any, sender: chrome.runtime.MessageSender) => void ) : void;
 
 }
