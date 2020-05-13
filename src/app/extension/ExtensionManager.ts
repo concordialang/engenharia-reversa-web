@@ -1,10 +1,12 @@
 import { Extension } from "./Extension";
 import { CommunicationChannel } from "../comm/CommunicationChannel";
+import { Tab } from "./Tab";
+import { ChromeTab } from "./ChromeTab";
 
 export class ExtensionManager {
 
     //mudar tipo de chrome.tabs.Tab para uma classe que represente Tab de maneira mais genérica
-    private openedTabs : Array<chrome.tabs.Tab>;
+    private openedTabs : Array<Tab>;
     private extension : Extension;
     private communicationChannel : CommunicationChannel;
 
@@ -19,8 +21,10 @@ export class ExtensionManager {
         //abstrair chrome.tabs.Tab
         let _this = this;
         this.extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
-            _this.addOpenedTab(tab);
-            _this.sendOrderToCrawlTab(tab,true);
+            if(tab && tab.id){
+                _this.addOpenedTab(new ChromeTab(tab.id?.toString()));
+                _this.sendOrderToCrawlTab(new ChromeTab(tab.id?.toString()),true);
+            }
         });
 
         //abstrair sender/request
@@ -29,9 +33,9 @@ export class ExtensionManager {
             if (request.action == 'open-tab') {
                 _this.openNewTab(new URL(request.url));
             }
-            else if (sender.tab && request.action == 'loaded') {
-                if (_this.tabWasOpenedByThisExtension(sender.tab)) {
-                    _this.sendOrderToCrawlTab(sender.tab);
+            else if (sender.tab && sender.tab.id && request.action == 'loaded') {
+                if (_this.tabWasOpenedByThisExtension(new ChromeTab(sender.tab.id.toString()))) {
+                    _this.sendOrderToCrawlTab(new ChromeTab(sender.tab.id.toString()));
                 }
             }
         });
@@ -39,20 +43,20 @@ export class ExtensionManager {
     }
 
     public openNewTab(url : URL) : void {
-        const promise : Promise<chrome.tabs.Tab> = this.extension.openNewTab(url);
+        const promise : Promise<Tab> = this.extension.openNewTab(url);
         const _this = this;
-        promise.then(function(tab : chrome.tabs.Tab){
+        promise.then(function(tab : Tab){
             _this.openedTabs.push(tab);
         });
     }
 
     //temporaria
-    public sendOrderToCrawlTab(tab : chrome.tabs.Tab, firstCrawl : Boolean = false) {
+    public sendOrderToCrawlTab(tab : Tab, firstCrawl : Boolean = false) {
         let actions : Array<String> = ["crawl"];
         if(firstCrawl){
             actions.push("clean-graph");
         }
-        let idTab = tab?.id ?? 0;
+        let idTab = tab.getId() ?? 0;
         const promise : Promise<void> = this.extension.sendMessageToTab(idTab.toString(),{ actions: actions });
         const _this = this;
         promise.then(function(){
@@ -61,26 +65,26 @@ export class ExtensionManager {
     }
 
     //temporaria
-    public addOpenedTab(tab : chrome.tabs.Tab) {
+    public addOpenedTab(tab : Tab) {
         this.openedTabs.push(tab);
     }
 
     //temporaria
     //teoricamente pode dar problema de concorrência
-    private removeTab(tab : chrome.tabs.Tab) {
+    private removeTab(tab : Tab) {
         for(let i : number = 0;i< this.openedTabs.length;i++){
-            let openedTab : chrome.tabs.Tab = this.openedTabs[i];
-            if(openedTab.id == tab.id){
+            let openedTab : Tab = this.openedTabs[i];
+            if(openedTab.getId() == tab.getId()){
                 this.openedTabs.splice(i, 1);
             }
         }
     }
 
     //temporaria
-    public tabWasOpenedByThisExtension(tab : chrome.tabs.Tab) {
+    public tabWasOpenedByThisExtension(tab : Tab) {
         for(let i : number = 0;i< this.openedTabs.length;i++){
-            let openedTab : chrome.tabs.Tab = this.openedTabs[i];
-            if(openedTab.id == tab.id){
+            let openedTab : Tab = this.openedTabs[i];
+            if(openedTab.getId() == tab.getId()){
                 return true;
             }
         }

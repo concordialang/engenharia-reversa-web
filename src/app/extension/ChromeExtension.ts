@@ -1,4 +1,6 @@
 import { Extension } from "./Extension";
+import { Tab } from "./Tab";
+import { ChromeTab } from "./ChromeTab";
 
 export class ChromeExtension implements Extension {
 
@@ -13,13 +15,17 @@ export class ChromeExtension implements Extension {
 
     }
 
-    //abstrair chrome.tabs.Tab
-    public openNewTab(url : URL) : Promise<chrome.tabs.Tab> {
+    public openNewTab(url : URL) : Promise<Tab> {
         return new Promise(function (resolve,reject) {
             chrome.tabs.create({
                 url: url.toString()
             }, function (tab : chrome.tabs.Tab) {
-                resolve(tab);
+                if(tab && tab.id){
+                    resolve(new ChromeTab(tab.id.toString()));
+                }
+                else{
+                    reject();
+                }
             });
         });
     }
