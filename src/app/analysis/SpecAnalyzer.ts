@@ -3,10 +3,13 @@ import { Feature } from '../feature-structure/Feature';
 import { Scenario } from '../feature-structure/Scenario';
 import { Spec } from './Spec';
 import { UIElementGenerator } from '../feature-generators/UIElementGenerator';
+import { Variant } from '../feature-structure/Variant';
+import { VariantsGenerator } from '../feature-generators/VariantsGenerator';
+import { ScenarioGenerator } from '../feature-generators/ScenarioGenerator';
 
 export class SpecAnalyzer {
 
-    analyze( e: HTMLElement, spec: Spec ) {
+    analyze( e: HTMLElement, spec: Spec ) : Spec {
         const forms = this.findForms( e );
         for ( const f of forms ) {
             this.createFeatureFromForm( f, spec );
@@ -19,8 +22,7 @@ export class SpecAnalyzer {
         return Array.from( e.querySelectorAll( NodeTypes.FORM ) );
     }
 
-    createFeatureFromForm( f: HTMLElement, spec: Spec ) {
-
+    createFeatureFromForm( f: HTMLElement, spec: Spec ) : void{
         const title: HTMLElement | null = this.titleBeforeForm( f );
 
         const feature = new Feature();
@@ -30,25 +32,34 @@ export class SpecAnalyzer {
 
         spec.features.push( feature );
 
-        const scenario = new Scenario();
-        scenario.name = 'Scenario 1'; // TO-DO mudar
-        feature.setScenario( scenario );
+        const uiElementsGenerator = new UIElementGenerator();
+        const scenarioGenerator = new ScenarioGenerator();
+        const variantGenerator = new VariantsGenerator();
 
-        let uiElementsGenerator = new UIElementGenerator();
+        // UIElements
         const uiElements = uiElementsGenerator.createUIElementsFromForm( f );
         feature.setUiElements(uiElements);
 
-        // const variant = this.generateVariantFromUIElements( uiElements );
-        // scenario.addVariant( variant );
+        // Scenario With All Elements
+        const scenarioAllElm = new Scenario();
+        scenarioAllElm.setName('Scenario 1'); // TO-DO mudar
+        feature.addScenario( scenarioAllElm );
 
-        // const variant2 = this.createVariantFromMandatoryUIElements( uiElements );
-        // if ( ! variant2 ) {
-        //     scenario.addVariant( variant2 );
+        const variantAllElm = variantGenerator.generateVariantFromUIElements( f, uiElements );
+        variantAllElm.setName("Variant 1");
+        scenarioAllElm.addVariant( variantAllElm );
+
+        // Scenario With Mandatory Elements
+        const scenarioMandatoryElm = new Scenario();
+        scenarioMandatoryElm.setName('Scenario 2'); // TO-DO mudar
+        feature.addScenario( scenarioMandatoryElm );
+
+        const variantMandatoryElm = variantGenerator.generateVariantFromMandatoryUIElements( f, uiElements );
+        variantMandatoryElm.setName("Variant 2");
+        scenarioMandatoryElm.addVariant( variantMandatoryElm );
+        // if ( ! variantMandatoryElm ) {
+        //     scenarioMandatoryElm.addVariant( variantMandatoryElm );
         // }
-
-        // ...
-
-        // return spec;
     }
 
     titleBeforeForm( f: HTMLElement ): HTMLElement | null {

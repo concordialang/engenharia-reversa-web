@@ -1,8 +1,8 @@
 import { Variant } from "./Variant";
 
 export class Scenario {
-	name!: string;
-    variants!: Array< Variant >;
+	private name!: string;
+    private variants!: Array< Variant >;
     
     constructor() {
         this.variants = [];
@@ -18,7 +18,7 @@ export class Scenario {
     }
 
     //variants
-    public setVariant(variant : Variant){
+    public addVariant(variant : Variant){
         this.variants.push(variant);
     }
 

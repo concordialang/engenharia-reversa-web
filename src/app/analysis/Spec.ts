@@ -8,5 +8,4 @@ export class Spec {
         public readonly language: string
     ) {
     }
-
 }

@@ -52,7 +52,7 @@ export class ScenarioGenerator {
             }
 
             if(this._checkElementType(node.nodeName)){
-                feature.setScenario( scenario );
+                feature.addScenario( scenario );
                 nodeGenerator = this.elementsMap.get(node.nodeName);
                 nodeGenerator.generate(node, feature, generatorsMap, context)
             }

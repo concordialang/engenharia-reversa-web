@@ -1,64 +1,63 @@
 import { Feature } from "../feature-structure/Feature";
 import { NodeTypes } from "../node/NodeTypes";
-import { NodeIterator } from "../node/NodeIterator";
-import { GeneratorTypes } from "./GeneratorTypes";
-import { GeneratorsMap } from "./GeneratorsMap";
-import { ContextGenerator } from "./ContextGenerator";
 import { Variant } from "../feature-structure/Variant";
 import { VariantSentence } from "../feature-structure/VariantSentence";
 import { VariantSentenceType } from "../feature-structure/types/VariantSentenceType";
+import { UIElement } from "../feature-structure/UIElement";
 
 export class VariantsGenerator {
 
-    private elementsMap: any;
-    
-    private _createFeatureElementsMap(generatorsMap : any) : void {
-        this.elementsMap = new Map();
-        this.elementsMap.set(NodeTypes.INPUT, generatorsMap.get(GeneratorTypes.UIELEMENT));
-    }
-
-    private _contextualizes(context : ContextGenerator, variant: Variant) : ContextGenerator {
-        context.inVariant = true;
-        context.currentVariant = variant;
-
-        return context;
-    }
-
-    // check if element is treatable for this class
-    public _checkElementType(nodeName : String) : boolean{
+    public generateVariantFromUIElements(node : HTMLElement, uiElements : Array <UIElement>) : Variant {
+        let variant = new Variant();
+        let inputs : Array < HTMLInputElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
         
-        if(nodeName != NodeTypes.INPUT){
-            return false;
-        }
-
-        return true;
-    }
-
-    public generate(element : HTMLElement, feature : Feature, generatorsMap : GeneratorsMap, context : ContextGenerator) : void {
-
-        this._createFeatureElementsMap(generatorsMap);
-
-        let nodes = Array.from( element.children );
-        let it = new NodeIterator( nodes );
-        let node : any = null;
-
-        while ( it.hasNext() ) {
-            node = it.next();
-
-            if(node.nodeName == NodeTypes.INPUT){
-
-                let variant = new Variant();
-                context = this._contextualizes(context, variant);
-                // variant.setName(node.innerHTML);
-
+        for(let input of inputs){
+            if (input.nodeName == NodeTypes.INPUT){
                 if(typeof node.id != undefined){
-                    let variantName = node.id.toString(); 
-                    variant.setName(variantName.charAt(0).toUpperCase() + variantName.slice(1));
+                    let target = '<#' + input.id + '>';
                     
-                    variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', ['<#' + node.id + '>']));
-                    context.currentScenario.setVariant(variant);
+                    for(let uiElm of uiElements){
+                        for(let property of uiElm.getProperties()){
+                            if(input.id == property.getValue()){
+                                target = "{" + uiElm.getName() + "}";
+                            }
+                        }
+                    }
+                    
+                    variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', [target]));
                 }
             }
         }
+
+        return variant;
+    }
+
+    public generateVariantFromMandatoryUIElements(node : HTMLElement, uiElements : Array <UIElement>) : Variant {
+        let variant = new Variant();
+        let inputs : Array < HTMLInputElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
+        
+        for(let input of inputs){
+            if (input.nodeName == NodeTypes.INPUT){
+                if(input.required){
+                    if(typeof node.id != undefined){
+                        let target = '<#' + input.id + '>';
+                        
+                        for(let uiElm of uiElements){
+                            for(let property of uiElm.getProperties()){
+                                if(input.id == property.getValue()){
+                                    target = "{" + uiElm.getName() + "}";
+                                }
+                            }
+                        }
+    
+                        variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', [target]));
+                    }
+
+                }
+                
+            }
+        }
+
+        return variant;
     }
 }

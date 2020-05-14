@@ -27,7 +27,7 @@ export class Feature{
         this.uiElements = uiElements;
     }
 
-    public setScenario(scenario : Scenario){
+    public addScenario(scenario : Scenario){
         this.scenarios.push(scenario);
     }
 }

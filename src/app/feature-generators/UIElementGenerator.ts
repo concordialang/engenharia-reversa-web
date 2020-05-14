@@ -32,7 +32,7 @@ export class UIElementGenerator {
                         uiElm.setName(nodeName.charAt(0).toUpperCase() + nodeName.slice(1));
                     }
 
-                    uiElm.setProperty(new UIProperty('id', '#' + input.id));
+                    uiElm.setProperty(new UIProperty('id', input.id));
                 }
 
                 if (this._validPropertyNode(input.type)) {
@@ -72,8 +72,8 @@ export class UIElementGenerator {
                     uiElm.setProperty(new UIProperty('max_value', input.max));
                 }
 
-                if (this._validPropertyNode(input.pattern)) {
-                    uiElm.setProperty(new UIProperty('format', input.pattern));
+                if (this._validPropertyNode(input.required)) {
+                    uiElm.setProperty(new UIProperty('required', input.required));
                 }
 
                 uiElements.push(uiElm);

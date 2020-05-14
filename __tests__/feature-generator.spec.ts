@@ -20,9 +20,9 @@ describe( 'FeatureGenerator', () => {
             <form id="formulario" name="Cadastro" method="post">
                 <div id="cadastroNomeCompleto">
                     <label for="nome">Nome:</label>
-                    <input type="text" id="nome" name="nome">
+                    <input type="text" id="nome" name="nome" required>
                     <label for="sobrenome">Sobrenome:</label>
-                    <input type="text" id="sobrenome" name="sobrenome">
+                    <input type="text" id="sobrenome" name="sobrenome" required>
                 </div>
 
                 <div id="cadastroTelefones">
@@ -35,10 +35,11 @@ describe( 'FeatureGenerator', () => {
         
         document.body.innerHTML = html;
         const spec = new Spec('pt-br');
-        const features = specAnalyzer.analyze( document.body, spec );
-        // expect( feature?.scenarios ).toHaveLength( 2 );
-        // expect( feature?.scenarios[0].getVariants() ).toHaveLength( 2 );
-        // expect( feature?.scenarios[1].getVariants() ).toHaveLength( 2 );
-        // expect( feature?.uiElements ).toHaveLength( 4 );
+        const specAnalyzed = specAnalyzer.analyze( document.body, spec );
+        const feature = specAnalyzed.features[0];
+        expect( feature?.scenarios ).toHaveLength( 2 );
+        expect( feature?.scenarios[0].getVariants() ).toHaveLength( 1 );
+        expect( feature?.scenarios[1].getVariants() ).toHaveLength( 1 );
+        expect( feature?.uiElements ).toHaveLength( 4 );
     } );
 } );
