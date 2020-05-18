@@ -1,5 +1,6 @@
 import { Extension } from "./Extension";
 import { Tab } from "./Tab";
+import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
 
 export class ChromeExtension implements Extension {
 
@@ -29,8 +30,22 @@ export class ChromeExtension implements Extension {
         });
     }
 
-    public setBrowserActionListener(action : string, callback : CallableFunction) : void{
-        chrome.browserAction[action].addListener(callback);
+    public setBrowserActionListener(action : ExtensionBrowserAction, callback : (tab : Tab) => void) : void {
+        const cb = function(tab : chrome.tabs.Tab){
+            if(tab && tab.id){
+                callback(new Tab(tab.id.toString()));
+            }
+        };
+        const chromeAction = this.getChromeActionName(action);
+        //lançar exceção caso n encontre a ação do chrome ?
+        if(chromeAction){
+            chrome.browserAction[chromeAction].addListener(cb);
+        }
+    }
+
+    //procurar maneira mais correta de fazer que nao envolva ifs nem switch
+    private getChromeActionName(action : ExtensionBrowserAction) : string|undefined{
+        if(action == ExtensionBrowserAction.ExtensionIconClicked) return "onClicked";
     }
 
     

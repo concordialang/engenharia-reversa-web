@@ -1,10 +1,10 @@
 import { Extension } from "./Extension";
 import { CommunicationChannel } from "../comm/CommunicationChannel";
 import { Tab } from "./Tab";
+import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
 
 export class ExtensionManager {
 
-    //mudar tipo de chrome.tabs.Tab para uma classe que represente Tab de maneira mais genérica
     private openedTabs : Array<Tab>;
     private extension : Extension;
     private communicationChannel : CommunicationChannel;
@@ -17,13 +17,10 @@ export class ExtensionManager {
 
     public setup() : void {
 
-        //abstrair chrome.tabs.Tab
         let _this = this;
-        this.extension.setBrowserActionListener('onClicked',function (tab : chrome.tabs.Tab) {
-            if(tab && tab.id){
-                _this.addOpenedTab(new Tab(tab.id?.toString()));
-                _this.sendOrderToCrawlTab(new Tab(tab.id?.toString()),true);
-            }
+        this.extension.setBrowserActionListener(ExtensionBrowserAction.ExtensionIconClicked,function (tab : Tab) {
+            _this.addOpenedTab(tab);
+            _this.sendOrderToCrawlTab(tab,true);
         });
 
         //abstrair sender/request

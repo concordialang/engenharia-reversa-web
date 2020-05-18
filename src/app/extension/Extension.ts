@@ -1,4 +1,5 @@
 import { Tab } from "./Tab";
+import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
 
 export interface Extension {
 
@@ -7,6 +8,6 @@ export interface Extension {
 
     openNewTab(url : URL) : Promise<Tab>;
 
-    setBrowserActionListener(action : string, callback : CallableFunction) : void;
+    setBrowserActionListener(action : ExtensionBrowserAction, callback : (tab : Tab) => void) : void;
 
 }
