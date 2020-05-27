@@ -24,6 +24,12 @@ describe( 'FeatureGenerator', () => {
                     <label for="sobrenome">Sobrenome:</label>
                     <input type="text" id="sobrenome" name="sobrenome" required>
                 </div>
+                <select id="cars">
+                    <option value="volvo">Volvo</option>
+                    <option value="saab">Saab</option>
+                    <option value="mercedes">Mercedes</option>
+                    <option value="audi">Audi</option>
+                </select>
 
                 <div id="cadastroTelefones">
                     <label for="telefone">Telefone Fixo:</label>
