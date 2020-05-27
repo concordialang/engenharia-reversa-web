@@ -14,8 +14,8 @@ let graphStorage : GraphStorage = new GraphStorage();
 let crawledUrlsStorage : UrlListStorage = new UrlListStorage();
 const graphKey = "graph";
 const crawledUrlsKey = "crawled-urls";
-let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,graphKey,crawledUrlsKey,mu);
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
+let crawler : Crawler = new Crawler(communicationChannel,graphStorage,crawledUrlsStorage,graphKey,crawledUrlsKey,mu);
 
 communicationChannel.setMessageListener(function (message : Message) {
     if(message.includesAction(Command.CleanGraph)){

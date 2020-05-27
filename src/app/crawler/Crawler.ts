@@ -4,10 +4,12 @@ import { Mutex } from "../mutex/Mutex";
 import { UrlListStorage } from "./UrlListStorage";
 import { Message } from "../comm/Message";
 import { Command } from "../comm/Command";
+import { CommunicationChannel } from "../comm/CommunicationChannel";
 
 //classe deve ser refatorada
 export class Crawler {
 
+    private communicationChannel : CommunicationChannel;
     private graphStorage : GraphStorage;
     private crawledUrlsStorage : UrlListStorage;
     //abstrair mutex em classe
@@ -18,12 +20,13 @@ export class Crawler {
     //aux variables
     private closeWindow = false;
 
-    constructor( graphStorage : GraphStorage, crawledUrlsStorage : UrlListStorage, graphKey : string, crawledUrlsKey : string, mutex : Mutex ){
+    constructor( communicationChannel: CommunicationChannel, graphStorage : GraphStorage, crawledUrlsStorage : UrlListStorage, graphKey : string, crawledUrlsKey : string, mutex : Mutex ){
         this.graphStorage = graphStorage;
         this.crawledUrlsStorage = crawledUrlsStorage;
         this.mutex = mutex;
         this.graphKey = graphKey;
         this.crawledUrlsKey = crawledUrlsKey;
+        this.communicationChannel = communicationChannel;
     }
 
     public crawl(){
@@ -39,7 +42,7 @@ export class Crawler {
 
                 this.crawledUrlsStorage.add(this.crawledUrlsKey,new URL(links[i].href));
                 const message : Message = new Message([Command.OpenNewTab],{url: links[i].href});
-                chrome.runtime.sendMessage(message);
+                this.communicationChannel.sendMessageToAll(message);
                 
             }
         }
