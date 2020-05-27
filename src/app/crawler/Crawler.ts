@@ -2,6 +2,8 @@ import { GraphStorage } from "../graph/GraphStorage";
 import { Graph } from "../graph/Graph";
 import { Mutex } from "../mutex/Mutex";
 import { UrlListStorage } from "./UrlListStorage";
+import { Message } from "../comm/Message";
+import { Command } from "../comm/Command";
 
 //classe deve ser refatorada
 export class Crawler {
@@ -36,7 +38,8 @@ export class Crawler {
             if(this.sameHostname(foundUrl,pageUrl) && !this.wasUrlAlreadyCrawled(foundUrl)){
 
                 this.crawledUrlsStorage.add(this.crawledUrlsKey,new URL(links[i].href));
-                chrome.runtime.sendMessage({ action: "open-tab", url: links[i].href });
+                const message : Message = new Message([Command.OpenNewTab],{url: links[i].href});
+                chrome.runtime.sendMessage(message);
                 
             }
         }

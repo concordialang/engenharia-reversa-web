@@ -2,6 +2,9 @@ import { Extension } from "./Extension";
 import { CommunicationChannel } from "../comm/CommunicationChannel";
 import { Tab } from "./Tab";
 import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
+import { Command } from "../comm/Command";
+import { Message } from "../comm/Message";
+import { AppEvent } from "../comm/AppEvent";
 
 export class ExtensionManager {
 
@@ -25,11 +28,14 @@ export class ExtensionManager {
 
         //abstrair sender/request
         //definir constante para acoes / criar protocolo
-        this.communicationChannel.setMessageListener(function (request, sender) {
-            if (request.action == 'open-tab') {
-                _this.openNewTab(new URL(request.url));
+        this.communicationChannel.setMessageListener(function (message, sender) {
+            const actions = message.actions;
+            if (actions.includes(Command.OpenNewTab)) {
+                const extra : {url:string} | undefined = message.extra;
+                if(extra && extra.url)
+                _this.openNewTab(new URL(extra.url));
             }
-            else if (sender.tab && sender.tab.id && request.action == 'loaded') {
+            else if (sender.tab && sender.tab.id && actions.includes(AppEvent.Loaded)) {
                 if (_this.tabWasOpenedByThisExtension(new Tab(sender.tab.id.toString()))) {
                     _this.sendOrderToCrawlTab(new Tab(sender.tab.id.toString()));
                 }
@@ -48,12 +54,12 @@ export class ExtensionManager {
 
     //temporaria
     public sendOrderToCrawlTab(tab : Tab, firstCrawl : Boolean = false) {
-        let actions : Array<String> = ["crawl"];
+        let commands : Array<Command> = [Command.Crawl];
         if(firstCrawl){
-            actions.push("clean-graph");
+            commands.push(Command.CleanGraph);
         }
         let idTab = tab.getId() ?? 0;
-        const promise : Promise<void> = this.extension.sendMessageToTab(idTab.toString(),{ actions: actions });
+        const promise : Promise<void> = this.extension.sendMessageToTab(idTab.toString(),new Message(commands));
         const _this = this;
         promise.then(function(){
             _this.removeTab(tab);

@@ -1,9 +1,10 @@
 import { CommunicationChannel } from "./CommunicationChannel";
+import { Message } from "./Message";
 
 export class ChromeCommunicationChannel implements CommunicationChannel {
 
     // substituir {} por classe que represente mensagem
-    public sendMessageToAll(message : {}) : Promise <void> {
+    public sendMessageToAll(message : Message) : Promise <void> {
         return new Promise(function(resolve,reject){
             chrome.runtime.sendMessage(message);
             resolve();

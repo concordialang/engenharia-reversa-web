@@ -4,6 +4,9 @@ import { Mutex } from "./app/mutex/Mutex";
 import { UrlListStorage } from "./app/crawler/UrlListStorage";
 import { ChromeCommunicationChannel } from "./app/comm/ChromeCommunicationChannel";
 import { CommunicationChannel } from "./app/comm/CommunicationChannel";
+import { Command } from "./app/comm/Command";
+import { Message } from "./app/comm/Message";
+import { AppEvent } from "./app/comm/AppEvent";
 
 const mu : Mutex = new Mutex('mylock');
 
@@ -17,17 +20,17 @@ let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel
 communicationChannel.setMessageListener(function (request) {
     const actions = request.actions;
     if(actions){
-        if(inArray(actions,"clean-graph")){
+        if(actions.includes(Command.CleanGraph)){
             cleanGraph();
         }
-        if(inArray(actions,"crawl")) {
+        if(actions.includes(Command.Crawl)) {
             crawler.crawl();
         }
     }
 });
 
 //definir no protocolo de comunicação maneira para que a comunicação da extensão não interfira com a de outras extensões, e vice-versa
-communicationChannel.sendMessageToAll({ action: "loaded" });
+communicationChannel.sendMessageToAll(new Message([AppEvent.Loaded]));
 
 function cleanGraph() : void {
     graphStorage.remove(graphKey);
@@ -35,8 +38,3 @@ function cleanGraph() : void {
 }
 
 // OUTRAS FUNÇÕES
-
-function inArray(array : Array<any> ,valor : any) : boolean {
-    if(array.indexOf(valor) !== -1) return true;
-    return false;
-}

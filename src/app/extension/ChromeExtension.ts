@@ -1,11 +1,11 @@
 import { Extension } from "./Extension";
 import { Tab } from "./Tab";
 import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
+import { Message } from "../comm/Message";
 
 export class ChromeExtension implements Extension {
 
-    // substituir {} por classe que represente mensagem
-    public sendMessageToTab(tabId : string, message : {}) : Promise<void> {
+    public sendMessageToTab(tabId : string, message : Message) : Promise<void> {
         return new Promise(function (resolve,reject) {
             const options = new Object();
             chrome.tabs.sendMessage(Number(tabId), message, options, function () {

@@ -1,7 +1,8 @@
+import { Message } from "./Message";
+
 export interface CommunicationChannel {
 
-    // substituir {} por classe que represente mensagem
-    sendMessageToAll(message : {}) : Promise <void>;
+    sendMessageToAll(message : Message) : Promise <void>;
 
     // substituir any por classe que represente mensagem
     //abstrair MessageSender
