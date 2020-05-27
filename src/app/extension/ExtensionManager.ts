@@ -26,18 +26,15 @@ export class ExtensionManager {
             _this.sendOrderToCrawlTab(tab,true);
         });
 
-        //abstrair sender/request
-        //definir constante para acoes / criar protocolo
-        this.communicationChannel.setMessageListener(function (message, sender) {
-            const actions = message.actions;
-            if (actions.includes(Command.OpenNewTab)) {
-                const extra : {url:string} | undefined = message.extra;
+        this.communicationChannel.setMessageListener(function (message : Message, sender? : Tab) {
+            if (message.includesAction(Command.OpenNewTab)) {
+                const extra  = message.getExtra();
                 if(extra && extra.url)
-                _this.openNewTab(new URL(extra.url));
+                    _this.openNewTab(new URL(extra.url));
             }
-            else if (sender.tab && sender.tab.id && actions.includes(AppEvent.Loaded)) {
-                if (_this.tabWasOpenedByThisExtension(new Tab(sender.tab.id.toString()))) {
-                    _this.sendOrderToCrawlTab(new Tab(sender.tab.id.toString()));
+            else if (sender instanceof Tab && sender.getId() && message.includesAction(AppEvent.Loaded)) {
+                if (_this.tabWasOpenedByThisExtension(sender)){
+                    _this.sendOrderToCrawlTab(sender);
                 }
             }
         });

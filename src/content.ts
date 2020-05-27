@@ -17,15 +17,12 @@ const crawledUrlsKey = "crawled-urls";
 let crawler : Crawler = new Crawler(graphStorage,crawledUrlsStorage,graphKey,crawledUrlsKey,mu);
 let communicationChannel : CommunicationChannel = new ChromeCommunicationChannel();
 
-communicationChannel.setMessageListener(function (request) {
-    const actions = request.actions;
-    if(actions){
-        if(actions.includes(Command.CleanGraph)){
-            cleanGraph();
-        }
-        if(actions.includes(Command.Crawl)) {
-            crawler.crawl();
-        }
+communicationChannel.setMessageListener(function (message : Message) {
+    if(message.includesAction(Command.CleanGraph)){
+        cleanGraph();
+    }
+    if(message.includesAction(Command.Crawl)) {
+        crawler.crawl();
     }
 });
 

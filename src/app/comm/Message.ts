@@ -4,9 +4,9 @@ import { AppEvent } from "./AppEvent";
 export class Message {
 
     private actions : Array<Command>|Array<AppEvent>;
-    private extra? : Object
+    private extra? : any;
 
-    constructor(actions : Array<Command>|Array<AppEvent>, extra? : Object){
+    constructor(actions : Array<Command>|Array<AppEvent>, extra? : any){
         this.actions = actions;
         this.extra = extra;
     }
@@ -15,8 +15,15 @@ export class Message {
         return this.actions;
     }
 
-    public getExtra(): Object | undefined {
+    public getExtra(): any | undefined {
         return this.extra;
+    }
+
+    public includesAction(action : Command|AppEvent){
+        for(const a of this.actions){
+            if(a == action) return true;
+        }
+        return false;
     }
     
 }
