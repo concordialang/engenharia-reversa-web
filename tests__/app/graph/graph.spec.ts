@@ -25,10 +25,17 @@ describe( 'Graph', () => {
         expect(nodes.length).toBe(2);
     } );
 
-    it( 'adds edge', () => {
+    it( 'doesnt add the same node more than once', () => {
         const graph : Graph = new Graph();
         graph.addNode(url1);
-        graph.addNode(url2);
+        graph.addNode(url1);
+        const nodes : Array<string> = graph.getAllNodes();
+        expect(nodes.includes(url1)).toBe(true);
+        expect(nodes.length).toBe(1);
+    } );
+
+    it( 'adds edge', () => {
+        const graph : Graph = new Graph();
         graph.addEdge(url1,url2);
         graph.addEdge(url2,url1);
         const adjacentNodesUrl1 : Array<string> = graph.getAdjacentNodes(url1);
@@ -39,15 +46,32 @@ describe( 'Graph', () => {
 
     it( 'adds only one edge at a time', () => {
         const graph : Graph = new Graph();
-        graph.addNode(url1);
-        graph.addNode(url2);
-        graph.addNode(url3);
         graph.addEdge(url1,url2);
         let adjacentNodes : Array<string> = graph.getAdjacentNodes(url1);
         expect(adjacentNodes.length).toBe(1);
         graph.addEdge(url1,url3);
         adjacentNodes = graph.getAdjacentNodes(url1);
         expect(adjacentNodes.length).toBe(2);
+    } );
+
+    it( 'adding a edge will automatically add a new node', () => {
+        const graph : Graph = new Graph();
+        graph.addEdge(url1,url2);
+        const adjacentNodes : Array<string> = graph.getAdjacentNodes(url1);
+        expect(adjacentNodes.includes(url2)).toBe(true);
+        expect(adjacentNodes.length).toBe(1);
+        const nodes : Array<string> = graph.getAllNodes();
+        expect(nodes.includes(url1)).toBe(true);
+        expect(nodes.includes(url2)).toBe(true);
+    } );
+
+    it( 'doesnt add the same edge more than once', () => {
+        const graph : Graph = new Graph();
+        graph.addEdge(url1,url2);
+        graph.addEdge(url1,url2);
+        const adjacentNodes : Array<string> = graph.getAdjacentNodes(url1);
+        expect(adjacentNodes.includes(url2)).toBe(true);
+        expect(adjacentNodes.length).toBe(1);
     } );
 
     //refatorar nome do teste ou dividir em testes separados
@@ -76,8 +100,50 @@ describe( 'Graph', () => {
         expect(links).toContainEqual({source:url3,target:url1,weight: 1});
     } );
 
-    //teste se adiciona peso ao link de node certo
-    //teste de criacao de novo obj Graph a partir de json(object e string)
-    //teste se permite adicionar mesmo node 2 vezes
-    //teste se permite adicionar mesmo link de node 2 vezes
+    it( 'creates graph instance from json object', () => {
+        const graph : Graph = new Graph();
+        graph.addNode(url1);
+        graph.addNode(url2);
+        graph.addNode(url3);
+        graph.addEdge(url1,url2);
+        graph.addEdge(url1,url3);
+        graph.addEdge(url2,url3);
+        graph.addEdge(url3,url1);
+        const serializedGraph : object = graph.serialize();
+
+        const deserializedGraph : Graph = new Graph(serializedGraph);
+        let nodes : Array<string> = deserializedGraph.getAllNodes();
+        expect(nodes.includes(url1)).toBe(true);
+        expect(nodes.includes(url2)).toBe(true);
+        expect(nodes.includes(url3)).toBe(true);
+
+        expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(true);
+    } );
+
+    it( 'creates graph instance from json string', () => {
+        const graph : Graph = new Graph();
+        graph.addNode(url1);
+        graph.addNode(url2);
+        graph.addNode(url3);
+        graph.addEdge(url1,url2);
+        graph.addEdge(url1,url3);
+        graph.addEdge(url2,url3);
+        graph.addEdge(url3,url1);
+        const serializedGraph : string = JSON.stringify(graph.serialize());
+
+        const deserializedGraph : Graph = new Graph(serializedGraph);
+        let nodes : Array<string> = deserializedGraph.getAllNodes();
+        expect(nodes.includes(url1)).toBe(true);
+        expect(nodes.includes(url2)).toBe(true);
+        expect(nodes.includes(url3)).toBe(true);
+
+        expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(true);
+        expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(true);
+    } );
+
 } );

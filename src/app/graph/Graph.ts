@@ -20,7 +20,10 @@ class GraphClass {
     }
 
     public addEdge(from : string, to : string) : void {
-        this.graphVendor.addEdge(from,to);
+        const adjacentNodes : Array<string> = this.getAdjacentNodes(from);
+        if(!adjacentNodes.includes(to)){
+            this.graphVendor.addEdge(from,to);
+        }
     }
 
     public getAllNodes() : Array<string> {
