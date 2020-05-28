@@ -1,5 +1,6 @@
 import Graph  from "graph-data-structure";
 
+//tive que chamar de GraphClass porque por algum motivo dá erro se chamar somente de Graph
 class GraphClass {
     
     private graphVendor : Graph;
@@ -20,6 +21,14 @@ class GraphClass {
 
     public addEdge(from : string, to : string) : void {
         this.graphVendor.addEdge(from,to);
+    }
+
+    public getAllNodes() : Array<string> {
+        return this.graphVendor.nodes();
+    }
+
+    public getAdjacentNodes(key : string) : Array<string> {
+        return this.graphVendor.adjacent(key);
     }
 
     public serialize() : object {
