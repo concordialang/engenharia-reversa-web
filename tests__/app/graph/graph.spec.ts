@@ -77,9 +77,6 @@ describe( 'Graph', () => {
     //refatorar nome do teste ou dividir em testes separados
     it( 'serializes correctly', () => {
         const graph : Graph = new Graph();
-        graph.addNode(url1);
-        graph.addNode(url2);
-        graph.addNode(url3);
         graph.addEdge(url1,url2);
         graph.addEdge(url1,url3);
         graph.addEdge(url2,url3);
@@ -102,9 +99,6 @@ describe( 'Graph', () => {
 
     it( 'creates graph instance from json object', () => {
         const graph : Graph = new Graph();
-        graph.addNode(url1);
-        graph.addNode(url2);
-        graph.addNode(url3);
         graph.addEdge(url1,url2);
         graph.addEdge(url1,url3);
         graph.addEdge(url2,url3);
@@ -116,6 +110,7 @@ describe( 'Graph', () => {
         expect(nodes.includes(url1)).toBe(true);
         expect(nodes.includes(url2)).toBe(true);
         expect(nodes.includes(url3)).toBe(true);
+        expect(nodes.length).toBe(3);
 
         expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(true);
         expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(true);
@@ -125,9 +120,6 @@ describe( 'Graph', () => {
 
     it( 'creates graph instance from json string', () => {
         const graph : Graph = new Graph();
-        graph.addNode(url1);
-        graph.addNode(url2);
-        graph.addNode(url3);
         graph.addEdge(url1,url2);
         graph.addEdge(url1,url3);
         graph.addEdge(url2,url3);
