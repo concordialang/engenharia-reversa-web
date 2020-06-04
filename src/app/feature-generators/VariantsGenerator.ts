@@ -5,97 +5,89 @@ import { VariantSentenceType } from "../feature-structure/types/VariantSentenceT
 import { VariantSentenceActions } from "../feature-structure/types/VariantSentenceActions";
 import { UIElement } from "../feature-structure/UIElement";
 import { Util } from "../Util";
+import { EditableTypes } from "../feature-structure/types/EditableTypes";
 
 export class VariantsGenerator {
 
-    private checkValidNode(node: HTMLElement) : boolean{
-        // return false if node is not treatable for variants
-        if(node.nodeName != NodeTypes.INPUT && node.nodeName != NodeTypes.SELECT && node.nodeName != NodeTypes.TEXTAREA){
-            return false;
-        }
+    // private checkValidNode(node: HTMLElement) : boolean{
+    //     // return false if node is not treatable for variants
+    //     if(node.nodeName != NodeTypes.INPUT && node.nodeName != NodeTypes.SELECT && node.nodeName != NodeTypes.TEXTAREA){
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
-    public generateVariantFromUIElements(form: HTMLElement, uiElements: Array <UIElement>): Variant {
+    public generateVariantFromUIElements(uiElements: Array <UIElement>, onlyMandatoryElements: boolean = false): Variant {
         let variant = new Variant();
-        let formElements : Array < HTMLFormElement > = Array.from(form.querySelectorAll('*'));
         
-        for(let elm of formElements){
-            
-            if(!this.checkValidNode(elm)){
+        for(let uiElm of uiElements){
+            let type: string = '';
+            let target: string | null = null;
+            let editable: boolean | null = null;
+            let required: boolean = false;
+
+            for(let property of uiElm.getProperties()){
+                switch(property.getName()){
+                    case 'type' : type = property.getValue(); break;
+                    case 'editabled' : editable = property.getValue(); break;
+                    case 'id' : target = property.getValue(); break;
+                    case 'required' : required = property.getValue(); break;
+                }
+            }
+
+            // check required property based on parameter for mandatory elements
+            if(onlyMandatoryElements){
+                if(!required){
+                    continue;
+                }
+            }
+
+            if(target === null || editable === null || type === '' ){
                 continue;
             }
 
-            if(typeof elm.id != undefined){
-                let target = '<#' + elm.id + '>';
-                
-                for(let uiElm of uiElements){
-                    for(let property of uiElm.getProperties()){
-                        if(elm.id == property.getValue()){
-                            target = "{" + uiElm.getName() + "}";
-                        }
-                    }
-                }
-                
-                variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.FILL, [target]));
+            let action: string = "";
+            switch(type){
+                case EditableTypes.TEXTBOX: action = VariantSentenceActions.FILL; break;
+                case EditableTypes.TEXTAREA: action = VariantSentenceActions.FILL; break;
+                case EditableTypes.CHECKBOX: action = VariantSentenceActions.CHECK; break;
+                case EditableTypes.SELECT: action = VariantSentenceActions.SELECT; break;
+                default: action = VariantSentenceActions.FILL; break;
             }
+
+            variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, action, ["{" + target + "}"]));
         }
 
         return variant;
     }
 
-    // public generateVariantFromUIElements(node : HTMLElement, uiElements : Array <UIElement>) : Variant {
+
+    // public generateVariantFromUIElements(form: HTMLElement, uiElements: Array <UIElement>): Variant {
     //     let variant = new Variant();
-    //     let inputs : Array < HTMLInputElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
+    //     let formElements : Array < HTMLFormElement > = Array.from(form.querySelectorAll('*'));
         
-    //     for(let input of inputs){
-    //         if (input.nodeName == NodeTypes.INPUT){
-    //             if(typeof node.id != undefined){
-    //                 let target = '<#' + input.id + '>';
-                    
-    //                 for(let uiElm of uiElements){
-    //                     for(let property of uiElm.getProperties()){
-    //                         if(input.id == property.getValue()){
-    //                             target = "{" + uiElm.getName() + "}";
-    //                         }
+    //     for(let elm of formElements){
+            
+    //         if(!this.checkValidNode(elm)){
+    //             continue;
+    //         }
+
+    //         if(typeof elm.id != undefined){
+    //             let target = '<#' + elm.id + '>';
+                
+    //             for(let uiElm of uiElements){
+    //                 for(let property of uiElm.getProperties()){
+    //                     if(elm.id == property.getValue()){
+    //                         target = "{" + uiElm.getName() + "}";
     //                     }
     //                 }
-                    
-    //                 variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', [target]));
     //             }
+                
+    //             variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.FILL, [target]));
     //         }
     //     }
 
     //     return variant;
     // }
-
-    public generateVariantFromMandatoryUIElements(node : HTMLElement, uiElements : Array <UIElement>) : Variant {
-        let variant = new Variant();
-        let inputs : Array < HTMLInputElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
-        
-        for(let input of inputs){
-            if (input.nodeName == NodeTypes.INPUT){
-                if(input.required){
-                    if(typeof node.id != undefined){
-                        let target = '<#' + input.id + '>';
-                        
-                        for(let uiElm of uiElements){
-                            for(let property of uiElm.getProperties()){
-                                if(input.id == property.getValue()){
-                                    target = "{" + uiElm.getName() + "}";
-                                }
-                            }
-                        }
-    
-                        variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, 'fill', [target]));
-                    }
-
-                }
-                
-            }
-        }
-
-        return variant;
-    }
 }

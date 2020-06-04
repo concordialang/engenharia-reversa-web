@@ -42,29 +42,27 @@ export class SpecAnalyzer {
 
         // Scenario With All Elements
         const scenarioAllElm = new Scenario();
-        scenarioAllElm.setName('Scenario 1'); // TO-DO mudar
+        scenarioAllElm.setName(feature.name + " - Scenario 1");
         feature.addScenario( scenarioAllElm );
 
-        const variantAllElm = variantGenerator.generateVariantFromUIElements( f, uiElements );
-        variantAllElm.setName("Variant 1");
+        const variantAllElm = variantGenerator.generateVariantFromUIElements( uiElements );
+        variantAllElm.setName(feature.name + " With All Elements");
         scenarioAllElm.addVariant( variantAllElm );
 
         // Scenario With Mandatory Elements
         const scenarioMandatoryElm = new Scenario();
-        scenarioMandatoryElm.setName('Scenario 2'); // TO-DO mudar
+        scenarioMandatoryElm.setName(feature.name + " - Scenario 2");
         feature.addScenario( scenarioMandatoryElm );
 
-        const variantMandatoryElm = variantGenerator.generateVariantFromMandatoryUIElements( f, uiElements );
-        variantMandatoryElm.setName("Variant 2");
+        const variantMandatoryElm = variantGenerator.generateVariantFromUIElements( uiElements, true );
+        variantMandatoryElm.setName(feature.name + " With Mandatory Elements");
         scenarioMandatoryElm.addVariant( variantMandatoryElm );
-        // if ( ! variantMandatoryElm ) {
-        //     scenarioMandatoryElm.addVariant( variantMandatoryElm );
-        // }
     }
 
     titleBeforeForm( f: HTMLElement ): HTMLElement | null {
         if ( f.previousElementSibling?.nodeName === NodeTypes.H1 ||
-            f.previousElementSibling?.nodeName === NodeTypes.H2
+            f.previousElementSibling?.nodeName === NodeTypes.H2 ||
+            f.previousElementSibling?.nodeName === NodeTypes.LEGEND
         ) {
             return f.previousElementSibling as HTMLElement;
         }
