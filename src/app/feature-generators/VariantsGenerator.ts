@@ -9,15 +9,6 @@ import { EditableTypes } from "../feature-structure/types/EditableTypes";
 
 export class VariantsGenerator {
 
-    // private checkValidNode(node: HTMLElement) : boolean{
-    //     // return false if node is not treatable for variants
-    //     if(node.nodeName != NodeTypes.INPUT && node.nodeName != NodeTypes.SELECT && node.nodeName != NodeTypes.TEXTAREA){
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
-
     public generateVariantFromUIElements(uiElements: Array <UIElement>, onlyMandatoryElements: boolean = false): Variant {
         let variant = new Variant();
         
@@ -61,33 +52,4 @@ export class VariantsGenerator {
 
         return variant;
     }
-
-
-    // public generateVariantFromUIElements(form: HTMLElement, uiElements: Array <UIElement>): Variant {
-    //     let variant = new Variant();
-    //     let formElements : Array < HTMLFormElement > = Array.from(form.querySelectorAll('*'));
-        
-    //     for(let elm of formElements){
-            
-    //         if(!this.checkValidNode(elm)){
-    //             continue;
-    //         }
-
-    //         if(typeof elm.id != undefined){
-    //             let target = '<#' + elm.id + '>';
-                
-    //             for(let uiElm of uiElements){
-    //                 for(let property of uiElm.getProperties()){
-    //                     if(elm.id == property.getValue()){
-    //                         target = "{" + uiElm.getName() + "}";
-    //                     }
-    //                 }
-    //             }
-                
-    //             variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.FILL, [target]));
-    //         }
-    //     }
-
-    //     return variant;
-    // }
 }

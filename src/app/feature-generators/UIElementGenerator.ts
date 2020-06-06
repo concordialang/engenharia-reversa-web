@@ -2,6 +2,7 @@ import { NodeTypes } from '../node/NodeTypes';
 import { UIElement } from "../feature-structure/UIElement";
 import { UIProperty } from "../feature-structure/UIProperty";
 import { Util } from '../Util';
+import { getXPath } from 'get-xpath';
 
 export class UIElementGenerator {
 
@@ -13,6 +14,7 @@ export class UIElementGenerator {
 
         return true;
     }
+
 
     public createUIElementsFromForm (node : HTMLElement) : Array <UIElement> {
         let uiElements : Array < UIElement > = [];
@@ -26,50 +28,59 @@ export class UIElementGenerator {
             }
 
             let uiElm = new UIElement();
-                
+            
+            // name
             uiElm.setName(this.generateName(elm));
 
-            if(Util.isNotEmpty(elm.id)){
-                uiElm.setProperty(new UIProperty('id', elm.id));
-            }
+            // id
+            uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
 
+            // type
             if(Util.isNotEmpty(elm.type)){
                 uiElm.setProperty(new UIProperty('type', elm.type));
             }
 
+            // editabled
             if(Util.isNotEmpty(elm.disabled)){
                 let editabled = !elm.disabled ? true : false;
                 uiElm.setProperty(new UIProperty('editabled', editabled));
             }
 
-            // if (this.validPropertyNode(input.dataType)) {
-            //     uiElm.setProperty(new UIProperty('dataType', input.dataType));
-            // }
+            // dataType
+            if (Util.isNotEmpty(elm.type)) {
+                uiElm.setProperty(new UIProperty('dataType', elm.type));
+            }
 
+            // value
             if(Util.isNotEmpty(elm.value)){
                 uiElm.setProperty(new UIProperty('value', elm.value));
             }
 
+            // min_length
             if(Util.isNotEmpty(elm.minLength)){
                 if(elm.minLength !== 0){
                     uiElm.setProperty(new UIProperty('min_length', elm.minLength));
                 }
             }
 
+            // max_length
             if(Util.isNotEmpty(elm.maxLength)){
                 if(elm.maxLength !== 524288){
                     uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
                 }
             }
 
+            // min_value
             if(Util.isNotEmpty(elm.min)){
                 uiElm.setProperty(new UIProperty('min_value', elm.min));
             }
 
+            // max_value
             if(Util.isNotEmpty(elm.max)){
                 uiElm.setProperty(new UIProperty('max_value', elm.max));
             }
 
+            // required
             if(Util.isNotEmpty(elm.required)){
                 uiElm.setProperty(new UIProperty('required', elm.required));
             }
@@ -79,6 +90,7 @@ export class UIElementGenerator {
 
         return uiElements;
     }
+
 
     private generateName(elm: HTMLFormElement) : string{
         let name = '';
@@ -95,6 +107,7 @@ export class UIElementGenerator {
 
         return name;
     }
+
 
     private generateNameFromLabel(elm: HTMLFormElement) : string{
         let label: HTMLLabelElement = elm.previousElementSibling as HTMLLabelElement;
@@ -115,6 +128,7 @@ export class UIElementGenerator {
         return name;
     }
 
+
     private generateNameFromNode(elm: HTMLFormElement) : string{
         let name: string = '';
         
@@ -129,5 +143,17 @@ export class UIElementGenerator {
         }
 
         return name;
+    }
+
+    public generateId(elm: HTMLFormElement) : string {
+        let id = '';
+        
+        if(Util.isNotEmpty(elm.id)){
+            id = elm.id
+        } else {
+            id = getXPath(elm);
+        }
+
+        return id;
     }
 }

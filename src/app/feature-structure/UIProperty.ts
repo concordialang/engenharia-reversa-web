@@ -40,8 +40,14 @@ export class UIProperty {
                 this.value = value;
             }
 
-        } else if (this.name == "dataType"){
+        } else if (this.name == PropertyTypes.DATATYPE){
             
+            if(value == 'text'){
+                this.value = DataTypes.STRING;
+            } else if(value == 'datetime-local'){
+                this.value = DataTypes.DATETIME;
+            }
+
             if(Object.values(DataTypes).includes(value)){
                 this.value = value;
             }

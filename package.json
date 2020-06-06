@@ -26,6 +26,7 @@
     "testEnvironment": "jsdom"
   },
   "dependencies": {
+    "get-xpath": "^1.0.1",
     "mustache": "^4.0.1"
   },
   "scripts": {
