@@ -18,7 +18,7 @@ export class UIElementGenerator {
 
     public createUIElementsFromForm (node : HTMLElement) : Array <UIElement> {
         let uiElements : Array < UIElement > = [];
-        let formElements : Array < HTMLFormElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT));
+        let formElements : Array < HTMLFormElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT + ", " + NodeTypes.SELECT + ", " + NodeTypes.TEXTAREA));
         
         for(let elm of formElements){
             
@@ -37,7 +37,11 @@ export class UIElementGenerator {
 
             // type
             if(Util.isNotEmpty(elm.type)){
-                uiElm.setProperty(new UIProperty('type', elm.type));
+                let type = elm.type
+                if(elm.nodeName === NodeTypes.SELECT){
+                    type = "select";
+                }
+                uiElm.setProperty(new UIProperty('type', type));
             }
 
             // editabled
@@ -65,7 +69,7 @@ export class UIElementGenerator {
 
             // max_length
             if(Util.isNotEmpty(elm.maxLength)){
-                if(elm.maxLength !== 524288){
+                if(elm.maxLength !== 0 && elm.maxLength !== 524288){ // max length input defaut
                     uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
                 }
             }

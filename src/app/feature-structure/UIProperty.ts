@@ -13,13 +13,6 @@ export class UIProperty {
 
     //name
     public setName(name : string){
-        
-        if(name == PropertyTypes.TYPE){
-            if(this.value == DataTypes.DATE){
-                name = "dataType"
-            }
-        }
-
         this.name = name;
     }
 
@@ -43,9 +36,9 @@ export class UIProperty {
         } else if (this.name == PropertyTypes.DATATYPE){
             
             if(value == 'text'){
-                this.value = DataTypes.STRING;
+                value = DataTypes.STRING;
             } else if(value == 'datetime-local'){
-                this.value = DataTypes.DATETIME;
+                value = DataTypes.DATETIME;
             }
 
             if(Object.values(DataTypes).includes(value)){

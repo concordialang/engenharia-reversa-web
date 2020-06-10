@@ -34,7 +34,7 @@ export class VariantsGenerator {
                 }
             }
 
-            if(target === null || editable === null || type === '' ){
+            if(!Util.isNotEmpty(target) || !Util.isNotEmpty(editable) || !Util.isNotEmpty(type)){
                 continue;
             }
 
