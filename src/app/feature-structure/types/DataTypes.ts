@@ -4,5 +4,7 @@ export enum DataTypes{
     DOUBLE = 'double',
     DATE = 'date',
     TIME = 'time',
-    DATETIME = 'datetime'
+    DATETIME = 'datetime',
+    CHECKBOX = 'boolean',
+    NUMBER = 'number'
 }

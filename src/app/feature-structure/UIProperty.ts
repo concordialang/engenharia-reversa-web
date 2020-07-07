@@ -25,7 +25,7 @@ export class UIProperty {
         
         if(this.name == PropertyTypes.TYPE){
             
-            if(value == 'text' || value == 'textbox'){
+            if(value == 'text' || value == 'textbox' || value == 'number'){
                 value = EditableTypes.TEXTBOX;
             }
 
@@ -39,6 +39,8 @@ export class UIProperty {
                 value = DataTypes.STRING;
             } else if(value == 'datetime-local'){
                 value = DataTypes.DATETIME;
+            } else if(value == "checkbox"){
+                value = DataTypes.CHECKBOX;
             }
 
             if(Object.values(DataTypes).includes(value)){

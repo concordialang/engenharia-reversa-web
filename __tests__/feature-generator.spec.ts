@@ -66,10 +66,10 @@ describe( 'FeatureGenerator', () => {
         const spec = new Spec('pt-br');
         const specAnalyzed = specAnalyzer.analyze( document.body, spec );
         const feature = specAnalyzed.features[0];
+        
         expect( feature?.scenarios ).toHaveLength( 2 );
         expect( feature?.scenarios[0].getVariants() ).toHaveLength( 1 );
         expect( feature?.scenarios[1].getVariants() ).toHaveLength( 1 );
         expect( feature?.uiElements ).toHaveLength( 4 );
     } );
-
 } );

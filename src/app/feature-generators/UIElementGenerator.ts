@@ -37,10 +37,12 @@ export class UIElementGenerator {
 
             // type
             if(Util.isNotEmpty(elm.type)){
-                let type = elm.type
+                let type = elm.type;
+
                 if(elm.nodeName === NodeTypes.SELECT){
                     type = "select";
                 }
+                
                 uiElm.setProperty(new UIProperty('type', type));
             }
 
@@ -51,7 +53,7 @@ export class UIElementGenerator {
             }
 
             // dataType
-            if (Util.isNotEmpty(elm.type)) {
+            if (Util.isNotEmpty(elm.type)){
                 uiElm.setProperty(new UIProperty('dataType', elm.type));
             }
 
