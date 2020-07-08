@@ -2,7 +2,7 @@ import { NodeTypes } from '../node/NodeTypes';
 import { UIElement } from "../feature-structure/UIElement";
 import { UIProperty } from "../feature-structure/UIProperty";
 import { Util } from '../Util';
-import { getXPath } from 'get-xpath';
+import getXPath from 'get-xpath';
 
 export class UIElementGenerator {
 
@@ -19,16 +19,16 @@ export class UIElementGenerator {
     public createUIElementsFromForm (node : HTMLElement) : Array <UIElement> {
         let uiElements : Array < UIElement > = [];
         let formElements : Array < HTMLFormElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT + ", " + NodeTypes.SELECT + ", " + NodeTypes.TEXTAREA));
-        
+
         for(let elm of formElements){
-            
+
             if (!this.checkValidNode(elm)){
                 // skips element if he's not valid
                 continue;
             }
 
             let uiElm = new UIElement();
-            
+
             // name
             uiElm.setName(this.generateName(elm));
 
@@ -42,7 +42,7 @@ export class UIElementGenerator {
                 if(elm.nodeName === NodeTypes.SELECT){
                     type = "select";
                 }
-                
+
                 uiElm.setProperty(new UIProperty('type', type));
             }
 
@@ -100,7 +100,7 @@ export class UIElementGenerator {
 
     private generateName(elm: HTMLFormElement) : string{
         let name = '';
-        
+
         if(elm.previousElementSibling?.nodeName === NodeTypes.LABEL){
 
             name = this.generateNameFromLabel(elm);
@@ -108,7 +108,7 @@ export class UIElementGenerator {
         } else {
 
             name = this.generateNameFromNode(elm);
-            
+
         }
 
         return name;
@@ -137,7 +137,7 @@ export class UIElementGenerator {
 
     private generateNameFromNode(elm: HTMLFormElement) : string{
         let name: string = '';
-        
+
         if(Util.isNotEmpty(elm.name)){
 
             name = Util.formatName(elm.name);
@@ -153,7 +153,7 @@ export class UIElementGenerator {
 
     public generateId(elm: HTMLFormElement) : string {
         let id = '';
-        
+
         if(Util.isNotEmpty(elm.id)){
             id = elm.id
         } else {
