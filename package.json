@@ -1,50 +1,67 @@
 {
-  "name": "engenharia-reversa-web",
-  "version": "0.1.0",
-  "description": "TCC",
-  "main": "dist/index.js",
-  "keywords": [],
-  "author": "",
-  "license": "A-GPL",
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watchAll",
-    "watch": "webpack --config webpack/webpack.dev.js --watch",
-    "build": "webpack --config webpack/webpack.prod.js",
-    "clean": "rimraf dist",
-    "coverage": "jest --coverage",
-    "all": "npm run build && npm run test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://gitlab.com/dstriotto/tcc-matheus-danilo.git"
-  },
-  "bugs": {
-    "url": "https://gitlab.com/dstriotto/tcc-matheus-danilo/issues"
-  },
-  "homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
-  "devDependencies": {
-    "@types/chrome": "0.0.119",
-    "@types/jest": "^26.0.4",
-    "copy-webpack-plugin": "^5.1.1",
-    "jest": "^26.1.0",
-    "jest-environment-jsdom-sixteen": "^1.0.3",
-    "rimraf": "^3.0.2 ",
-    "ts-jest": "^26.1.1",
-    "ts-loader": "^7.0.5",
-    "typescript": "^3.8.3",
-    "webpack": "^4.43.0",
-    "webpack-cli": "~3.3.11",
-    "webpack-merge": "~4.2.2"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom"
-  },
-  "dependencies": {
+	"name": "engenharia-reversa-web",
+	"version": "0.1.0",
+	"description": "TCC",
+	"main": "dist/index.js",
+	"keywords": [],
+	"author": "",
+	"license": "A-GPL",
+	"repository": {
+		"type": "git",
+		"url": "git+https://gitlab.com/dstriotto/tcc-matheus-danilo.git"
+	},
+	"bugs": {
+		"url": "https://gitlab.com/dstriotto/tcc-matheus-danilo/issues"
+	},
+	"homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
+	"scripts": {
+		"fmt": "prettier ./ --write",
+		"test": "jest",
+		"test:watch": "jest --watchAll",
+		"watch": "webpack --config webpack/webpack.dev.js --watch",
+		"build": "webpack --config webpack/webpack.prod.js",
+		"clean": "rimraf dist",
+		"coverage": "jest --coverage",
+		"all": "npm run build && npm run test",
+		"preversion": "npm run all",
+		"postversion": "git push && git push --tags"
+	},
+	"jest": {
+		"preset": "ts-jest",
+		"testEnvironment": "jsdom"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "npm run build && lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.{js,json,css,md}": [
+			"prettier --write",
+			"git add"
+		]
+	},
+	"devDependencies": {
+		"@types/chrome": "0.0.119",
+		"@types/jest": "^26.0.4",
+		"copy-webpack-plugin": "^5.1.1",
+		"husky": "^4.2.5",
+		"jest": "^26.1.0",
+		"jest-environment-jsdom-sixteen": "^1.0.3",
+		"lint-staged": "^10.2.11",
+		"prettier": "^2.0.5",
+		"rimraf": "^3.0.2 ",
+		"ts-jest": "^26.1.1",
+		"ts-loader": "^7.0.5",
+		"typescript": "^3.8.3",
+		"webpack": "^4.43.0",
+		"webpack-cli": "~3.3.11",
+		"webpack-merge": "~4.2.2"
+	},
+	"dependencies": {
 		"get-xpath": "^3.0.0",
 		"graph-data-structure": "^1.10.0",
-    "idb-mutex": "^0.11.0",
-    "mustache": "^4.0.1"
-  }
+		"idb-mutex": "^0.11.0",
+		"mustache": "^4.0.1"
+	}
 }
