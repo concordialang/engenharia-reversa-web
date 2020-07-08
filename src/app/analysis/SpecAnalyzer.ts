@@ -5,7 +5,6 @@ import { Spec } from './Spec';
 import { UIElementGenerator } from '../feature-generators/UIElementGenerator';
 import { Variant } from '../feature-structure/Variant';
 import { VariantsGenerator } from '../feature-generators/VariantsGenerator';
-import { ScenarioGenerator } from '../feature-generators/ScenarioGenerator';
 
 export class SpecAnalyzer {
 
