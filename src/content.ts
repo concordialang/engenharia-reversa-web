@@ -1,12 +1,12 @@
-import { GraphStorage } from "./app/graph/GraphStorage";
-import { Crawler } from "./app/crawler/Crawler";
-import { Mutex } from "./app/mutex/Mutex";
-import { UrlListStorage } from "./app/crawler/UrlListStorage";
-import { ChromeCommunicationChannel } from "./app/comm/ChromeCommunicationChannel";
-import { CommunicationChannel } from "./app/comm/CommunicationChannel";
-import { Command } from "./app/comm/Command";
-import { Message } from "./app/comm/Message";
-import { AppEvent } from "./app/comm/AppEvent";
+import { AppEvent } from './app/comm/AppEvent';
+import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
+import { Command } from './app/comm/Command';
+import { CommunicationChannel } from './app/comm/CommunicationChannel';
+import { Message } from './app/comm/Message';
+import { Crawler } from './app/crawler/Crawler';
+import { UrlListStorage } from './app/crawler/UrlListStorage';
+import { GraphStorage } from './app/graph/GraphStorage';
+import { Mutex } from './app/mutex/Mutex';
 
 const mu : Mutex = new Mutex('mylock');
 

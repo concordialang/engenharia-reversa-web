@@ -1,10 +1,9 @@
-import { NodeTypes } from '../node/NodeTypes';
+import { UIElementGenerator } from '../feature-generators/UIElementGenerator';
+import { VariantsGenerator } from '../feature-generators/VariantsGenerator';
 import { Feature } from '../feature-structure/Feature';
 import { Scenario } from '../feature-structure/Scenario';
+import { NodeTypes } from '../node/NodeTypes';
 import { Spec } from './Spec';
-import { UIElementGenerator } from '../feature-generators/UIElementGenerator';
-import { Variant } from '../feature-structure/Variant';
-import { VariantsGenerator } from '../feature-generators/VariantsGenerator';
 
 export class SpecAnalyzer {
 

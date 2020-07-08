@@ -1,10 +1,10 @@
-import { Extension } from "./Extension";
-import { CommunicationChannel } from "../comm/CommunicationChannel";
-import { Tab } from "./Tab";
-import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
-import { Command } from "../comm/Command";
-import { Message } from "../comm/Message";
-import { AppEvent } from "../comm/AppEvent";
+import { AppEvent } from '../comm/AppEvent';
+import { Command } from '../comm/Command';
+import { CommunicationChannel } from '../comm/CommunicationChannel';
+import { Message } from '../comm/Message';
+import { Extension } from './Extension';
+import { ExtensionBrowserAction } from './ExtensionBrowserAction';
+import { Tab } from './Tab';
 
 export class ExtensionManager {
 

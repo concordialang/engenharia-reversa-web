@@ -1,8 +1,9 @@
-import { NodeTypes } from '../node/NodeTypes';
-import { UIElement } from "../feature-structure/UIElement";
-import { UIProperty } from "../feature-structure/UIProperty";
-import { Util } from '../Util';
 import getXPath from 'get-xpath';
+
+import { UIElement } from '../feature-structure/UIElement';
+import { UIProperty } from '../feature-structure/UIProperty';
+import { NodeTypes } from '../node/NodeTypes';
+import { Util } from '../Util';
 
 export class UIElementGenerator {
 

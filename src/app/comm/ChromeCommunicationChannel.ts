@@ -1,8 +1,8 @@
+import { Tab } from "../extension/Tab";
+import { AppEvent } from "./AppEvent";
+import { Command } from "./Command";
 import { CommunicationChannel } from "./CommunicationChannel";
 import { Message } from "./Message";
-import { Tab } from "../extension/Tab";
-import { Command } from "./Command";
-import { AppEvent } from "./AppEvent";
 
 export class ChromeCommunicationChannel implements CommunicationChannel {
 
@@ -21,7 +21,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
         const cb = function(message: {actions:Array<string>,extra: {}}, sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void){
             const actions : Array<Command>|Array<AppEvent> = message.actions.map(action => _this.mapToActionEnum(action));
             const messageObj = new Message(actions,message.extra);
-            
+
             //se mensagem veio de uma tab, sender.tab é preenchido pelo chrome, se não, veio da extensão
             if(sender.tab){
                 //lancar excecao se tab vier sem id

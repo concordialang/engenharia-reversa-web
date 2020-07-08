@@ -1,5 +1,5 @@
-import { Message } from "./Message";
 import { Tab } from "../extension/Tab";
+import { Message } from "./Message";
 
 export interface CommunicationChannel {
 

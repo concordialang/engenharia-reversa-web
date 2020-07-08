@@ -1,8 +1,8 @@
-import { EditableTypes } from "./types/EditableTypes";
 import { DataTypes } from "./types/DataTypes";
+import { EditableTypes } from "./types/EditableTypes";
 import { PropertyTypes } from "./types/PropertyTypes";
 
-export class UIProperty {	 
+export class UIProperty {
     private name!: string;
     private value: any;
 
@@ -22,9 +22,9 @@ export class UIProperty {
 
     //value
     public setValue(value : any){
-        
+
         if(this.name == PropertyTypes.TYPE){
-            
+
             if(value == 'text' || value == 'textbox' || value == 'number'){
                 value = EditableTypes.TEXTBOX;
             }
@@ -34,7 +34,7 @@ export class UIProperty {
             }
 
         } else if (this.name == PropertyTypes.DATATYPE){
-            
+
             if(value == 'text'){
                 value = DataTypes.STRING;
             } else if(value == 'datetime-local'){
@@ -46,7 +46,7 @@ export class UIProperty {
             if(Object.values(DataTypes).includes(value)){
                 this.value = value;
             }
-            
+
         } else {
             this.value = value;
         }

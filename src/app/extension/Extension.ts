@@ -1,6 +1,6 @@
-import { Tab } from "./Tab";
-import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
 import { Message } from "../comm/Message";
+import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
+import { Tab } from "./Tab";
 
 export interface Extension {
 

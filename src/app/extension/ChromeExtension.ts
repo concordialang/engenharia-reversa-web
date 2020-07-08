@@ -1,7 +1,7 @@
-import { Extension } from "./Extension";
-import { Tab } from "./Tab";
-import { ExtensionBrowserAction } from "./ExtensionBrowserAction";
-import { Message } from "../comm/Message";
+import { Message } from '../comm/Message';
+import { Extension } from './Extension';
+import { ExtensionBrowserAction } from './ExtensionBrowserAction';
+import { Tab } from './Tab';
 
 export class ChromeExtension implements Extension {
 
@@ -48,6 +48,6 @@ export class ChromeExtension implements Extension {
         if(action == ExtensionBrowserAction.ExtensionIconClicked) return "onClicked";
     }
 
-    
+
 
 }

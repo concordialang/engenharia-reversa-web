@@ -1,8 +1,8 @@
-import Graph  from "graph-data-structure";
+import Graph from "graph-data-structure";
 
 //tive que chamar de GraphClass porque por algum motivo dá erro se chamar somente de Graph
 class GraphClass {
-    
+
     private graphVendor : Graph;
 
     constructor(json? : object|string){
@@ -40,4 +40,4 @@ class GraphClass {
 
 }
 
-export {GraphClass as Graph};
+export { GraphClass as Graph };

@@ -1,5 +1,5 @@
-import { Command } from "./Command";
 import { AppEvent } from "./AppEvent";
+import { Command } from "./Command";
 
 export class Message {
 
@@ -25,5 +25,5 @@ export class Message {
         }
         return false;
     }
-    
+
 }

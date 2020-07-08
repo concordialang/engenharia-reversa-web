@@ -1,10 +1,10 @@
-import { GraphStorage } from "../graph/GraphStorage";
-import { Graph } from "../graph/Graph";
-import { Mutex } from "../mutex/Mutex";
-import { UrlListStorage } from "./UrlListStorage";
-import { Message } from "../comm/Message";
-import { Command } from "../comm/Command";
-import { CommunicationChannel } from "../comm/CommunicationChannel";
+import { Command } from '../comm/Command';
+import { CommunicationChannel } from '../comm/CommunicationChannel';
+import { Message } from '../comm/Message';
+import { Graph } from '../graph/Graph';
+import { GraphStorage } from '../graph/GraphStorage';
+import { Mutex } from '../mutex/Mutex';
+import { UrlListStorage } from './UrlListStorage';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -43,7 +43,7 @@ export class Crawler {
                 this.crawledUrlsStorage.add(this.crawledUrlsKey,new URL(links[i].href));
                 const message : Message = new Message([Command.OpenNewTab],{url: links[i].href});
                 this.communicationChannel.sendMessageToAll(message);
-                
+
             }
         }
         this.closeWindow = true;
@@ -78,7 +78,7 @@ export class Crawler {
             if(this.closeWindow === true) window.close();
         });
     }
-    
+
     private wasUrlAlreadyCrawled(url : URL) : boolean {
         return this.crawledUrlsStorage.isUrlInList(this.crawledUrlsKey,url);
     }

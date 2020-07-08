@@ -1,17 +1,16 @@
-import { NodeTypes } from "../node/NodeTypes";
-import { Variant } from "../feature-structure/Variant";
-import { VariantSentence } from "../feature-structure/VariantSentence";
-import { VariantSentenceType } from "../feature-structure/types/VariantSentenceType";
-import { VariantSentenceActions } from "../feature-structure/types/VariantSentenceActions";
-import { UIElement } from "../feature-structure/UIElement";
-import { Util } from "../Util";
-import { EditableTypes } from "../feature-structure/types/EditableTypes";
+import { EditableTypes } from '../feature-structure/types/EditableTypes';
+import { VariantSentenceActions } from '../feature-structure/types/VariantSentenceActions';
+import { VariantSentenceType } from '../feature-structure/types/VariantSentenceType';
+import { UIElement } from '../feature-structure/UIElement';
+import { Variant } from '../feature-structure/Variant';
+import { VariantSentence } from '../feature-structure/VariantSentence';
+import { Util } from '../Util';
 
 export class VariantsGenerator {
 
     public generateVariantFromUIElements(uiElements: Array <UIElement>, onlyMandatoryElements: boolean = false): Variant {
         let variant = new Variant();
-        
+
         for(let uiElm of uiElements){
             let type: string = '';
             let target: string | null = null;
