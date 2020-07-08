@@ -33,7 +33,7 @@ export class SpecAnalyzer {
         spec.features.push( feature );
 
         const uiElementsGenerator = new UIElementGenerator();
-        const scenarioGenerator = new ScenarioGenerator();
+        // const scenarioGenerator = new ScenarioGenerator();
         const variantGenerator = new VariantsGenerator();
 
         // UIElements
