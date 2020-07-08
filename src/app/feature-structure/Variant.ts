@@ -1,30 +1,30 @@
-import { VariantSentence } from "./VariantSentence";
+import { VariantSentence } from './VariantSentence';
 
 export class Variant {
-    private name!: string;
-    private sentences !: Array< VariantSentence >;
-    
-    constructor() {
-        this.sentences = [];
-    }
+	private name!: string;
+	private sentences!: Array<VariantSentence>;
 
-    public setName(name : string){
-        this.name = name;
-    }
+	constructor() {
+		this.sentences = [];
+	}
 
-    public getName(){
-        return this.name;
-    }
+	public setName(name: string) {
+		this.name = name;
+	}
 
-    public setVariantSentence(variantSentence : VariantSentence){
-        this.sentences.push(variantSentence);
-    }
+	public getName() {
+		return this.name;
+	}
 
-    public getVariant(){
-        return this.sentences;
-    }
+	public setVariantSentence(variantSentence: VariantSentence) {
+		this.sentences.push(variantSentence);
+	}
 
-    public getSentences(){
-        return this.sentences;
-    }
+	public getVariant() {
+		return this.sentences;
+	}
+
+	public getSentences() {
+		return this.sentences;
+	}
 }

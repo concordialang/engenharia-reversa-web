@@ -1,7 +1,7 @@
 export class Import {
-    file: string;
+	file: string;
 
-    constructor(file: string) {
-        this.file = file;
-    }
+	constructor(file: string) {
+		this.file = file;
+	}
 }

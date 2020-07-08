@@ -1,13 +1,11 @@
 export class Tab {
+	private id: string;
 
-    private id : string;
+	constructor(id: string) {
+		this.id = id;
+	}
 
-    constructor(id : string){
-        this.id = id;
-    }
-
-    public getId() : string{
-        return this.id;
-    }
-
+	public getId(): string {
+		return this.id;
+	}
 }

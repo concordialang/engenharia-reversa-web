@@ -1,3 +1,3 @@
 export enum ExtensionBrowserAction {
-    ExtensionIconClicked
+	ExtensionIconClicked,
 }

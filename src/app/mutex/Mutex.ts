@@ -1,21 +1,19 @@
-import Mutex from "idb-mutex";
+import Mutex from 'idb-mutex';
 
 class MutexClass {
+	private mutexVendor: Mutex;
 
-    private mutexVendor : Mutex;
+	constructor(id: string) {
+		this.mutexVendor = new Mutex(id);
+	}
 
-    constructor(id : string){
-        this.mutexVendor = new Mutex(id);
-    }
+	public lock(): Promise<void> {
+		return this.mutexVendor.lock();
+	}
 
-    public lock() : Promise<void> {
-        return this.mutexVendor.lock();
-    }
-
-    public unlock() : Promise<{}> {
-        return this.mutexVendor.unlock();
-    }
-
+	public unlock(): Promise<{}> {
+		return this.mutexVendor.unlock();
+	}
 }
 
-export {MutexClass as Mutex};
+export { MutexClass as Mutex };

@@ -6,161 +6,160 @@ import { NodeTypes } from '../node/NodeTypes';
 import { Util } from '../Util';
 
 export class UIElementGenerator {
+	private checkValidNode(node: HTMLElement): boolean {
+		// return false if node is not treatable for UIElement
+		if (
+			node.nodeName !== NodeTypes.INPUT &&
+			node.nodeName !== NodeTypes.SELECT &&
+			node.nodeName !== NodeTypes.TEXTAREA
+		) {
+			return false;
+		}
 
-    private checkValidNode(node: HTMLElement) : boolean{
-        // return false if node is not treatable for UIElement
-        if(node.nodeName !== NodeTypes.INPUT && node.nodeName !== NodeTypes.SELECT && node.nodeName !== NodeTypes.TEXTAREA){
-            return false;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	public createUIElementsFromForm(node: HTMLElement): Array<UIElement> {
+		let uiElements: Array<UIElement> = [];
+		let formElements: Array<HTMLFormElement> = Array.from(
+			node.querySelectorAll(
+				NodeTypes.INPUT +
+					', ' +
+					NodeTypes.SELECT +
+					', ' +
+					NodeTypes.TEXTAREA
+			)
+		);
 
+		for (let elm of formElements) {
+			if (!this.checkValidNode(elm)) {
+				// skips element if he's not valid
+				continue;
+			}
 
-    public createUIElementsFromForm (node : HTMLElement) : Array <UIElement> {
-        let uiElements : Array < UIElement > = [];
-        let formElements : Array < HTMLFormElement > = Array.from(node.querySelectorAll(NodeTypes.INPUT + ", " + NodeTypes.SELECT + ", " + NodeTypes.TEXTAREA));
+			let uiElm = new UIElement();
 
-        for(let elm of formElements){
+			// name
+			uiElm.setName(this.generateName(elm));
 
-            if (!this.checkValidNode(elm)){
-                // skips element if he's not valid
-                continue;
-            }
+			// id
+			uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
 
-            let uiElm = new UIElement();
+			// type
+			if (Util.isNotEmpty(elm.type)) {
+				let type = elm.type;
 
-            // name
-            uiElm.setName(this.generateName(elm));
+				if (elm.nodeName === NodeTypes.SELECT) {
+					type = 'select';
+				}
 
-            // id
-            uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
+				uiElm.setProperty(new UIProperty('type', type));
+			}
 
-            // type
-            if(Util.isNotEmpty(elm.type)){
-                let type = elm.type;
+			// editabled
+			if (Util.isNotEmpty(elm.disabled)) {
+				let editabled = !elm.disabled ? true : false;
+				uiElm.setProperty(new UIProperty('editabled', editabled));
+			}
 
-                if(elm.nodeName === NodeTypes.SELECT){
-                    type = "select";
-                }
+			// dataType
+			if (Util.isNotEmpty(elm.type)) {
+				uiElm.setProperty(new UIProperty('dataType', elm.type));
+			}
 
-                uiElm.setProperty(new UIProperty('type', type));
-            }
+			// value
+			if (Util.isNotEmpty(elm.value)) {
+				uiElm.setProperty(new UIProperty('value', elm.value));
+			}
 
-            // editabled
-            if(Util.isNotEmpty(elm.disabled)){
-                let editabled = !elm.disabled ? true : false;
-                uiElm.setProperty(new UIProperty('editabled', editabled));
-            }
+			// min_length
+			if (Util.isNotEmpty(elm.minLength)) {
+				if (elm.minLength !== 0) {
+					uiElm.setProperty(
+						new UIProperty('min_length', elm.minLength)
+					);
+				}
+			}
 
-            // dataType
-            if (Util.isNotEmpty(elm.type)){
-                uiElm.setProperty(new UIProperty('dataType', elm.type));
-            }
+			// max_length
+			if (Util.isNotEmpty(elm.maxLength)) {
+				if (elm.maxLength !== 0 && elm.maxLength !== 524288) {
+					// max length input defaut
+					uiElm.setProperty(
+						new UIProperty('max_length', elm.maxLength)
+					);
+				}
+			}
 
-            // value
-            if(Util.isNotEmpty(elm.value)){
-                uiElm.setProperty(new UIProperty('value', elm.value));
-            }
+			// min_value
+			if (Util.isNotEmpty(elm.min)) {
+				uiElm.setProperty(new UIProperty('min_value', elm.min));
+			}
 
-            // min_length
-            if(Util.isNotEmpty(elm.minLength)){
-                if(elm.minLength !== 0){
-                    uiElm.setProperty(new UIProperty('min_length', elm.minLength));
-                }
-            }
+			// max_value
+			if (Util.isNotEmpty(elm.max)) {
+				uiElm.setProperty(new UIProperty('max_value', elm.max));
+			}
 
-            // max_length
-            if(Util.isNotEmpty(elm.maxLength)){
-                if(elm.maxLength !== 0 && elm.maxLength !== 524288){ // max length input defaut
-                    uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
-                }
-            }
+			// required
+			if (Util.isNotEmpty(elm.required)) {
+				uiElm.setProperty(new UIProperty('required', elm.required));
+			}
 
-            // min_value
-            if(Util.isNotEmpty(elm.min)){
-                uiElm.setProperty(new UIProperty('min_value', elm.min));
-            }
+			uiElements.push(uiElm);
+		}
 
-            // max_value
-            if(Util.isNotEmpty(elm.max)){
-                uiElm.setProperty(new UIProperty('max_value', elm.max));
-            }
+		return uiElements;
+	}
 
-            // required
-            if(Util.isNotEmpty(elm.required)){
-                uiElm.setProperty(new UIProperty('required', elm.required));
-            }
+	private generateName(elm: HTMLFormElement): string {
+		let name = '';
 
-            uiElements.push(uiElm);
-        }
+		if (elm.previousElementSibling?.nodeName === NodeTypes.LABEL) {
+			name = this.generateNameFromLabel(elm);
+		} else {
+			name = this.generateNameFromNode(elm);
+		}
 
-        return uiElements;
-    }
+		return name;
+	}
 
+	private generateNameFromLabel(elm: HTMLFormElement): string {
+		let label: HTMLLabelElement = elm.previousElementSibling as HTMLLabelElement;
+		let name: string = '';
 
-    private generateName(elm: HTMLFormElement) : string{
-        let name = '';
+		if (Util.isNotEmpty(label.innerHTML)) {
+			name = Util.formatName(label.innerHTML);
+		} else if (label.htmlFor !== undefined) {
+			if (Util.isNotEmpty(elm.id) && elm.id === label.htmlFor) {
+				name = Util.formatName(label.htmlFor);
+			}
+		}
 
-        if(elm.previousElementSibling?.nodeName === NodeTypes.LABEL){
+		return name;
+	}
 
-            name = this.generateNameFromLabel(elm);
+	private generateNameFromNode(elm: HTMLFormElement): string {
+		let name: string = '';
 
-        } else {
+		if (Util.isNotEmpty(elm.name)) {
+			name = Util.formatName(elm.name);
+		} else if (Util.isNotEmpty(elm.id)) {
+			name = Util.formatName(elm.id.toString());
+		}
 
-            name = this.generateNameFromNode(elm);
+		return name;
+	}
 
-        }
+	public generateId(elm: HTMLFormElement): string {
+		let id = '';
 
-        return name;
-    }
+		if (Util.isNotEmpty(elm.id)) {
+			id = elm.id;
+		} else {
+			id = getXPath(elm);
+		}
 
-
-    private generateNameFromLabel(elm: HTMLFormElement) : string{
-        let label: HTMLLabelElement = elm.previousElementSibling as HTMLLabelElement;
-        let name: string = '';
-
-        if(Util.isNotEmpty(label.innerHTML)){
-
-            name = Util.formatName(label.innerHTML);
-
-        } else if(label.htmlFor !== undefined){
-
-            if(Util.isNotEmpty(elm.id) && elm.id === label.htmlFor){
-                name = Util.formatName(label.htmlFor);
-            }
-
-        }
-
-        return name;
-    }
-
-
-    private generateNameFromNode(elm: HTMLFormElement) : string{
-        let name: string = '';
-
-        if(Util.isNotEmpty(elm.name)){
-
-            name = Util.formatName(elm.name);
-
-        } else if(Util.isNotEmpty(elm.id)){
-
-            name = Util.formatName(elm.id.toString());
-
-        }
-
-        return name;
-    }
-
-    public generateId(elm: HTMLFormElement) : string {
-        let id = '';
-
-        if(Util.isNotEmpty(elm.id)){
-            id = elm.id
-        } else {
-            id = getXPath(elm);
-        }
-
-        return id;
-    }
+		return id;
+	}
 }

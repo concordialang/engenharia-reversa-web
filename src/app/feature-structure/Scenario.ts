@@ -1,32 +1,32 @@
-import { Variant } from "./Variant";
+import { Variant } from './Variant';
 
 export class Scenario {
 	private name!: string;
-    private variants!: Array< Variant >;
-    
-    constructor() {
-        this.variants = [];
-    }
+	private variants!: Array<Variant>;
 
-    //name
-    public setName(name : string){
-        this.name = name;
-    }
+	constructor() {
+		this.variants = [];
+	}
 
-    public getName(){
-        return this.name;
-    }
+	//name
+	public setName(name: string) {
+		this.name = name;
+	}
 
-    //variants
-    public addVariant(variant : Variant){
-        this.variants.push(variant);
-    }
+	public getName() {
+		return this.name;
+	}
 
-    public setVariants(variants : Array< Variant >){
-        this.variants = variants;
-    }
+	//variants
+	public addVariant(variant: Variant) {
+		this.variants.push(variant);
+	}
 
-    public getVariants(){
-        return this.variants;
-    }
+	public setVariants(variants: Array<Variant>) {
+		this.variants = variants;
+	}
+
+	public getVariants() {
+		return this.variants;
+	}
 }

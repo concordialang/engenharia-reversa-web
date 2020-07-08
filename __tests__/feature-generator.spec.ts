@@ -1,21 +1,20 @@
-import { SpecAnalyzer } from "../src/app/analysis/SpecAnalyzer";
-import { Spec } from "../src/app/analysis/Spec";
-import clearElement from "../src/util/clear-element";
+import { SpecAnalyzer } from '../src/app/analysis/SpecAnalyzer';
+import { Spec } from '../src/app/analysis/Spec';
+import clearElement from '../src/util/clear-element';
 
-describe( 'FeatureGenerator', () => {
+describe('FeatureGenerator', () => {
+	let specAnalyzer: SpecAnalyzer;
 
-    let specAnalyzer: SpecAnalyzer;
+	beforeEach(() => {
+		specAnalyzer = new SpecAnalyzer();
+	});
 
-    beforeEach( () => {
-        specAnalyzer = new SpecAnalyzer();
-    } );
+	afterEach(() => {
+		clearElement(document.body);
+	});
 
-    afterEach( () => {
-        clearElement( document.body );
-    } );
-
-    it( 'detects feature default', () => {
-        const html = `
+	it('detects feature default', () => {
+		const html = `
             <h1>Cadastro de Cliente</h1>
             <form id="formulario" name="Cadastro" method="post">
                 <div id="cadastroNomeCompleto">
@@ -31,22 +30,26 @@ describe( 'FeatureGenerator', () => {
                     <input type="text" id="celular" name="celular" min="6" max="50">
                 </div>
             </form>`;
-        
-        document.body.innerHTML = html;
-        const spec = new Spec('pt-br');
-        const specAnalyzed = specAnalyzer.analyze( document.body, spec );
-        const feature = specAnalyzed.features[0];
 
-        expect( feature?.scenarios ).toHaveLength( 2 );
-        expect( feature?.scenarios[0].getVariants() ).toHaveLength( 1 );
-        expect( feature?.scenarios[1].getVariants() ).toHaveLength( 1 );
-        expect( feature?.scenarios[0].getVariants()[0].getSentences() ).toHaveLength( 4 );
-        expect( feature?.scenarios[1].getVariants()[0].getSentences() ).toHaveLength( 2 );
-        expect( feature?.uiElements ).toHaveLength( 4 );
-    } );
+		document.body.innerHTML = html;
+		const spec = new Spec('pt-br');
+		const specAnalyzed = specAnalyzer.analyze(document.body, spec);
+		const feature = specAnalyzed.features[0];
 
-    it( 'detects feature with fieldset, select and textarea', () => {
-        const html = `
+		expect(feature?.scenarios).toHaveLength(2);
+		expect(feature?.scenarios[0].getVariants()).toHaveLength(1);
+		expect(feature?.scenarios[1].getVariants()).toHaveLength(1);
+		expect(
+			feature?.scenarios[0].getVariants()[0].getSentences()
+		).toHaveLength(4);
+		expect(
+			feature?.scenarios[1].getVariants()[0].getSentences()
+		).toHaveLength(2);
+		expect(feature?.uiElements).toHaveLength(4);
+	});
+
+	it('detects feature with fieldset, select and textarea', () => {
+		const html = `
             <fieldset>
                 <legend>Cadastro de Cliente</legend>
                 <form id="formulario" name="Cadastro" method="post">
@@ -61,15 +64,15 @@ describe( 'FeatureGenerator', () => {
                     </select>
                 </form>
             </fieldset>`;
-        
-        document.body.innerHTML = html;
-        const spec = new Spec('pt-br');
-        const specAnalyzed = specAnalyzer.analyze( document.body, spec );
-        const feature = specAnalyzed.features[0];
-        
-        expect( feature?.scenarios ).toHaveLength( 2 );
-        expect( feature?.scenarios[0].getVariants() ).toHaveLength( 1 );
-        expect( feature?.scenarios[1].getVariants() ).toHaveLength( 1 );
-        expect( feature?.uiElements ).toHaveLength( 4 );
-    } );
-} );
+
+		document.body.innerHTML = html;
+		const spec = new Spec('pt-br');
+		const specAnalyzed = specAnalyzer.analyze(document.body, spec);
+		const feature = specAnalyzed.features[0];
+
+		expect(feature?.scenarios).toHaveLength(2);
+		expect(feature?.scenarios[0].getVariants()).toHaveLength(1);
+		expect(feature?.scenarios[1].getVariants()).toHaveLength(1);
+		expect(feature?.uiElements).toHaveLength(4);
+	});
+});
