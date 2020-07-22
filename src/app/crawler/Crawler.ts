@@ -5,6 +5,8 @@ import { Graph } from '../graph/Graph';
 import { GraphStorage } from '../graph/GraphStorage';
 import { Mutex } from '../mutex/Mutex';
 import { UrlListStorage } from './UrlListStorage';
+import { SpecAnalyzer } from '../analysis/SpecAnalyzer';
+import { Spec } from '../analysis/Spec';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -57,6 +59,10 @@ export class Crawler {
 				this.communicationChannel.sendMessageToAll(message);
 			}
 		}
+		const specAnalyzer : SpecAnalyzer = new SpecAnalyzer();
+        const spec = new Spec('pt-br');
+        const specAnalyzed = specAnalyzer.analyze( document.body, spec );
+        const feature = specAnalyzed.features[0];
 		this.closeWindow = true;
 	}
 
