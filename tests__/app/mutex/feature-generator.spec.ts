@@ -1,6 +1,6 @@
-import { SpecAnalyzer } from '../src/app/analysis/SpecAnalyzer';
-import { Spec } from '../src/app/analysis/Spec';
-import clearElement from '../src/util/clear-element';
+import { SpecAnalyzer } from '../../../src/app/analysis/SpecAnalyzer';
+import { Spec } from '../../../src/app/analysis/Spec';
+import clearElement from '../../../src/util/clear-element';
 
 describe('FeatureGenerator', () => {
 	let specAnalyzer: SpecAnalyzer;
