@@ -7,6 +7,8 @@ import { Crawler } from './app/crawler/Crawler';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
+import { SpecAnalyzer } from './app/analysis/SpecAnalyzer';
+import { Spec } from './app/analysis/Spec';
 
 const mu: Mutex = new Mutex('mylock');
 
@@ -15,10 +17,12 @@ let crawledUrlsStorage: UrlListStorage = new UrlListStorage();
 const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
 let communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
+const specAnalyzer: SpecAnalyzer = new SpecAnalyzer();
 let crawler: Crawler = new Crawler(
 	communicationChannel,
 	graphStorage,
 	crawledUrlsStorage,
+	specAnalyzer,
 	graphKey,
 	crawledUrlsKey,
 	mu

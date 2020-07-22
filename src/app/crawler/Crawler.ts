@@ -13,6 +13,7 @@ export class Crawler {
 	private communicationChannel: CommunicationChannel;
 	private graphStorage: GraphStorage;
 	private crawledUrlsStorage: UrlListStorage;
+	private specAnalyzer: SpecAnalyzer;
 	//abstrair mutex em classe
 	private mutex: Mutex;
 	private graphKey: string;
@@ -25,6 +26,7 @@ export class Crawler {
 		communicationChannel: CommunicationChannel,
 		graphStorage: GraphStorage,
 		crawledUrlsStorage: UrlListStorage,
+		specAnalyzer: SpecAnalyzer,
 		graphKey: string,
 		crawledUrlsKey: string,
 		mutex: Mutex
@@ -35,6 +37,7 @@ export class Crawler {
 		this.graphKey = graphKey;
 		this.crawledUrlsKey = crawledUrlsKey;
 		this.communicationChannel = communicationChannel;
+		this.specAnalyzer = specAnalyzer;
 	}
 
 	public crawl() {
@@ -59,10 +62,10 @@ export class Crawler {
 				this.communicationChannel.sendMessageToAll(message);
 			}
 		}
-		const specAnalyzer : SpecAnalyzer = new SpecAnalyzer();
         const spec = new Spec('pt-br');
-        const specAnalyzed = specAnalyzer.analyze( document.body, spec );
-        const feature = specAnalyzed.features[0];
+        const specAnalyzed = this.specAnalyzer.analyze( document.body, spec );
+		const feature = specAnalyzed.features[0];
+		console.log(feature);
 		this.closeWindow = true;
 	}
 
