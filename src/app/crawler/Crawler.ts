@@ -44,8 +44,8 @@ export class Crawler {
 		const pageUrl: URL = new URL(window.location.href);
 		this.addUrlToGraph(pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
-		for (let i: number = 0; i < links.length; i++) {
-			const foundUrl: URL = new URL(links[i].href);
+		for (const link of links) {
+			const foundUrl: URL = new URL(link.href);
 			this.addUrlToGraph(foundUrl);
 			this.addUrlsLinkToGraph(pageUrl, foundUrl);
 			if (
@@ -54,10 +54,10 @@ export class Crawler {
 			) {
 				this.crawledUrlsStorage.add(
 					this.crawledUrlsKey,
-					new URL(links[i].href)
+					new URL(foundUrl.href)
 				);
 				const message: Message = new Message([Command.OpenNewTab], {
-					url: links[i].href,
+					url: foundUrl.href,
 				});
 				this.communicationChannel.sendMessageToAll(message);
 			}
