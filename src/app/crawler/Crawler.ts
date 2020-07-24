@@ -85,7 +85,7 @@ export class Crawler {
 				return this.mutex.unlock();
 			})
 			.then(() => {
-				//if (this.closeWindow === true) window.close();
+				if (this.closeWindow === true) window.close();
 			});
 	}
 
@@ -101,7 +101,7 @@ export class Crawler {
 				return this.mutex.unlock();
 			})
 			.then(() => {
-				//if (this.closeWindow === true) window.close();
+				if (this.closeWindow === true) window.close();
 			});
 	}
 

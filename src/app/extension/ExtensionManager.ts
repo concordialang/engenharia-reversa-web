@@ -8,16 +8,23 @@ import { Tab } from './Tab';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
+	private openedTabsCounter: number;
 	private extension: Extension;
 	private communicationChannel: CommunicationChannel;
+	private urlQueue: Array<URL>;
+	private openedTabsLimit: number;
 
 	constructor(
 		extension: Extension,
-		communicationChannel: CommunicationChannel
+		communicationChannel: CommunicationChannel,
+		openedTabsLimit: number
 	) {
 		this.openedTabs = [];
 		this.extension = extension;
 		this.communicationChannel = communicationChannel;
+		this.openedTabsCounter = 0;
+		this.urlQueue = [];
+		this.openedTabsLimit = openedTabsLimit;
 	}
 
 	public setup(): void {
@@ -25,7 +32,8 @@ export class ExtensionManager {
 		this.extension.setBrowserActionListener(
 			ExtensionBrowserAction.ExtensionIconClicked,
 			function (tab: Tab) {
-				_this.addOpenedTab(tab);
+				_this.openedTabs.push(tab);
+				_this.openedTabsCounter++;
 				_this.sendOrderToCrawlTab(tab, true);
 			}
 		);
@@ -50,11 +58,19 @@ export class ExtensionManager {
 	}
 
 	public openNewTab(url: URL): void {
-		const promise: Promise<Tab> = this.extension.openNewTab(url);
-		const _this = this;
-		promise.then(function (tab: Tab) {
-			_this.openedTabs.push(tab);
-		});
+		if(this.openedTabsCounter < this.openedTabsLimit){
+			const promise: Promise<Tab> = this.extension.openNewTab(url);
+			const _this = this;
+			this.openedTabsCounter++;
+			promise.catch(function () {
+				_this.openedTabsCounter--;
+			});
+			promise.then(function (tab: Tab) {
+				_this.openedTabs.push(tab);
+			});
+		} else {
+			this.urlQueue.push(url);
+		}
 	}
 
 	//temporaria
@@ -74,12 +90,6 @@ export class ExtensionManager {
 		});
 	}
 
-	//temporaria
-	public addOpenedTab(tab: Tab) {
-		this.openedTabs.push(tab);
-	}
-
-	//temporaria
 	//teoricamente pode dar problema de concorrência
 	private removeTab(tab: Tab) {
 		for (let i: number = 0; i < this.openedTabs.length; i++) {
@@ -88,6 +98,9 @@ export class ExtensionManager {
 				this.openedTabs.splice(i, 1);
 			}
 		}
+		this.openedTabsCounter--;
+		const url : URL|undefined = this.urlQueue.shift();
+		if(url) this.openNewTab(url);
 	}
 
 	//temporaria

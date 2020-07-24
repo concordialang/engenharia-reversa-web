@@ -10,6 +10,7 @@ let extension: Extension = new ChromeExtension();
 let communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 let manager: ExtensionManager = new ExtensionManager(
 	extension,
-	communicationChannel
+	communicationChannel,
+	1
 );
 manager.setup();
