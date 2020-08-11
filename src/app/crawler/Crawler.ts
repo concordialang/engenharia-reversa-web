@@ -44,8 +44,13 @@ export class Crawler {
 		const pageUrl: URL = new URL(window.location.href);
 		this.addUrlToGraph(pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
+		let foundUrl: URL;
 		for (const link of links) {
-			const foundUrl: URL = new URL(link.href);
+			try{
+				foundUrl = new URL(link.href);
+			} catch(_) {
+				continue;
+			}
 			this.addUrlToGraph(foundUrl);
 			this.addUrlsLinkToGraph(pageUrl, foundUrl);
 			if (
