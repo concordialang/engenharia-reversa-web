@@ -7,12 +7,15 @@ import { Mutex } from '../mutex/Mutex';
 import { UrlListStorage } from './UrlListStorage';
 import { SpecAnalyzer } from '../analysis/SpecAnalyzer';
 import { Spec } from '../analysis/Spec';
+import { FeatureStorage } from './FeatureStorage';
+import { v4 as uuid } from 'uuid';
 
 //classe deve ser refatorada
 export class Crawler {
 	private communicationChannel: CommunicationChannel;
 	private graphStorage: GraphStorage;
 	private crawledUrlsStorage: UrlListStorage;
+	private featureStorage : FeatureStorage;
 	private specAnalyzer: SpecAnalyzer;
 	//abstrair mutex em classe
 	private mutex: Mutex;
@@ -26,6 +29,7 @@ export class Crawler {
 		communicationChannel: CommunicationChannel,
 		graphStorage: GraphStorage,
 		crawledUrlsStorage: UrlListStorage,
+		featureStorage: FeatureStorage,
 		specAnalyzer: SpecAnalyzer,
 		graphKey: string,
 		crawledUrlsKey: string,
@@ -33,6 +37,7 @@ export class Crawler {
 	) {
 		this.graphStorage = graphStorage;
 		this.crawledUrlsStorage = crawledUrlsStorage;
+		this.featureStorage = featureStorage;
 		this.mutex = mutex;
 		this.graphKey = graphKey;
 		this.crawledUrlsKey = crawledUrlsKey;
@@ -67,10 +72,17 @@ export class Crawler {
 				this.communicationChannel.sendMessageToAll(message);
 			}
 		}
+		//ANÁLISE
         const spec = new Spec('pt-br');
-        const specAnalyzed = this.specAnalyzer.analyze( document.body, spec );
-		const feature = specAnalyzed.features[0];
-		console.log(feature);
+		const specAnalyzed = this.specAnalyzer.analyze( document.body, spec );
+		for( const feature of  specAnalyzed.features){
+			const id: string = uuid();
+			const key = pageUrl.href+":"+id;
+			this.featureStorage.save(key,feature);
+			//temporario
+			console.log(this.featureStorage.get(key));
+		}
+
 		this.closeWindow = true;
 	}
 
