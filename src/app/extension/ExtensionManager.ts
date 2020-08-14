@@ -58,7 +58,7 @@ export class ExtensionManager {
 	}
 
 	public openNewTab(url: URL): void {
-		if(this.openedTabsCounter < this.openedTabsLimit){
+		if (this.openedTabsCounter < this.openedTabsLimit) {
 			const promise: Promise<Tab> = this.extension.openNewTab(url);
 			const _this = this;
 			this.openedTabsCounter++;
@@ -99,8 +99,8 @@ export class ExtensionManager {
 			}
 		}
 		this.openedTabsCounter--;
-		const url : URL|undefined = this.urlQueue.shift();
-		if(url) this.openNewTab(url);
+		const url: URL | undefined = this.urlQueue.shift();
+		if (url) this.openNewTab(url);
 	}
 
 	//temporaria

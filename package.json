@@ -18,11 +18,11 @@
 		"fmt": "prettier ./ --write",
 		"test": "jest",
 		"test:watch": "jest --watchAll",
-		"watch": "webpack --config webpack/webpack.dev.js --watch",
-		"build": "webpack --config webpack/webpack.prod.js",
 		"clean": "rimraf dist",
+		"watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",
+		"build": "npm run clean && webpack --config webpack/webpack.prod.js",
 		"coverage": "jest --coverage",
-		"all": "npm run build && npm run test",
+		"all": "npm run build && npm run test && npm run fmt",
 		"preversion": "npm run all",
 		"postversion": "git push && git push --tags"
 	},
@@ -37,7 +37,7 @@
 	},
 	"lint-staged": {
 		"*.{ts,js,json,css,md}": [
-			"prettier --write"
+			"prettier ./ --write"
 		]
 	},
 	"devDependencies": {

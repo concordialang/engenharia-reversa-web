@@ -1,15 +1,14 @@
+import { SpecAnalyzer } from './app/analysis/SpecAnalyzer';
 import { AppEvent } from './app/comm/AppEvent';
 import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
 import { Command } from './app/comm/Command';
 import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { Message } from './app/comm/Message';
 import { Crawler } from './app/crawler/Crawler';
+import { FeatureStorage } from './app/crawler/FeatureStorage';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
-import { SpecAnalyzer } from './app/analysis/SpecAnalyzer';
-import { Spec } from './app/analysis/Spec';
-import { FeatureStorage } from './app/crawler/FeatureStorage';
 
 const mu: Mutex = new Mutex('mylock');
 
@@ -48,7 +47,7 @@ function cleanGraph(): void {
 	crawledUrlsStorage.removeAll('crawled-urls');
 	//temporario
 	const keys = Object.keys(window.localStorage);
-	for(const key of keys){
+	for (const key of keys) {
 		window.localStorage.removeItem(key);
 	}
 }
