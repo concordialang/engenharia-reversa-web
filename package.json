@@ -5,15 +5,15 @@
 	"main": "dist/index.js",
 	"keywords": [],
 	"author": "",
-	"license": "A-GPL",
+	"license": "AGPL-3.0",
 	"repository": {
 		"type": "git",
-		"url": "git+https://gitlab.com/dstriotto/tcc-matheus-danilo.git"
+		"url": "git+https://github.com/concordialang/engenharia-reversa-web.git"
 	},
 	"bugs": {
-		"url": "https://gitlab.com/dstriotto/tcc-matheus-danilo/issues"
+		"url": "https://github.com/concordialang/engenharia-reversa-web/issues"
 	},
-	"homepage": "https://gitlab.com/dstriotto/tcc-matheus-danilo#readme",
+	"homepage": "https://github.com/concordialang/engenharia-reversa-web",
 	"scripts": {
 		"fmt": "prettier ./ --write",
 		"test": "jest",
@@ -32,13 +32,12 @@
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "npm run build && lint-staged"
+			"pre-commit": "npm run test && lint-staged"
 		}
 	},
 	"lint-staged": {
-		"*.{js,json,css,md}": [
-			"prettier --write",
-			"git add"
+		"*.{ts,js,json,css,md}": [
+			"prettier --write"
 		]
 	},
 	"devDependencies": {
