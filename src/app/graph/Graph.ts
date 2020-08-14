@@ -1,41 +1,38 @@
-import Graph from 'graph-data-structure';
+import GraphType from 'graph-data-structure';
 
-//tive que chamar de GraphClass porque por algum motivo dá erro se chamar somente de Graph
-class GraphClass {
-	private graphVendor: Graph;
+export class Graph {
+	private _graph: ReturnType<typeof GraphType>;
 
 	constructor(json?: object | string) {
-		this.graphVendor = new Graph();
+		this._graph = GraphType();
 		if (json) {
 			if (typeof json === 'string') {
 				json = JSON.parse(json);
 			}
-			this.graphVendor = this.graphVendor.deserialize(json);
+			this._graph = this._graph.deserialize(json as any);
 		}
 	}
 
 	public addNode(key: string): void {
-		this.graphVendor.addNode(key);
+		this._graph.addNode(key);
 	}
 
 	public addEdge(from: string, to: string): void {
 		const adjacentNodes: Array<string> = this.getAdjacentNodes(from);
 		if (!adjacentNodes.includes(to)) {
-			this.graphVendor.addEdge(from, to);
+			this._graph.addEdge(from, to);
 		}
 	}
 
 	public getAllNodes(): Array<string> {
-		return this.graphVendor.nodes();
+		return this._graph.nodes();
 	}
 
 	public getAdjacentNodes(key: string): Array<string> {
-		return this.graphVendor.adjacent(key);
+		return this._graph.adjacent(key);
 	}
 
 	public serialize(): object {
-		return this.graphVendor.serialize();
+		return this._graph.serialize();
 	}
 }
-
-export { GraphClass as Graph };

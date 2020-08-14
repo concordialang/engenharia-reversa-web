@@ -1,21 +1,22 @@
+import { v4 as uuid } from 'uuid';
+
+import { Spec } from '../analysis/Spec';
+import { SpecAnalyzer } from '../analysis/SpecAnalyzer';
 import { Command } from '../comm/Command';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Graph } from '../graph/Graph';
 import { GraphStorage } from '../graph/GraphStorage';
 import { Mutex } from '../mutex/Mutex';
-import { UrlListStorage } from './UrlListStorage';
-import { SpecAnalyzer } from '../analysis/SpecAnalyzer';
-import { Spec } from '../analysis/Spec';
 import { FeatureStorage } from './FeatureStorage';
-import { v4 as uuid } from 'uuid';
+import { UrlListStorage } from './UrlListStorage';
 
 //classe deve ser refatorada
 export class Crawler {
 	private communicationChannel: CommunicationChannel;
 	private graphStorage: GraphStorage;
 	private crawledUrlsStorage: UrlListStorage;
-	private featureStorage : FeatureStorage;
+	private featureStorage: FeatureStorage;
 	private specAnalyzer: SpecAnalyzer;
 	//abstrair mutex em classe
 	private mutex: Mutex;
@@ -51,9 +52,9 @@ export class Crawler {
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 		let foundUrl: URL;
 		for (const link of links) {
-			try{
+			try {
 				foundUrl = new URL(link.href);
-			} catch(_) {
+			} catch (_) {
 				continue;
 			}
 			this.addUrlToGraph(foundUrl);
@@ -73,12 +74,12 @@ export class Crawler {
 			}
 		}
 		//ANÁLISE
-        const spec = new Spec('pt-br');
-		const specAnalyzed = this.specAnalyzer.analyze( document.body, spec );
-		for( const feature of  specAnalyzed.features){
+		const spec = new Spec('pt-br');
+		const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
+		for (const feature of specAnalyzed.features) {
 			const id: string = uuid();
-			const key = pageUrl.href+":"+id;
-			this.featureStorage.save(key,feature);
+			const key = pageUrl.href + ':' + id;
+			this.featureStorage.save(key, feature);
 			//temporario
 			console.log(this.featureStorage.get(key));
 		}

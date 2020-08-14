@@ -1,4 +1,4 @@
-import { Graph } from '../../../../src/app/graph/Graph';
+import { Graph } from '../src/app/graph/Graph';
 
 describe('Graph', () => {
 	const url1: string = 'https://www.google.com';
