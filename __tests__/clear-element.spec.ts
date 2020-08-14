@@ -1,4 +1,4 @@
-import clearElement from '../../../../src/util/clear-element';
+import clearElement from '../src/util/clear-element';
 
 describe('#clearElement', () => {
 	it('does not change an empty element', () => {
