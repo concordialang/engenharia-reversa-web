@@ -116,7 +116,15 @@ export class UIElementGenerator {
 		let name = '';
 
 		if (elm.previousElementSibling?.nodeName === NodeTypes.LABEL) {
-			name = this.generateNameFromLabel(elm);
+			name = this.generateNameFromLabel(elm as HTMLFormElement);
+		} else if (
+			elm.parentElement?.nodeName === NodeTypes.DIV &&
+			elm.parentElement?.previousElementSibling?.nodeName ===
+				NodeTypes.LABEL
+		) {
+			name = this.generateNameFromLabel(
+				elm.parentElement as HTMLFormElement
+			);
 		} else {
 			name = this.generateNameFromNode(elm);
 		}

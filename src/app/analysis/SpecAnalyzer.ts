@@ -65,6 +65,7 @@ export class SpecAnalyzer {
 		if (
 			f.previousElementSibling?.nodeName === NodeTypes.H1 ||
 			f.previousElementSibling?.nodeName === NodeTypes.H2 ||
+			f.previousElementSibling?.nodeName === NodeTypes.H3 ||
 			f.previousElementSibling?.nodeName === NodeTypes.LEGEND
 		) {
 			return f.previousElementSibling as HTMLElement;

@@ -50,29 +50,30 @@ export class Crawler {
 		const pageUrl: URL = new URL(window.location.href);
 		this.addUrlToGraph(pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
-		let foundUrl: URL;
-		for (const link of links) {
-			try {
-				foundUrl = new URL(link.href);
-			} catch (_) {
-				continue;
-			}
-			this.addUrlToGraph(foundUrl);
-			this.addUrlsLinkToGraph(pageUrl, foundUrl);
-			if (
-				this.sameHostname(foundUrl, pageUrl) &&
-				!this.wasUrlAlreadyCrawled(foundUrl)
-			) {
-				this.crawledUrlsStorage.add(
-					this.crawledUrlsKey,
-					new URL(foundUrl.href)
-				);
-				const message: Message = new Message([Command.OpenNewTab], {
-					url: foundUrl.href,
-				});
-				this.communicationChannel.sendMessageToAll(message);
-			}
-		}
+		// COMENTATO PARA TESTE
+		// let foundUrl: URL;
+		// for (const link of links) {
+		// 	try {
+		// 		foundUrl = new URL(link.href);
+		// 	} catch (_) {
+		// 		continue;
+		// 	}
+		// 	this.addUrlToGraph(foundUrl);
+		// 	this.addUrlsLinkToGraph(pageUrl, foundUrl);
+		// 	if (
+		// 		this.sameHostname(foundUrl, pageUrl) &&
+		// 		!this.wasUrlAlreadyCrawled(foundUrl)
+		// 	) {
+		// 		this.crawledUrlsStorage.add(
+		// 			this.crawledUrlsKey,
+		// 			new URL(foundUrl.href)
+		// 		);
+		// 		const message: Message = new Message([Command.OpenNewTab], {
+		// 			url: foundUrl.href,
+		// 		});
+		// 		this.communicationChannel.sendMessageToAll(message);
+		// 	}
+		// }
 		//ANÁLISE
 		const spec = new Spec('pt-br');
 		const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
