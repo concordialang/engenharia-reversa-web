@@ -35,6 +35,7 @@ communicationChannel.setMessageListener(function (message: Message) {
 		cleanGraph();
 	}
 	if (message.includesAction(Command.Crawl)) {
+		overwriteJavascriptPopups();
 		crawler.crawl();
 	}
 });
@@ -52,4 +53,9 @@ function cleanGraph(): void {
 	}
 }
 
-// OUTRAS FUNÇÕES
+function overwriteJavascriptPopups() {
+	var script = document.createElement('script');
+	script.innerHTML =
+		'alert = function(){};confirm = function(){return true;};prompt = function(text,defaultText){return defaultText;}';
+	document.body.appendChild(script);
+}
