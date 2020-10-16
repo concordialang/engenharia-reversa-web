@@ -10,7 +10,7 @@ import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
 
-const mu: Mutex = new Mutex('mylock');
+const mutex: Mutex = new Mutex('mylock');
 
 const graphStorage: GraphStorage = new GraphStorage();
 const featureStorage: FeatureStorage = new FeatureStorage();
@@ -27,7 +27,7 @@ const crawler: Crawler = new Crawler(
 	specAnalyzer,
 	graphKey,
 	crawledUrlsKey,
-	mu
+	mutex
 );
 
 communicationChannel.setMessageListener(function (message: Message) {
