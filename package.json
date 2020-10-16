@@ -15,6 +15,7 @@
 	},
 	"homepage": "https://github.com/concordialang/engenharia-reversa-web",
 	"scripts": {
+		"dev": "watch 'npm run build' src",
 		"fmt": "prettier ./ --write",
 		"test": "jest",
 		"test:watch": "jest --watchAll",
@@ -62,6 +63,7 @@
 		"get-xpath": "^3.0.0",
 		"graph-data-structure": "^1.10.0",
 		"idb-mutex": "^0.11.0",
-		"mustache": "^4.0.1"
+		"mustache": "^4.0.1",
+		"watch": "^1.0.2"
 	}
 }
