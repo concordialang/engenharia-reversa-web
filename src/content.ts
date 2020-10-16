@@ -6,6 +6,7 @@ import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { Message } from './app/comm/Message';
 import { Crawler } from './app/crawler/Crawler';
 import { FeatureStorage } from './app/crawler/FeatureStorage';
+import { FormFiller } from './app/crawler/FormFiller';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
@@ -19,7 +20,9 @@ const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const specAnalyzer: SpecAnalyzer = new SpecAnalyzer();
+const formFiller: FormFiller = new FormFiller();
 const crawler: Crawler = new Crawler(
+	document,
 	communicationChannel,
 	graphStorage,
 	crawledUrlsStorage,
@@ -27,7 +30,8 @@ const crawler: Crawler = new Crawler(
 	specAnalyzer,
 	graphKey,
 	crawledUrlsKey,
-	mutex
+	mutex,
+	formFiller
 );
 
 communicationChannel.setMessageListener(function (message: Message) {
