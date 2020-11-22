@@ -99,7 +99,7 @@ export class Crawler {
 			this.formFiller.fill(form);
 		}
 
-		this.closeWindow = true;
+		//this.closeWindow = true;
 	}
 
 	private searchForLinks(): HTMLCollectionOf<HTMLAnchorElement> {
