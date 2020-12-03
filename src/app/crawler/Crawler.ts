@@ -7,16 +7,21 @@ import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Graph } from '../graph/Graph';
 import { GraphStorage } from '../graph/GraphStorage';
+import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
 import { Mutex } from '../mutex/Mutex';
+import { ElementInteraction } from './ElementInteraction';
+import { ElementInteractionManager } from './ElementInteractionManager';
 import { FeatureStorage } from './FeatureStorage';
 import { FormFiller } from './FormFiller';
+import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
 
 //classe deve ser refatorada
 export class Crawler {
 	private document: HTMLDocument;
+	private pageUrl: URL;
 	private communicationChannel: CommunicationChannel;
 	private graphStorage: GraphStorage;
 	private crawledUrlsStorage: UrlListStorage;
@@ -33,6 +38,7 @@ export class Crawler {
 
 	constructor(
 		document: HTMLDocument,
+		pageUrl: URL,
 		communicationChannel: CommunicationChannel,
 		graphStorage: GraphStorage,
 		crawledUrlsStorage: UrlListStorage,
@@ -44,6 +50,7 @@ export class Crawler {
 		formFiller: FormFiller
 	) {
 		this.document = document;
+		this.pageUrl = pageUrl;
 		this.graphStorage = graphStorage;
 		this.crawledUrlsStorage = crawledUrlsStorage;
 		this.featureStorage = featureStorage;
@@ -56,8 +63,7 @@ export class Crawler {
 	}
 
 	public crawl() {
-		const pageUrl: URL = new URL(window.location.href);
-		this.addUrlToGraph(pageUrl);
+		this.addUrlToGraph(this.pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 		// COMENTATO PARA TESTE
 		// let foundUrl: URL;
@@ -88,11 +94,18 @@ export class Crawler {
 		const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
 		for (const feature of specAnalyzed.features) {
 			const id: string = uuid();
-			const key = pageUrl.href + ':' + id;
+			const key = this.pageUrl.href + ':' + id;
 			this.featureStorage.save(key, feature);
 			//temporario
-			console.log(this.featureStorage.get(key));
+			//console.log(this.featureStorage.get(key));
 		}
+
+		// const element = document.getElementById('fname');
+		// if(element){
+		// 	const interaction = new ElementInteraction(<HTMLInputElement>element, HTMLEventType.Change, 'oaspkdaposkd');
+		// 	const inputInteractor = new InputInteractor();
+		// 	inputInteractor.execute(interaction);
+		// }
 
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {

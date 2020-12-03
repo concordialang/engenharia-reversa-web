@@ -5,8 +5,11 @@ import { Command } from './app/comm/Command';
 import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { Message } from './app/comm/Message';
 import { Crawler } from './app/crawler/Crawler';
+import { ElementInteractionManager } from './app/crawler/ElementInteractionManager';
+import { ElementInteractionStorage } from './app/crawler/ElementInteractionStorage';
 import { FeatureStorage } from './app/crawler/FeatureStorage';
 import { FormFiller } from './app/crawler/FormFiller';
+import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
@@ -18,11 +21,26 @@ const featureStorage: FeatureStorage = new FeatureStorage();
 const crawledUrlsStorage: UrlListStorage = new UrlListStorage();
 const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
+const elementInteractionGraphKey = 'interactions-graph';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const specAnalyzer: SpecAnalyzer = new SpecAnalyzer();
-const formFiller: FormFiller = new FormFiller();
+const inputInteractor = new InputInteractor();
+const elementInteracationStorage = new ElementInteractionStorage(document);
+const elementInteractionManager = new ElementInteractionManager(
+	inputInteractor,
+	elementInteractionGraphKey,
+	graphStorage,
+	elementInteracationStorage,
+	mutex
+);
+const pageUrl: URL = new URL(window.location.href);
+const formFiller: FormFiller = new FormFiller(
+	elementInteractionManager,
+	pageUrl
+);
 const crawler: Crawler = new Crawler(
 	document,
+	pageUrl,
 	communicationChannel,
 	graphStorage,
 	crawledUrlsStorage,
@@ -49,6 +67,7 @@ communicationChannel.sendMessageToAll(new Message([AppEvent.Loaded]));
 
 function cleanGraph(): void {
 	graphStorage.remove(graphKey);
+	graphStorage.remove(elementInteractionGraphKey);
 	crawledUrlsStorage.removeAll('crawled-urls');
 	//temporario
 	const keys = Object.keys(window.localStorage);

@@ -1,30 +1,42 @@
 import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
+import { ElementInteraction } from './ElementInteraction';
+import { ElementInteractionManager } from './ElementInteractionManager';
+import { InputInteractor } from './InputInteractor';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
 export class FormFiller {
 	private radioGroupsAlreadyFilled: string[];
+	private elementInteractionManager: ElementInteractionManager;
+	private pageUrl: URL;
 
-	constructor() {
+	constructor(
+		elementInteractionManager: ElementInteractionManager,
+		pageUrl: URL
+	) {
 		this.radioGroupsAlreadyFilled = [];
+		this.elementInteractionManager = elementInteractionManager;
+		this.pageUrl = pageUrl;
 	}
 
 	public fill(form: HTMLFormElement) {
 		const inputs = form.getElementsByTagName(HTMLElementType.Input);
 		for (const input of inputs) {
-			if (input instanceof HTMLInputElement) this.fillInput(input, form);
+			if (input instanceof HTMLInputElement) {
+				this.fillInput(input);
+			}
 		}
 		this.radioGroupsAlreadyFilled = [];
 	}
 
-	private fillInput(input: HTMLInputElement, form: HTMLFormElement) {
+	private fillInput(input: HTMLInputElement) {
 		const type = input.getAttribute('type');
 		if (type == HTMLInputType.Text) {
 			this.fillTextInput(input);
 		} else if (type == HTMLInputType.Radio) {
-			this.fillRadioInput(input, form);
+			this.fillRadioInput(input);
 		} else if (type == HTMLInputType.Checkbox) {
 			this.fillCheckboxInput(input);
 		}
@@ -32,12 +44,10 @@ export class FormFiller {
 
 	//RADIO
 
-	private fillRadioInput(
-		element: HTMLInputElement,
-		form: HTMLFormElement
-	): void {
+	private fillRadioInput(element: HTMLInputElement): void {
 		const name = element.getAttribute('name');
-		if (name) {
+		const form = element.form;
+		if (name && form) {
 			if (!this.radioGroupsAlreadyFilled.includes(name)) {
 				const radioGroup = this.getFormInputElementsByNameAttribute(
 					form,
@@ -46,10 +56,20 @@ export class FormFiller {
 				if (radioGroup && radioGroup.length) {
 					const chosenRadio = this.chooseRadioButton(radioGroup);
 					if (chosenRadio) {
-						chosenRadio.checked = true;
+						const interaction = new ElementInteraction<
+							HTMLInputElement
+						>(
+							chosenRadio,
+							HTMLEventType.Change,
+							this.pageUrl,
+							chosenRadio.value
+						);
+						this.elementInteractionManager.execute(
+							interaction,
+							true
+						);
+						this.radioGroupsAlreadyFilled.push(name);
 					}
-					this.dispatchEvent(element, HTMLEventType.Change);
-					this.radioGroupsAlreadyFilled.push(name);
 				}
 			}
 		}
@@ -67,30 +87,25 @@ export class FormFiller {
 	//TEXT
 
 	private fillTextInput(element: HTMLInputElement): void {
-		this.simulateTextTyping(element, 'test');
-		this.dispatchEvent(element, HTMLEventType.Change);
-	}
-
-	private simulateTextTyping(element: HTMLInputElement, text: string): void {
-		element.value = text;
+		const interaction = new ElementInteraction<HTMLInputElement>(
+			element,
+			HTMLEventType.Change,
+			this.pageUrl,
+			'teste'
+		);
+		this.elementInteractionManager.execute(interaction, true);
 	}
 
 	//CHECKBOX
 
 	private fillCheckboxInput(element: HTMLInputElement): void {
-		element.checked = true;
-		this.dispatchEvent(element, HTMLEventType.Change);
-	}
-
-	//UTIL
-
-	private dispatchEvent(
-		element: HTMLElement,
-		eventType: HTMLEventType
-	): void {
-		var evt = document.createEvent('HTMLEvents');
-		evt.initEvent(eventType, false, true);
-		element.dispatchEvent(evt);
+		const interaction = new ElementInteraction<HTMLInputElement>(
+			element,
+			HTMLEventType.Change,
+			this.pageUrl,
+			true
+		);
+		this.elementInteractionManager.execute(interaction, true);
 	}
 
 	private getFormInputElementsByNameAttribute(
