@@ -79,10 +79,11 @@ export class ElementInteractionStorage {
 			);
 		}
 		return null;
-	}
+	} // source https://stackoverflow.com/a/2631931/14729456
 
-	/* REFATORAR, colocar em util ou helper */ // source https://stackoverflow.com/a/2631931/14729456
-	private getPathTo(element: HTMLElement): string | null {
+	/* REFATORAR, colocar em util ou helper */ private getPathTo(
+		element: HTMLElement
+	): string | null {
 		if (element.id !== '') return 'id("' + element.id + '")';
 		if (element === document.body) return element.tagName;
 
@@ -112,7 +113,9 @@ export class ElementInteractionStorage {
 		return null;
 	}
 
-	/* REFATORAR, colocar em util ou helper */ private getElementByXpath(
+	/* REFATORAR, colocar em util ou helper */
+
+	private getElementByXpath(
 		path: string,
 		document: HTMLDocument
 	): HTMLElement | null {
