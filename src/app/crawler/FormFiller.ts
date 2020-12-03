@@ -53,6 +53,7 @@ export class FormFiller {
 					form,
 					name
 				);
+				//teste
 				if (radioGroup && radioGroup.length) {
 					const chosenRadio = this.chooseRadioButton(radioGroup);
 					if (chosenRadio) {
