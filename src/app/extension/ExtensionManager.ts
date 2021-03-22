@@ -13,6 +13,7 @@ export class ExtensionManager {
 	private communicationChannel: CommunicationChannel;
 	private urlQueue: Array<URL>;
 	private openedTabsLimit: number;
+	private extensionIsEnabled : boolean;
 
 	constructor(
 		extension: Extension,
@@ -25,6 +26,7 @@ export class ExtensionManager {
 		this.openedTabsCounter = 0;
 		this.urlQueue = [];
 		this.openedTabsLimit = openedTabsLimit;
+		this.extensionIsEnabled = false;
 	}
 
 	public setup(): void {
@@ -32,29 +34,28 @@ export class ExtensionManager {
 		this.extension.setBrowserActionListener(
 			ExtensionBrowserAction.ExtensionIconClicked,
 			function (tab: Tab) {
-				_this.openedTabs.push(tab);
-				_this.openedTabsCounter++;
-				_this.sendOrderToCrawlTab(tab, true);
+				if(!_this.extensionIsEnabled){
+					_this.extensionIsEnabled = true;
+					_this.openedTabs.push(tab);
+					_this.openedTabsCounter++;
+					_this.sendOrderToCrawlTab(tab, true);
+				} else {
+					_this.extensionIsEnabled = false;
+				}
 			}
 		);
 
-		this.communicationChannel.setMessageListener(function (
-			message: Message,
-			sender?: Tab
-		) {
-			if (message.includesAction(Command.OpenNewTab)) {
-				const extra = message.getExtra();
-				if (extra && extra.url) _this.openNewTab(new URL(extra.url));
-			} else if (
-				sender instanceof Tab &&
-				sender.getId() &&
-				message.includesAction(AppEvent.Loaded)
-			) {
-				if (_this.tabWasOpenedByThisExtension(sender)) {
+		this.communicationChannel.setMessageListener(function (message: Message, sender?: Tab) {
+			if(_this.extensionIsEnabled){
+				if (message.includesAction(Command.OpenNewTab)) {
+					const extra = message.getExtra();
+					if (extra && extra.url) _this.openNewTab(new URL(extra.url));
+				} else if (message.includesAction(AppEvent.Loaded) && sender instanceof Tab && sender.getId() && _this.tabWasOpenedByThisExtension(sender)) {
 					_this.sendOrderToCrawlTab(sender);
 				}
 			}
 		});
+		
 	}
 
 	public openNewTab(url: URL): void {
