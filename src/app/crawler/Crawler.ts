@@ -28,7 +28,7 @@ export class Crawler {
 	private featureStorage: FeatureStorage;
 	private specAnalyzer: SpecAnalyzer;
 	//abstrair mutex em classe
-	private mutex: Mutex;
+	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
 	private crawledUrlsKey: string;
 	private formFiller: FormFiller;
@@ -54,7 +54,7 @@ export class Crawler {
 		this.graphStorage = graphStorage;
 		this.crawledUrlsStorage = crawledUrlsStorage;
 		this.featureStorage = featureStorage;
-		this.mutex = mutex;
+		this.visitedPagesGraphMutex = mutex;
 		this.graphKey = graphKey;
 		this.crawledUrlsKey = crawledUrlsKey;
 		this.communicationChannel = communicationChannel;
@@ -62,7 +62,7 @@ export class Crawler {
 		this.formFiller = formFiller;
 	}
 
-	public crawl() {
+	public async crawl() {
 		this.addUrlToGraph(this.pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 		// COMENTATO PARA TESTE
@@ -109,7 +109,7 @@ export class Crawler {
 
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {
-			this.formFiller.fill(form);
+			await this.formFiller.fill(form);
 		}
 
 		//this.closeWindow = true;
@@ -122,13 +122,13 @@ export class Crawler {
 	//refatorar função
 	private addUrlToGraph(url: URL): void {
 		//mutex deveria ficar dentro de GraphStorage ou em Crawler ?
-		this.mutex
+		this.visitedPagesGraphMutex
 			.lock()
 			.then(() => {
 				let graph: Graph = this.graphStorage.get(this.graphKey);
 				graph.addNode(url.toString());
 				this.graphStorage.save(this.graphKey, graph);
-				return this.mutex.unlock();
+				return this.visitedPagesGraphMutex.unlock();
 			})
 			.then(() => {
 				if (this.closeWindow === true) window.close();
@@ -138,13 +138,13 @@ export class Crawler {
 	//refatorar função
 	private addUrlsLinkToGraph(urlFrom: URL, urlTo: URL): void {
 		//mutex deveria ficar dentro de GraphStorage ou em Crawler ?
-		this.mutex
+		this.visitedPagesGraphMutex
 			.lock()
 			.then(() => {
 				let graph: Graph = this.graphStorage.get(this.graphKey);
 				graph.addEdge(urlFrom.toString(), urlTo.toString());
 				this.graphStorage.save(this.graphKey, graph);
-				return this.mutex.unlock();
+				return this.visitedPagesGraphMutex.unlock();
 			})
 			.then(() => {
 				if (this.closeWindow === true) window.close();

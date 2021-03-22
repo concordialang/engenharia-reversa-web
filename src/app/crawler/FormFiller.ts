@@ -21,30 +21,33 @@ export class FormFiller {
 		this.pageUrl = pageUrl;
 	}
 
-	public fill(form: HTMLFormElement) {
-		const inputs = form.getElementsByTagName(HTMLElementType.Input);
-		for (const input of inputs) {
-			if (input instanceof HTMLInputElement) {
-				this.fillInput(input);
+	public async fill(form: HTMLFormElement) {
+		const elements = form.elements;
+		for (const element of elements) {
+			if (element instanceof HTMLInputElement) {
+				await this.fillInput(element);
+			} else if (element instanceof HTMLButtonElement){
+				const interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
+				this.elementInteractionManager.execute(interaction);
 			}
 		}
 		this.radioGroupsAlreadyFilled = [];
 	}
 
-	private fillInput(input: HTMLInputElement) {
+	private async fillInput(input: HTMLInputElement) {
 		const type = input.getAttribute('type');
 		if (type == HTMLInputType.Text) {
-			this.fillTextInput(input);
+			await this.fillTextInput(input);
 		} else if (type == HTMLInputType.Radio) {
-			this.fillRadioInput(input);
+			await this.fillRadioInput(input);
 		} else if (type == HTMLInputType.Checkbox) {
-			this.fillCheckboxInput(input);
+			await this.fillCheckboxInput(input);
 		}
 	}
 
 	//RADIO
 
-	private fillRadioInput(element: HTMLInputElement): void {
+	private async fillRadioInput(element: HTMLInputElement): Promise<void> {
 		const name = element.getAttribute('name');
 		const form = element.form;
 		if (name && form) {
@@ -64,7 +67,7 @@ export class FormFiller {
 							this.pageUrl,
 							chosenRadio.value
 						);
-						this.elementInteractionManager.execute(
+						await this.elementInteractionManager.execute(
 							interaction,
 							true
 						);
@@ -86,26 +89,26 @@ export class FormFiller {
 
 	//TEXT
 
-	private fillTextInput(element: HTMLInputElement): void {
+	private async fillTextInput(element: HTMLInputElement): Promise<void> {
 		const interaction = new ElementInteraction<HTMLInputElement>(
 			element,
 			HTMLEventType.Change,
 			this.pageUrl,
 			'teste'
 		);
-		this.elementInteractionManager.execute(interaction, true);
+		await this.elementInteractionManager.execute(interaction, true);
 	}
 
 	//CHECKBOX
 
-	private fillCheckboxInput(element: HTMLInputElement): void {
+	private async fillCheckboxInput(element: HTMLInputElement): Promise<void> {
 		const interaction = new ElementInteraction<HTMLInputElement>(
 			element,
 			HTMLEventType.Change,
 			this.pageUrl,
 			true
 		);
-		this.elementInteractionManager.execute(interaction, true);
+		await this.elementInteractionManager.execute(interaction, true);
 	}
 
 	private getFormInputElementsByNameAttribute(
