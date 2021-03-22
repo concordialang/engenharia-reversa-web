@@ -32,6 +32,10 @@ export class Graph {
 		return this._graph.adjacent(key);
 	}
 
+	public depthFirstSearch(): Array<string>{
+		return this._graph.depthFirstSearch();
+	}
+
 	public serialize(): object {
 		return this._graph.serialize();
 	}
