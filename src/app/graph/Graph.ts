@@ -32,7 +32,7 @@ export class Graph {
 		return this._graph.adjacent(key);
 	}
 
-	public depthFirstSearch(): Array<string>{
+	public depthFirstSearch(): Array<string> {
 		return this._graph.depthFirstSearch();
 	}
 

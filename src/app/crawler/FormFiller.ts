@@ -26,8 +26,12 @@ export class FormFiller {
 		for (const element of elements) {
 			if (element instanceof HTMLInputElement) {
 				await this.fillInput(element);
-			} else if (element instanceof HTMLButtonElement){
-				const interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
+			} else if (element instanceof HTMLButtonElement) {
+				const interaction = new ElementInteraction(
+					element,
+					HTMLEventType.Click,
+					this.pageUrl
+				);
 				this.elementInteractionManager.execute(interaction);
 			}
 		}

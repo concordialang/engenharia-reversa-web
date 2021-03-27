@@ -45,7 +45,10 @@ export class ElementInteractionManager {
 			this.inputInteractor.execute(
 				<ElementInteraction<HTMLInputElement>>interaction
 			);
-		} else if (type == HTMLElementType.Button && element.getAttribute("type") != "submit") {
+		} else if (
+			type == HTMLElementType.Button &&
+			element.getAttribute('type') != 'submit'
+		) {
 			this.buttonInteractor.execute(
 				<ElementInteraction<HTMLButtonElement>>interaction
 			);
@@ -61,7 +64,7 @@ export class ElementInteractionManager {
 				);
 				const depthFirstSearch = graph.depthFirstSearch();
 				console.log(depthFirstSearch);
-				if(depthFirstSearch.length){
+				if (depthFirstSearch.length) {
 					const lastInteractionId = depthFirstSearch[0];
 					console.log(key);
 					if (lastInteractionId) {
@@ -84,7 +87,7 @@ export class ElementInteractionManager {
 	}
 
 	private delay(ms: number) {
-		return new Promise( resolve => setTimeout(resolve, ms) );
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	public executeInteractions(
@@ -115,5 +118,4 @@ export class ElementInteractionManager {
 		graph.addEdge(keyFrom, keyTo);
 		this.graphStorage.save(this.elementInteractionGraphKey, graph);
 	}
-	
 }
