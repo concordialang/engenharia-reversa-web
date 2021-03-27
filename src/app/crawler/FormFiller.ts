@@ -28,8 +28,9 @@ export class FormFiller {
 				await this.fillInput(element);
 			} else if (element instanceof HTMLButtonElement){
 				const interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
-				this.elementInteractionManager.execute(interaction);
+				//this.elementInteractionManager.execute(interaction);
 			}
+			console.log(this.elementInteractionManager.getLastInteraction());
 		}
 		this.radioGroupsAlreadyFilled = [];
 	}

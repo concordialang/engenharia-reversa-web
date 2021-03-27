@@ -41,7 +41,7 @@ export class ElementInteractionStorage {
 
 	private createElementInteraction(json: {element: string;eventType: string;pageUrl: string;value: string | boolean | null},key: string): ElementInteraction<HTMLElement> | null {
 		const element = this.getElementByXpath(json.element, this.document);
-		const eventType = HTMLEventType[json.eventType];
+		const eventType = this.getEnumKeyByEnumValue(HTMLEventType,json.eventType);
 		const pageUrl = json.pageUrl;
 		if (element && eventType) {
 			return new ElementInteraction(element,HTMLEventType[json.eventType],new URL(pageUrl),json.value,key);
@@ -80,5 +80,10 @@ export class ElementInteractionStorage {
 			return <HTMLElement>node;
 		}
 		return null;
+	}
+
+	private getEnumKeyByEnumValue(myEnum, enumValue) {
+		let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
+		return keys.length > 0 ? myEnum[keys[0]] : null;
 	}
 }
