@@ -17,6 +17,7 @@ import { FeatureStorage } from './FeatureStorage';
 import { FormFiller } from './FormFiller';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
+import { MutationObserverSentencesGenerator } from '../mutationobserver/MutationObserverSentencesGenerator';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -90,15 +91,14 @@ export class Crawler {
 		// 	}
 		// }
 		//ANÁLISE
-		const spec = new Spec('pt-br');
-		const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
-		for (const feature of specAnalyzed.features) {
-			const id: string = uuid();
-			const key = this.pageUrl.href + ':' + id;
-			this.featureStorage.save(key, feature);
-			//temporario
-			//console.log(this.featureStorage.get(key));
-		}
+
+		// for (const feature of specAnalyzed.features) {
+		// 	const id: string = uuid();
+		// 	const key = this.pageUrl.href + ':' + id;
+		// 	this.featureStorage.save(key, feature);
+		// 	//temporario
+		// 	// console.log(this.featureStorage.get(key));
+		// }
 
 		// const element = document.getElementById('fname');
 		// if(element){
@@ -109,7 +109,28 @@ export class Crawler {
 
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {
+			// registra observer
+			const mutationObserverSentencesGenerator = new MutationObserverSentencesGenerator(
+				form
+			);
+			console.log(
+				'mutationObserverSentencesGenerator',
+				mutationObserverSentencesGenerator
+			);
+
+			// preenche formulario
 			await this.formFiller.fill(form);
+
+			// recebe mutacoes
+			let mutations = mutationObserverSentencesGenerator.getMutations();
+			console.log('mutations', mutations);
+
+			mutationObserverSentencesGenerator.disconnect();
+
+			// Analise
+			const spec = new Spec('pt-br');
+			const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
+			console.log('specAnalyzed', specAnalyzed);
 		}
 
 		//this.closeWindow = true;

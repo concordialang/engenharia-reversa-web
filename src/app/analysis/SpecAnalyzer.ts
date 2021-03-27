@@ -4,6 +4,7 @@ import { Feature } from '../feature-structure/Feature';
 import { Scenario } from '../feature-structure/Scenario';
 import { NodeTypes } from '../node/NodeTypes';
 import { Spec } from './Spec';
+import { MutationObserverSentencesGenerator } from '../mutationobserver/MutationObserverSentencesGenerator';
 
 export class SpecAnalyzer {
 	analyze(e: HTMLElement, spec: Spec): Spec {
