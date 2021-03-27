@@ -32,8 +32,9 @@ export class FormFiller {
 					HTMLEventType.Click,
 					this.pageUrl
 				);
-				this.elementInteractionManager.execute(interaction);
+				//this.elementInteractionManager.execute(interaction);
 			}
+			console.log(this.elementInteractionManager.getLastInteraction());
 		}
 		this.radioGroupsAlreadyFilled = [];
 	}

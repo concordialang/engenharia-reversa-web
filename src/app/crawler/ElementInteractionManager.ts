@@ -63,10 +63,8 @@ export class ElementInteractionManager {
 					this.elementInteractionGraphKey
 				);
 				const depthFirstSearch = graph.depthFirstSearch();
-				console.log(depthFirstSearch);
 				if (depthFirstSearch.length) {
 					const lastInteractionId = depthFirstSearch[0];
-					console.log(key);
 					if (lastInteractionId) {
 						this.addElementInteractionKeyToGraph(key);
 						this.addElementInteractionKeyLinkToGraph(
@@ -84,6 +82,18 @@ export class ElementInteractionManager {
 				return this.mutex.unlock();
 			});
 		}
+	}
+
+	public getLastInteraction(): ElementInteraction<HTMLElement> | null {
+		const graph = this.graphStorage.get(this.elementInteractionGraphKey);
+		const depthFirstSearch = graph.depthFirstSearch();
+		if (depthFirstSearch.length) {
+			const lastInteractionId = depthFirstSearch[0];
+			if (lastInteractionId) {
+				return this.elementInteractionStorage.get(lastInteractionId);
+			}
+		}
+		return null;
 	}
 
 	private delay(ms: number) {
