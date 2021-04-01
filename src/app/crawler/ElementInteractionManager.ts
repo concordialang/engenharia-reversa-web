@@ -16,7 +16,7 @@ export class ElementInteractionManager {
 	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
 	private mutex: Mutex;
-	//private lastInteraction: ElementInteraction<HTMLElement> | null;
+	private lastInteraction: ElementInteraction<HTMLElement> | null;
 
 	constructor(
 		inputInteractor: InputInteractor,
@@ -32,6 +32,7 @@ export class ElementInteractionManager {
 		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.mutex = mutex;
+		this.lastInteraction = null;
 	}
 
 	public async execute(
@@ -45,7 +46,10 @@ export class ElementInteractionManager {
 			this.inputInteractor.execute(
 				<ElementInteraction<HTMLInputElement>>interaction
 			);
-		} else if (type == HTMLElementType.Button && element.getAttribute("type") != "submit") {
+		} else if (
+			type == HTMLElementType.Button &&
+			element.getAttribute('type') != 'submit'
+		) {
 			this.buttonInteractor.execute(
 				<ElementInteraction<HTMLButtonElement>>interaction
 			);
@@ -55,12 +59,13 @@ export class ElementInteractionManager {
 			const id = uuid();
 			const key = interaction.getPageUrl().href + ':' + id;
 			this.elementInteractionStorage.save(key, interaction);
+			this.lastInteraction = interaction;
 			this.mutex.lock().then(() => {
 				const graph = this.graphStorage.get(
 					this.elementInteractionGraphKey
 				);
 				const depthFirstSearch = graph.depthFirstSearch();
-				if(depthFirstSearch.length){
+				if (depthFirstSearch.length) {
 					const lastInteractionId = depthFirstSearch[0];
 					if (lastInteractionId) {
 						this.addElementInteractionKeyToGraph(key);
@@ -81,22 +86,12 @@ export class ElementInteractionManager {
 		}
 	}
 
-	public getLastInteraction() : ElementInteraction<HTMLElement>|null {
-		const graph = this.graphStorage.get(
-			this.elementInteractionGraphKey
-		);
-		const depthFirstSearch = graph.depthFirstSearch();
-		if(depthFirstSearch.length){
-			const lastInteractionId = depthFirstSearch[0];
-			if (lastInteractionId) {
-				return this.elementInteractionStorage.get(lastInteractionId);
-			}
-		}
-		return null;
+	public getLastInteraction(): ElementInteraction<HTMLElement> | null {
+		return this.lastInteraction;
 	}
 
 	private delay(ms: number) {
-		return new Promise( resolve => setTimeout(resolve, ms) );
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	public executeInteractions(
@@ -127,5 +122,4 @@ export class ElementInteractionManager {
 		graph.addEdge(keyFrom, keyTo);
 		this.graphStorage.save(this.elementInteractionGraphKey, graph);
 	}
-	
 }
