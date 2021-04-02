@@ -16,7 +16,7 @@ export class ElementInteractionManager {
 	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
 	private mutex: Mutex;
-	//private lastInteraction: ElementInteraction<HTMLElement> | null;
+	private lastInteraction: ElementInteraction<HTMLElement> | null;
 
 	constructor(
 		inputInteractor: InputInteractor,
@@ -32,6 +32,7 @@ export class ElementInteractionManager {
 		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.mutex = mutex;
+		this.lastInteraction = null;
 	}
 
 	public async execute(
@@ -58,6 +59,7 @@ export class ElementInteractionManager {
 			const id = uuid();
 			const key = interaction.getPageUrl().href + ':' + id;
 			this.elementInteractionStorage.save(key, interaction);
+			this.lastInteraction = interaction;
 			this.mutex.lock().then(() => {
 				const graph = this.graphStorage.get(
 					this.elementInteractionGraphKey
@@ -85,15 +87,7 @@ export class ElementInteractionManager {
 	}
 
 	public getLastInteraction(): ElementInteraction<HTMLElement> | null {
-		const graph = this.graphStorage.get(this.elementInteractionGraphKey);
-		const depthFirstSearch = graph.depthFirstSearch();
-		if (depthFirstSearch.length) {
-			const lastInteractionId = depthFirstSearch[0];
-			if (lastInteractionId) {
-				return this.elementInteractionStorage.get(lastInteractionId);
-			}
-		}
-		return null;
+		return this.lastInteraction;
 	}
 
 	private delay(ms: number) {
