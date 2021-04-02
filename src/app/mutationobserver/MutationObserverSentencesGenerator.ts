@@ -1,9 +1,12 @@
 export class MutationObserverSentencesGenerator {
 	private observer: MutationObserver;
+	private mutations: MutationRecord[] = [];
 
 	constructor(feature: HTMLElement) {
 		this.observer = new MutationObserver((mutations) => {
-			console.log('mutations', mutations);
+			mutations.forEach((mutation) => {
+				console.log('mutation', mutation);
+			});
 		});
 
 		var config = {
@@ -18,14 +21,12 @@ export class MutationObserverSentencesGenerator {
 		this.observer.observe(feature, config);
 	}
 
-	// private addObserver(feature: HTMLElement){
-
-	// }
-
 	public getMutations() {
-		let records = this.observer.takeRecords();
-		console.log('records: ', records);
-		return records;
+		return this.mutations;
+	}
+
+	public getRecords() {
+		return this.observer.takeRecords();
 	}
 
 	public disconnect() {
