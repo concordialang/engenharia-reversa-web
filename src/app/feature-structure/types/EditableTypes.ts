@@ -5,4 +5,5 @@ export enum EditableTypes {
 	TABLE = 'table',
 	TEXTBOX = 'textbox',
 	TEXTAREA = 'textarea',
+	RADIO = 'radio',
 }

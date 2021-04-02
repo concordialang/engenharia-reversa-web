@@ -27,6 +27,7 @@ export enum VariantSentenceActions {
 	SAVESCREENSHOT = 'saveScreenshot',
 	SCROLLTO = 'scrollTo',
 	SEE = 'see',
+	NOTSEE = 'notSee',
 	SELECT = 'select',
 	SHAKE = 'shake',
 	SWIPE = 'swipe',

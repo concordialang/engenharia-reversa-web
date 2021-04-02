@@ -4,6 +4,9 @@ import { HTMLInputType } from '../html/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
 import { InputInteractor } from './InputInteractor';
+import { Spec } from '../analysis/Spec';
+import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
+import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -11,19 +14,33 @@ export class FormFiller {
 	private radioGroupsAlreadyFilled: string[];
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;
+	private spec: Spec;
 
 	constructor(
 		elementInteractionManager: ElementInteractionManager,
-		pageUrl: URL
+		pageUrl: URL,
+		spec: Spec
 	) {
 		this.radioGroupsAlreadyFilled = [];
 		this.elementInteractionManager = elementInteractionManager;
 		this.pageUrl = pageUrl;
+		this.spec = spec;
 	}
 
 	public async fill(form: HTMLFormElement) {
+		const featureAnalyzer = new FeatureAnalyzer();
+
+		// add observer on form
+		let observer = new MutationObserverCreator(form);
+
+		// start feature analysis
+		const feature = featureAnalyzer.createFeatureFromForm(form, this.spec);
+		const scenario = featureAnalyzer.createScenario(feature);
+		const variant = featureAnalyzer.createVariant();
+
 		const elements = form.elements;
 		for (const element of elements) {
+			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
 			if (element instanceof HTMLInputElement) {
 				interaction = await this.fillInput(element);
@@ -33,10 +50,51 @@ export class FormFiller {
 					HTMLEventType.Click,
 					this.pageUrl
 				);
-				//this.elementInteractionManager.execute(interaction);
+				this.elementInteractionManager.execute(interaction);
 			}
-			if (interaction) console.log(interaction);
+
+			if (!interaction) continue;
+
+			// analyzes the interaction
+			const uiElment = featureAnalyzer.createUiElment(
+				interaction.getElement()
+			);
+
+			if (uiElment !== null && uiElment !== undefined) {
+				feature.setUiElement(uiElment);
+
+				const variantSentence = featureAnalyzer.createVariantSentence(
+					uiElment
+				);
+
+				if (variantSentence !== null) {
+					variant.setVariantSentence(variantSentence);
+				}
+
+				const mutations = observer.getMutations();
+
+				if (mutations.length > 0) {
+					const mutationSentences = featureAnalyzer.createMutationVariantSentences(
+						uiElment,
+						mutations
+					);
+
+					for (let sentence of mutationSentences) {
+						variant.setVariantSentence(sentence);
+					}
+
+					observer.resetMutations();
+				}
+			}
 		}
+
+		scenario.addVariant(variant);
+		feature.addScenario(scenario);
+		this.spec.addFeature(feature);
+
+		console.log('spec', this.spec);
+
+		observer.disconnect();
 		this.radioGroupsAlreadyFilled = [];
 	}
 

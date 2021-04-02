@@ -1,15 +1,13 @@
-export class MutationObserverSentencesGenerator {
+export class MutationObserverCreator {
 	private observer: MutationObserver;
 	private mutations: MutationRecord[] = [];
 
-	constructor(feature: HTMLElement) {
+	constructor(element: HTMLElement) {
 		this.observer = new MutationObserver((mutations) => {
-			mutations.forEach((mutation) => {
-				console.log('mutation', mutation);
-			});
+			this.mutations = mutations;
 		});
 
-		var config = {
+		let config = {
 			attributes: true,
 			childList: true,
 			characterData: true,
@@ -18,11 +16,19 @@ export class MutationObserverSentencesGenerator {
 			characterDataOldValue: true,
 		};
 
-		this.observer.observe(feature, config);
+		this.observer.observe(element, config);
+	}
+
+	public getObserver() {
+		return this.observer;
 	}
 
 	public getMutations() {
 		return this.mutations;
+	}
+
+	public resetMutations() {
+		this.mutations = [];
 	}
 
 	public getRecords() {
