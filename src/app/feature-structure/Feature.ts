@@ -3,10 +3,10 @@ import { Scenario } from './Scenario';
 import { UIElement } from './UIElement';
 
 export class Feature {
-	name: string;
-	imports: Array<Import>;
-	scenarios: Array<Scenario>;
-	uiElements: Array<UIElement>;
+	private name: string;
+	private imports: Array<Import>;
+	private scenarios: Array<Scenario>;
+	private uiElements: Array<UIElement>;
 
 	constructor() {
 		this.name = '';
@@ -15,19 +15,23 @@ export class Feature {
 		this.uiElements = [];
 	}
 
-	public setName(name: string) {
+	public setName(name: string): void {
 		this.name = name;
 	}
 
-	public setUiElement(uiElement: UIElement) {
+	public getName(): string {
+		return this.name;
+	}
+
+	public setUiElement(uiElement: UIElement): void {
 		this.uiElements.push(uiElement);
 	}
 
-	public setUiElements(uiElements: Array<UIElement>) {
+	public setUiElements(uiElements: Array<UIElement>): void {
 		this.uiElements = uiElements;
 	}
 
-	public addScenario(scenario: Scenario) {
+	public addScenario(scenario: Scenario): void {
 		this.scenarios.push(scenario);
 	}
 }

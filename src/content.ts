@@ -1,4 +1,4 @@
-import { SpecAnalyzer } from './app/analysis/SpecAnalyzer';
+import { FeatureAnalyzer } from './app/analysis/FeatureAnalyzer';
 import { AppEvent } from './app/comm/AppEvent';
 import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
 import { Command } from './app/comm/Command';
@@ -14,6 +14,8 @@ import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
+import { MutationObserverCreator } from './app/mutationobserver/MutationObserverCreator';
+import { Spec } from './app/analysis/Spec';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -25,10 +27,12 @@ const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
 const elementInteractionGraphKey = 'interactions-graph';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const specAnalyzer: SpecAnalyzer = new SpecAnalyzer();
+const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor();
 const elementInteracationStorage = new ElementInteractionStorage(document);
+const mutationObserver = new MutationObserverCreator(document.body);
+const spec: Spec = new Spec('pt-br');
 
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,
@@ -41,7 +45,8 @@ const elementInteractionManager = new ElementInteractionManager(
 const pageUrl: URL = new URL(window.location.href);
 const formFiller: FormFiller = new FormFiller(
 	elementInteractionManager,
-	pageUrl
+	pageUrl,
+	spec
 );
 const crawler: Crawler = new Crawler(
 	document,
@@ -50,11 +55,12 @@ const crawler: Crawler = new Crawler(
 	graphStorage,
 	crawledUrlsStorage,
 	featureStorage,
-	specAnalyzer,
+	featureAnalyzer,
 	graphKey,
 	crawledUrlsKey,
 	visitedPagesGraphMutex,
-	formFiller
+	formFiller,
+	mutationObserver
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

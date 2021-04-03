@@ -19,5 +19,4 @@ export class ButtonInteractor implements ElementInteractor<HTMLButtonElement> {
 		evt.initEvent(eventType, false, true);
 		element.dispatchEvent(evt);
 	}
-
 }

@@ -6,7 +6,7 @@ import { Variant } from '../feature-structure/Variant';
 import { VariantSentence } from '../feature-structure/VariantSentence';
 import { Util } from '../Util';
 
-export class VariantsGenerator {
+export class VariantSentencesGenerator {
 	public generateVariantFromUIElements(
 		uiElements: Array<UIElement>,
 		onlyMandatoryElements: boolean = false
@@ -77,6 +77,13 @@ export class VariantsGenerator {
 			);
 		}
 
+		return variant;
+	}
+
+	public generateVariantSentenceFromUIElement(
+		variant: Variant,
+		uiElment: UIElement
+	): Variant {
 		return variant;
 	}
 }

@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { Spec } from '../analysis/Spec';
-import { SpecAnalyzer } from '../analysis/SpecAnalyzer';
+import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
 import { Command } from '../comm/Command';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
@@ -17,6 +17,7 @@ import { FeatureStorage } from './FeatureStorage';
 import { FormFiller } from './FormFiller';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
+import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -26,12 +27,13 @@ export class Crawler {
 	private graphStorage: GraphStorage;
 	private crawledUrlsStorage: UrlListStorage;
 	private featureStorage: FeatureStorage;
-	private specAnalyzer: SpecAnalyzer;
+	private featureAnalyzer: FeatureAnalyzer;
 	//abstrair mutex em classe
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
 	private crawledUrlsKey: string;
 	private formFiller: FormFiller;
+	private mutationObserver: MutationObserverCreator;
 
 	//aux variables
 	private closeWindow = false;
@@ -43,11 +45,12 @@ export class Crawler {
 		graphStorage: GraphStorage,
 		crawledUrlsStorage: UrlListStorage,
 		featureStorage: FeatureStorage,
-		specAnalyzer: SpecAnalyzer,
+		featureAnalyzer: FeatureAnalyzer,
 		graphKey: string,
 		crawledUrlsKey: string,
 		mutex: Mutex,
-		formFiller: FormFiller
+		formFiller: FormFiller,
+		mutationObserverCreator: MutationObserverCreator
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
@@ -58,8 +61,9 @@ export class Crawler {
 		this.graphKey = graphKey;
 		this.crawledUrlsKey = crawledUrlsKey;
 		this.communicationChannel = communicationChannel;
-		this.specAnalyzer = specAnalyzer;
+		this.featureAnalyzer = featureAnalyzer;
 		this.formFiller = formFiller;
+		this.mutationObserver = mutationObserverCreator;
 	}
 
 	public async crawl() {
@@ -90,15 +94,14 @@ export class Crawler {
 		// 	}
 		// }
 		//ANÁLISE
-		const spec = new Spec('pt-br');
-		const specAnalyzed = this.specAnalyzer.analyze(document.body, spec);
-		for (const feature of specAnalyzed.features) {
-			const id: string = uuid();
-			const key = this.pageUrl.href + ':' + id;
-			this.featureStorage.save(key, feature);
-			//temporario
-			//console.log(this.featureStorage.get(key));
-		}
+
+		// for (const feature of specAnalyzed.features) {
+		// 	const id: string = uuid();
+		// 	const key = this.pageUrl.href + ':' + id;
+		// 	this.featureStorage.save(key, feature);
+		// 	//temporario
+		// 	// console.log(this.featureStorage.get(key));
+		// }
 
 		// const element = document.getElementById('fname');
 		// if(element){
@@ -107,9 +110,34 @@ export class Crawler {
 		// 	inputInteractor.execute(interaction);
 		// }
 
+		console.log(
+			'mutationObserverSentencesGenerator',
+			this.mutationObserver
+		);
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {
+			// registra observer
+			// const mutationObserverSentencesGenerator = new MutationObserverSentencesGenerator(
+			// 	form
+			// );
+			// console.log(
+			// 	'mutationObserverSentencesGenerator',
+			// 	mutationObserverSentencesGenerator
+			// );
+
+			// preenche formulario
 			await this.formFiller.fill(form);
+
+			// recebe mutacoes
+			// let mutations = mutationObserverSentencesGenerator.getMutations();
+			// console.log('mutations', mutations);
+
+			// mutationObserverSentencesGenerator.disconnect();
+
+			// Analise
+			// const spec = new Spec('pt-br');
+			// const specAnalyzed = this.FeatureAnalyzer.analyze(document.body, spec);
+			// console.log('specAnalyzed', specAnalyzed);
 		}
 
 		//this.closeWindow = true;
