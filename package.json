@@ -32,9 +32,7 @@
 		"testEnvironment": "jsdom"
 	},
 	"husky": {
-		"hooks": {
-			"pre-commit": "npm run test && lint-staged"
-		}
+		
 	},
 	"lint-staged": {
 		"*.{ts,js,json,css,md}": [
