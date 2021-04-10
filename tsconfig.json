@@ -1,5 +1,5 @@
 {
-	"include": ["src"],
+	"include": ["src/content.ts","src/background.ts"],
 	"exclude": ["tests__"],
 	"compilerOptions": {
 		/* Basic Options */

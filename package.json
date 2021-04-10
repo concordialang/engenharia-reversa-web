@@ -20,7 +20,7 @@
 		"test": "jest",
 		"test:watch": "jest --watchAll",
 		"clean": "rimraf dist",
-		"watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",
+		"watch": "npm run clean && webpack --config webpack/webpack.prod.js --watch",
 		"build": "npm run clean && webpack --config webpack/webpack.prod.js",
 		"coverage": "jest --coverage",
 		"all": "npm run build && npm run test && npm run fmt",
@@ -31,9 +31,7 @@
 		"preset": "ts-jest",
 		"testEnvironment": "jsdom"
 	},
-	"husky": {
-		
-	},
+	"husky": {},
 	"lint-staged": {
 		"*.{ts,js,json,css,md}": [
 			"prettier ./ --write"
