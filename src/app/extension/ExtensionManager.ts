@@ -15,8 +15,6 @@ export class ExtensionManager {
 	private openedTabsLimit: number;
 	private extensionIsEnabled: boolean;
 
-	private lastModifiedDate : Date|null;
-
 	constructor(
 		extension: Extension,
 		communicationChannel: CommunicationChannel,
@@ -29,7 +27,6 @@ export class ExtensionManager {
 		this.urlQueue = [];
 		this.openedTabsLimit = openedTabsLimit;
 		this.extensionIsEnabled = false;
-		this.lastModifiedDate = null;
 	}
 
 	public setup(): void {
@@ -67,30 +64,6 @@ export class ExtensionManager {
 				}
 			}
 		});
-
-		function checkForReload(){
-			chrome.runtime.getPackageDirectoryEntry (function(dir){
-				dir.getFile("reload",{},function(file){
-					console.log(file.getMetadata(function(metadata){
-						if(!_this.lastModifiedDate){
-							_this.lastModifiedDate = metadata.modificationTime;
-						} else if(metadata.modificationTime > _this.lastModifiedDate){
-							chrome.runtime.reload();
-							for(let tab of _this.openedTabs){
-								chrome.tabs.reload (Number(tab.getId()))
-							}
-						}
-						checkForReload();
-					}))
-				});
-			});
-		}
-
-		chrome.management.getSelf (self => {
-			if (self.installType === 'development') {
-				checkForReload();
-			}
-		})
 
 	}
 
@@ -142,8 +115,7 @@ export class ExtensionManager {
 
 	//temporaria
 	public tabWasOpenedByThisExtension(tab: Tab) {
-		for (let i: number = 0; i < this.openedTabs.length; i++) {
-			let openedTab: Tab = this.openedTabs[i];
+		for (let openedTab of this.openedTabs) {
 			if (openedTab.getId() == tab.getId()) {
 				return true;
 			}
