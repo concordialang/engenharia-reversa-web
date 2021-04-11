@@ -21,6 +21,7 @@
 		"test:watch": "jest --watchAll",
 		"clean": "rimraf dist",
 		"watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",
+		"build": "npm run clean && webpack --config webpack/webpack.dev.js",
 		"coverage": "jest --coverage",
 		"all": "npm run build && npm run test && npm run fmt",
 		"preversion": "npm run all",
