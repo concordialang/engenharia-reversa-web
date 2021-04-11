@@ -5,43 +5,23 @@ import { ChromeExtension } from './app/extension/ChromeExtension';
 import { Extension } from './app/extension/Extension';
 import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
+import { CodeChangeMonitor } from './app/extension/CodeChangeMonitor';
 
-let extension: Extension = new ChromeExtension();
+const extension: Extension = new ChromeExtension();
 
-let lastModifiedDate : Date|null = null;
+const codeChangeMonitor = new CodeChangeMonitor(extension);
 
-//Reloads tabs running on development environment in case they were not yet opened/crawled by the extension
-chrome.tabs.query ({ url : "http://localhost/*" }, function(tabs){
+codeChangeMonitor.checkForModification().then(() => extension.reload());
+
+//Reloads all tabs running on development environment, to reload the content script
+extension.searchTab({ url : "http://localhost/*" }).then((tabs) => {
 	for(let tab of tabs){
-		if(tab.id){
-			chrome.tabs.reload(Number(tab.id))
-		}
+		extension.reloadTab(tab.getId().toString());
 	}
 });
 
-function checkForReload(){
-	chrome.runtime.getPackageDirectoryEntry (function(dir){
-		dir.getFile("reload",{},function(file){
-			file.getMetadata(function(metadata){
-				if(!lastModifiedDate){
-					lastModifiedDate = metadata.modificationTime;
-				} else if(metadata.modificationTime > lastModifiedDate){
-					chrome.runtime.reload();
-				}
-				checkForReload();
-			})
-		});
-	});
-}
-
-chrome.management.getSelf (self => {
-	if (self.installType === 'development') {
-		checkForReload();
-	}
-})
-
-let communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-let manager: ExtensionManager = new ExtensionManager(
+const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
+const manager: ExtensionManager = new ExtensionManager(
 	extension,
 	communicationChannel,
 	1
