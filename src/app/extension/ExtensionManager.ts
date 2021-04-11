@@ -15,6 +15,8 @@ export class ExtensionManager {
 	private openedTabsLimit: number;
 	private extensionIsEnabled: boolean;
 
+	private lastModifiedDate : Date|null;
+
 	constructor(
 		extension: Extension,
 		communicationChannel: CommunicationChannel,
@@ -27,6 +29,7 @@ export class ExtensionManager {
 		this.urlQueue = [];
 		this.openedTabsLimit = openedTabsLimit;
 		this.extensionIsEnabled = false;
+		this.lastModifiedDate = null;
 	}
 
 	public setup(): void {
@@ -64,6 +67,31 @@ export class ExtensionManager {
 				}
 			}
 		});
+
+		function checkForReload(){
+			chrome.runtime.getPackageDirectoryEntry (function(dir){
+				dir.getFile("reload",{},function(file){
+					console.log(file.getMetadata(function(metadata){
+						if(!_this.lastModifiedDate){
+							_this.lastModifiedDate = metadata.modificationTime;
+						} else if(metadata.modificationTime > _this.lastModifiedDate){
+							chrome.runtime.reload();
+							for(let tab of _this.openedTabs){
+								chrome.tabs.reload (Number(tab.getId()))
+							}
+						}
+						checkForReload();
+					}))
+				});
+			});
+		}
+
+		chrome.management.getSelf (self => {
+			if (self.installType === 'development') {
+				checkForReload();
+			}
+		})
+
 	}
 
 	public openNewTab(url: URL): void {
@@ -94,9 +122,9 @@ export class ExtensionManager {
 			new Message(commands)
 		);
 		const _this = this;
-		promise.then(function () {
-			_this.removeTab(tab);
-		});
+		// promise.then(function () {
+		// 	_this.removeTab(tab);
+		// });
 	}
 
 	//teoricamente pode dar problema de concorrência
