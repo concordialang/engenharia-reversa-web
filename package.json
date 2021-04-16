@@ -21,7 +21,7 @@
 		"test:watch": "jest --watchAll",
 		"clean": "rimraf dist",
 		"watch": "npm run clean && webpack --config webpack/webpack.dev.js --watch",
-		"build": "npm run clean && webpack --config webpack/webpack.prod.js",
+		"build": "npm run clean && webpack --config webpack/webpack.dev.js",
 		"coverage": "jest --coverage",
 		"all": "npm run build && npm run test && npm run fmt",
 		"preversion": "npm run all",
@@ -31,11 +31,7 @@
 		"preset": "ts-jest",
 		"testEnvironment": "jsdom"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "npm run test && lint-staged"
-		}
-	},
+	"husky": {},
 	"lint-staged": {
 		"*.{ts,js,json,css,md}": [
 			"prettier ./ --write"
@@ -46,6 +42,7 @@
 		"@types/jest": "^26.0.4",
 		"@types/uuid": "^8.3.0",
 		"copy-webpack-plugin": "^5.1.1",
+		"create-file-webpack": "^1.0.2",
 		"husky": "^4.2.5",
 		"jest": "^26.1.0",
 		"jest-environment-jsdom-sixteen": "^1.0.3",

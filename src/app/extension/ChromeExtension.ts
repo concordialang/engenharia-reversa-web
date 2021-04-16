@@ -51,6 +51,40 @@ export class ChromeExtension implements Extension {
 		}
 	}
 
+	public reloadTab(tabId: string) : Promise<void> {
+		console.log(tabId);
+		return new Promise(function(resolve){
+			chrome.tabs.reload(Number(tabId),{},function(){
+				resolve();
+			});
+		});
+	}
+
+	public reload() : void {
+		chrome.runtime.reload();
+	}
+
+	public getFileSystemEntry(path : string) : Promise<FileEntry> {
+		return new Promise(function(resolve,reject){
+			chrome.runtime.getPackageDirectoryEntry (function(dir){
+				dir.getFile(path,{},function(file){
+					resolve(file);
+				});
+			});
+		});
+	}
+
+	public searchTab(queryInfo : Object) : Promise<Tab[]> {
+		return new Promise(resolve => {
+			chrome.tabs.query(queryInfo, tabs => {
+				resolve(tabs.reduce((mappedTabs : Tab[],tab) => {
+					if(tab.id) mappedTabs.push(new Tab(tab.id.toString()));
+					return mappedTabs;
+				},[]))
+			});
+		});
+	}
+
 	//procurar maneira mais correta de fazer que nao envolva ifs nem switch
 	private getChromeActionName(
 		action: ExtensionBrowserAction
@@ -58,4 +92,6 @@ export class ChromeExtension implements Extension {
 		if (action == ExtensionBrowserAction.ExtensionIconClicked)
 			return 'onClicked';
 	}
+
+
 }

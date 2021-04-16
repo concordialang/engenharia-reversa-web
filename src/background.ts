@@ -5,10 +5,23 @@ import { ChromeExtension } from './app/extension/ChromeExtension';
 import { Extension } from './app/extension/Extension';
 import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
+import { CodeChangeMonitor } from './app/extension/CodeChangeMonitor';
 
-let extension: Extension = new ChromeExtension();
-let communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-let manager: ExtensionManager = new ExtensionManager(
+const extension: Extension = new ChromeExtension();
+
+const codeChangeMonitor = new CodeChangeMonitor(extension);
+
+codeChangeMonitor.checkForModification().then(() => extension.reload());
+
+//Reloads all tabs running on development environment, to reload the content script
+extension.searchTab({ url : "http://localhost/*" }).then((tabs) => {
+	for(let tab of tabs){
+		extension.reloadTab(tab.getId().toString());
+	}
+});
+
+const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
+const manager: ExtensionManager = new ExtensionManager(
 	extension,
 	communicationChannel,
 	1

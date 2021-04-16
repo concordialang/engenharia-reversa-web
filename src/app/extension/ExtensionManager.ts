@@ -64,6 +64,7 @@ export class ExtensionManager {
 				}
 			}
 		});
+
 	}
 
 	public openNewTab(url: URL): void {
@@ -114,8 +115,7 @@ export class ExtensionManager {
 
 	//temporaria
 	public tabWasOpenedByThisExtension(tab: Tab) {
-		for (let i: number = 0; i < this.openedTabs.length; i++) {
-			let openedTab: Tab = this.openedTabs[i];
+		for (let openedTab of this.openedTabs) {
 			if (openedTab.getId() == tab.getId()) {
 				return true;
 			}
