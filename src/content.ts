@@ -14,7 +14,6 @@ import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
-import { MutationObserverCreator } from './app/mutationobserver/MutationObserverCreator';
 import { Spec } from './app/analysis/Spec';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
@@ -31,7 +30,6 @@ const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor();
 const elementInteracationStorage = new ElementInteractionStorage(document);
-const mutationObserver = new MutationObserverCreator(document.body);
 const spec: Spec = new Spec('pt-br');
 
 const elementInteractionManager = new ElementInteractionManager(
@@ -59,8 +57,7 @@ const crawler: Crawler = new Crawler(
 	graphKey,
 	crawledUrlsKey,
 	visitedPagesGraphMutex,
-	formFiller,
-	mutationObserver
+	formFiller
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

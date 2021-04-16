@@ -94,9 +94,9 @@ export class ExtensionManager {
 			new Message(commands)
 		);
 		const _this = this;
-		promise.then(function () {
-			_this.removeTab(tab);
-		});
+		// promise.then(function () {
+		// 	_this.removeTab(tab);
+		// });
 	}
 
 	//teoricamente pode dar problema de concorrência
