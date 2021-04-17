@@ -13,18 +13,20 @@ export class CodeChangeMonitor {
     public checkForModification() : Promise<void> {
         const _this = this;
         return new Promise((resolve) => {
-            _this.extension.getFileSystemEntry("reload").then(function(file){
-                file.getMetadata(function(metadata){
-                    if(!_this.lastModifiedDate){
-                        _this.lastModifiedDate = metadata.modificationTime;
-                    } else if(metadata.modificationTime > _this.lastModifiedDate){
-                        _this.lastModifiedDate = metadata.modificationTime;
-                        resolve();
-                    }
-                    resolve(_this.checkForModification());
-                })
-            });
-            
+            function checkForModificationRecursion(){
+                _this.extension.getFileSystemEntry("reload").then(function(file){
+                    file.getMetadata(function(metadata){
+                        if(!_this.lastModifiedDate){
+                            _this.lastModifiedDate = metadata.modificationTime;
+                        } else if(metadata.modificationTime > _this.lastModifiedDate){
+                            _this.lastModifiedDate = metadata.modificationTime;
+                            resolve();
+                        }
+                        checkForModificationRecursion();
+                    })
+                });
+            }
+            checkForModificationRecursion();
         });
     }
 
