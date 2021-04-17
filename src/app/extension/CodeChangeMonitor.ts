@@ -10,23 +10,33 @@ export class CodeChangeMonitor {
         this.lastModifiedDate = null;
     }
 
-    public checkForModification() : Promise<void> {
+    public async checkForModification(callback : Function) {
+        while(true){
+            await sleep(5);
+            const wasModified = await this.wasCodeModified();
+            if(wasModified){
+                callback();
+            }
+        }
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    }
+
+    private wasCodeModified() : Promise<boolean> {
         const _this = this;
         return new Promise((resolve) => {
-            function checkForModificationRecursion(){
-                _this.extension.getFileSystemEntry("reload").then(function(file){
-                    file.getMetadata(function(metadata){
-                        if(!_this.lastModifiedDate){
-                            _this.lastModifiedDate = metadata.modificationTime;
-                        } else if(metadata.modificationTime > _this.lastModifiedDate){
-                            _this.lastModifiedDate = metadata.modificationTime;
-                            resolve();
-                        }
-                        checkForModificationRecursion();
-                    })
-                });
-            }
-            checkForModificationRecursion();
+            _this.extension.getFileSystemEntry("reload").then(function(file){
+                file.getMetadata(function(metadata){
+                    if(!_this.lastModifiedDate){
+                        _this.lastModifiedDate = metadata.modificationTime;
+                    } else if(metadata.modificationTime > _this.lastModifiedDate){
+                        _this.lastModifiedDate = metadata.modificationTime;
+                        resolve(true);
+                    }
+                    resolve(false);
+                })
+            });
         });
     }
 
