@@ -10,7 +10,20 @@ export class CodeChangeMonitor {
         this.lastModifiedDate = null;
     }
 
-    public checkForModification() : Promise<void> {
+    public async checkForModification(callback : Function) {
+        while(true){
+            await sleep(5);
+            const wasModified = await this.wasCodeModified();
+            if(wasModified){
+                callback();
+            }
+        }
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    }
+
+    private wasCodeModified() : Promise<boolean> {
         const _this = this;
         return new Promise((resolve) => {
             _this.extension.getFileSystemEntry("reload").then(function(file){
@@ -19,12 +32,11 @@ export class CodeChangeMonitor {
                         _this.lastModifiedDate = metadata.modificationTime;
                     } else if(metadata.modificationTime > _this.lastModifiedDate){
                         _this.lastModifiedDate = metadata.modificationTime;
-                        resolve();
+                        resolve(true);
                     }
-                    resolve(_this.checkForModification());
+                    resolve(false);
                 })
             });
-            
         });
     }
 
