@@ -17,7 +17,6 @@ import { FeatureStorage } from './FeatureStorage';
 import { FormFiller } from './FormFiller';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
-import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -33,7 +32,6 @@ export class Crawler {
 	private graphKey: string;
 	private crawledUrlsKey: string;
 	private formFiller: FormFiller;
-	private mutationObserver: MutationObserverCreator;
 
 	//aux variables
 	private closeWindow = false;
@@ -49,8 +47,7 @@ export class Crawler {
 		graphKey: string,
 		crawledUrlsKey: string,
 		mutex: Mutex,
-		formFiller: FormFiller,
-		mutationObserverCreator: MutationObserverCreator
+		formFiller: FormFiller
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
@@ -63,12 +60,12 @@ export class Crawler {
 		this.communicationChannel = communicationChannel;
 		this.featureAnalyzer = featureAnalyzer;
 		this.formFiller = formFiller;
-		this.mutationObserver = mutationObserverCreator;
 	}
 
 	public async crawl() {
 		this.addUrlToGraph(this.pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
+
 		// COMENTATO PARA TESTE
 		// let foundUrl: URL;
 		// for (const link of links) {
@@ -110,34 +107,17 @@ export class Crawler {
 		// 	inputInteractor.execute(interaction);
 		// }
 
-		console.log(
-			'mutationObserverSentencesGenerator',
-			this.mutationObserver
-		);
+		// const forms = this.document.getElementsByTagName('form');
+		// for (const form of forms) {
+
+		// 	// preenche formulario
+		// 	await this.formFiller.fill(form);
+		// }
+
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {
-			// registra observer
-			// const mutationObserverSentencesGenerator = new MutationObserverSentencesGenerator(
-			// 	form
-			// );
-			// console.log(
-			// 	'mutationObserverSentencesGenerator',
-			// 	mutationObserverSentencesGenerator
-			// );
-
 			// preenche formulario
 			await this.formFiller.fill(form);
-
-			// recebe mutacoes
-			// let mutations = mutationObserverSentencesGenerator.getMutations();
-			// console.log('mutations', mutations);
-
-			// mutationObserverSentencesGenerator.disconnect();
-
-			// Analise
-			// const spec = new Spec('pt-br');
-			// const specAnalyzed = this.FeatureAnalyzer.analyze(document.body, spec);
-			// console.log('specAnalyzed', specAnalyzed);
 		}
 
 		//this.closeWindow = true;
