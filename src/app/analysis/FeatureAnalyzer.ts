@@ -21,14 +21,7 @@ export class FeatureAnalyzer {
 		const title: HTMLElement | null = this.titleBeforeForm(f);
 
 		const feature = new Feature();
-		feature.setName(
-			title
-				? title.innerHTML
-				: this.generateFeatureName(
-						spec.getFeatures().length,
-						spec.language
-				  )
-		);
+		feature.setName(title ? title.innerHTML : this.generateFeatureName(spec.getFeatures().length, spec.language));
 
 		return feature;
 	}
@@ -44,13 +37,9 @@ export class FeatureAnalyzer {
 		let uiElement: UIElement | null = null;
 
 		if (element instanceof HTMLInputElement) {
-			uiElement = this.uiElementGenerator.createUIElementFromInput(
-				element
-			);
+			uiElement = this.uiElementGenerator.createUIElementFromInput(element);
 		} else if (element instanceof HTMLButtonElement) {
-			uiElement = this.uiElementGenerator.createUIElementFromButton(
-				element
-			);
+			uiElement = this.uiElementGenerator.createUIElementFromButton(element);
 		}
 
 		return uiElement;
@@ -64,21 +53,13 @@ export class FeatureAnalyzer {
 	}
 
 	createVariantSentence(uiElment: UIElement) {
-		const sentence = this.variantSentencesGenerator.generateVariantSentenceFromUIElement(
-			uiElment
-		);
+		const sentence = this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
 
 		return sentence;
 	}
 
-	createMutationVariantSentences(
-		uiElment: UIElement,
-		mutations: MutationRecord[]
-	): VariantSentence[] {
-		const mutationSentences = this.variantSentencesGenerator.generateVariantSentencesFromMutations(
-			uiElment,
-			mutations
-		);
+	createMutationVariantSentences(uiElment: UIElement, mutations: MutationRecord[]): VariantSentence[] {
+		const mutationSentences = this.variantSentencesGenerator.generateVariantSentencesFromMutations(uiElment, mutations);
 
 		return mutationSentences;
 	}
@@ -96,10 +77,7 @@ export class FeatureAnalyzer {
 		return null;
 	}
 
-	private generateFeatureName(
-		featureCount: number,
-		language: string
-	): string {
+	private generateFeatureName(featureCount: number, language: string): string {
 		const id = 1 + featureCount;
 		switch (language) {
 			case 'pt-br':

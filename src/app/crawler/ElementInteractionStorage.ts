@@ -8,10 +8,7 @@ export class ElementInteractionStorage {
 		this.document = document;
 	}
 
-	public save(
-		key: string,
-		elementInteraction: ElementInteraction<HTMLElement>
-	): void {
+	public save(key: string, elementInteraction: ElementInteraction<HTMLElement>): void {
 		const pathToElement = this.getPathTo(elementInteraction.getElement());
 		const eventType = elementInteraction.getEventType();
 		const value = elementInteraction.getValue();
@@ -30,9 +27,7 @@ export class ElementInteractionStorage {
 			};
 			window.localStorage.setItem(key, JSON.stringify(json));
 		} else {
-			throw new Error(
-				'Element Interaction could not be saved because it was not possible to get its xpath'
-			);
+			throw new Error('Element Interaction could not be saved because it was not possible to get its xpath');
 		}
 	}
 
@@ -67,26 +62,15 @@ export class ElementInteractionStorage {
 		key: string
 	): ElementInteraction<HTMLElement> | null {
 		const element = this.getElementByXpath(json.element, this.document);
-		const eventType = this.getEnumKeyByEnumValue(
-			HTMLEventType,
-			json.eventType
-		);
+		const eventType = this.getEnumKeyByEnumValue(HTMLEventType, json.eventType);
 		const pageUrl = json.pageUrl;
 		if (element && eventType) {
-			return new ElementInteraction(
-				element,
-				HTMLEventType[json.eventType],
-				new URL(pageUrl),
-				json.value,
-				key
-			);
+			return new ElementInteraction(element, HTMLEventType[json.eventType], new URL(pageUrl), json.value, key);
 		}
 		return null;
 	} // source https://stackoverflow.com/a/2631931/14729456
 
-	/* REFATORAR, colocar em util ou helper */ private getPathTo(
-		element: HTMLElement
-	): string | null {
+	/* REFATORAR, colocar em util ou helper */ private getPathTo(element: HTMLElement): string | null {
 		if (element.id !== '') return 'id("' + element.id + '")';
 		if (element === document.body) return element.tagName;
 
@@ -97,19 +81,8 @@ export class ElementInteractionStorage {
 			for (var i = 0; i < siblings.length; i++) {
 				var sibling = <HTMLElement>siblings[i];
 				if (sibling === element)
-					return (
-						this.getPathTo(<HTMLElement>parentNode) +
-						'/' +
-						element.tagName +
-						'[' +
-						(ix + 1) +
-						']'
-					);
-				if (
-					sibling.nodeType === 1 &&
-					sibling.tagName === element.tagName
-				)
-					ix++;
+					return this.getPathTo(<HTMLElement>parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
+				if (sibling.nodeType === 1 && sibling.tagName === element.tagName) ix++;
 			}
 		}
 
@@ -118,17 +91,8 @@ export class ElementInteractionStorage {
 
 	/* REFATORAR, colocar em util ou helper */
 
-	private getElementByXpath(
-		path: string,
-		document: HTMLDocument
-	): HTMLElement | null {
-		const node = document.evaluate(
-			path,
-			document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
+	private getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
+		const node = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 		if (node) {
 			return <HTMLElement>node;
 		}

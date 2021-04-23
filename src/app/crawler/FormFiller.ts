@@ -16,11 +16,7 @@ export class FormFiller {
 	private pageUrl: URL;
 	private spec: Spec;
 
-	constructor(
-		elementInteractionManager: ElementInteractionManager,
-		pageUrl: URL,
-		spec: Spec
-	) {
+	constructor(elementInteractionManager: ElementInteractionManager, pageUrl: URL, spec: Spec) {
 		this.radioGroupsAlreadyFilled = [];
 		this.elementInteractionManager = elementInteractionManager;
 		this.pageUrl = pageUrl;
@@ -45,27 +41,19 @@ export class FormFiller {
 			if (element instanceof HTMLInputElement) {
 				interaction = await this.fillInput(element);
 			} else if (element instanceof HTMLButtonElement) {
-				interaction = new ElementInteraction(
-					element,
-					HTMLEventType.Click,
-					this.pageUrl
-				);
+				interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
 				this.elementInteractionManager.execute(interaction);
 			}
 
 			if (!interaction) continue;
 
 			// analyzes the interaction
-			const uiElment = featureAnalyzer.createUiElment(
-				interaction.getElement()
-			);
+			const uiElment = featureAnalyzer.createUiElment(interaction.getElement());
 
 			if (uiElment !== null && uiElment !== undefined) {
 				feature.setUiElement(uiElment);
 
-				const variantSentence = featureAnalyzer.createVariantSentence(
-					uiElment
-				);
+				const variantSentence = featureAnalyzer.createVariantSentence(uiElment);
 
 				if (variantSentence !== null) {
 					variant.setVariantSentence(variantSentence);
@@ -74,10 +62,7 @@ export class FormFiller {
 				const mutations = observer.getMutations();
 
 				if (mutations.length > 0) {
-					const mutationSentences = featureAnalyzer.createMutationVariantSentences(
-						uiElment,
-						mutations
-					);
+					const mutationSentences = featureAnalyzer.createMutationVariantSentences(uiElment, mutations);
 
 					for (let sentence of mutationSentences) {
 						variant.setVariantSentence(sentence);
@@ -111,32 +96,22 @@ export class FormFiller {
 
 	//RADIO
 
-	private async fillRadioInput(
-		element: HTMLInputElement
-	): Promise<ElementInteraction<HTMLElement> | null> {
+	private async fillRadioInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement> | null> {
 		const name = element.getAttribute('name');
 		const form = element.form;
 		if (name && form) {
 			if (!this.radioGroupsAlreadyFilled.includes(name)) {
-				const radioGroup = this.getFormInputElementsByNameAttribute(
-					form,
-					name
-				);
+				const radioGroup = this.getFormInputElementsByNameAttribute(form, name);
 				if (radioGroup && radioGroup.length) {
 					const chosenRadio = this.chooseRadioButton(radioGroup);
 					if (chosenRadio) {
-						const interaction = new ElementInteraction<
-							HTMLInputElement
-						>(
+						const interaction = new ElementInteraction<HTMLInputElement>(
 							chosenRadio,
 							HTMLEventType.Change,
 							this.pageUrl,
 							chosenRadio.value
 						);
-						await this.elementInteractionManager.execute(
-							interaction,
-							true
-						);
+						await this.elementInteractionManager.execute(interaction, true);
 						this.radioGroupsAlreadyFilled.push(name);
 						return interaction;
 					}
@@ -146,9 +121,7 @@ export class FormFiller {
 		return null;
 	}
 
-	private chooseRadioButton(
-		radioGroup: HTMLInputElement[]
-	): HTMLInputElement | null {
+	private chooseRadioButton(radioGroup: HTMLInputElement[]): HTMLInputElement | null {
 		if (radioGroup.length) {
 			return radioGroup[0];
 		}
@@ -157,38 +130,21 @@ export class FormFiller {
 
 	//TEXT
 
-	private async fillTextInput(
-		element: HTMLInputElement
-	): Promise<ElementInteraction<HTMLElement>> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.pageUrl,
-			'teste'
-		);
+	private async fillTextInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement>> {
+		const interaction = new ElementInteraction<HTMLInputElement>(element, HTMLEventType.Change, this.pageUrl, 'teste');
 		await this.elementInteractionManager.execute(interaction, true);
 		return interaction;
 	}
 
 	//CHECKBOX
 
-	private async fillCheckboxInput(
-		element: HTMLInputElement
-	): Promise<ElementInteraction<HTMLElement>> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.pageUrl,
-			true
-		);
+	private async fillCheckboxInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement>> {
+		const interaction = new ElementInteraction<HTMLInputElement>(element, HTMLEventType.Change, this.pageUrl, true);
 		await this.elementInteractionManager.execute(interaction, true);
 		return interaction;
 	}
 
-	private getFormInputElementsByNameAttribute(
-		form: HTMLFormElement,
-		name: string
-	): HTMLInputElement[] {
+	private getFormInputElementsByNameAttribute(form: HTMLFormElement, name: string): HTMLInputElement[] {
 		const matchedInputs: HTMLInputElement[] = [];
 		const inputs = form.getElementsByTagName(HTMLElementType.Input);
 		for (const input of inputs) {

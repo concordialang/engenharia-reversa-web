@@ -1,7 +1,6 @@
 import cytoscape, { CytoscapeOptions, ElementDefinition } from 'cytoscape';
 
 export class Graph {
-
 	private graph: cytoscape.Core;
 
 	constructor(json?: object | string) {
@@ -14,88 +13,82 @@ export class Graph {
 	}
 
 	public addNode(key: string): void {
-		this.graph.add({group: 'nodes',data:{id:key}});
+		this.graph.add({ group: 'nodes', data: { id: key } });
 	}
 
 	public addEdge(from: string, to: string): void {
 		const adjacentNodes: Array<string> = this.getAdjacentNodes(from);
 		if (!adjacentNodes.includes(to)) {
-			this.graph.add({group: 'edges', data : {source: from, target: to}});
+			this.graph.add({ group: 'edges', data: { source: from, target: to } });
 		}
 	}
 
 	public getAllNodes(): Array<string> {
 		const nodes = this.graph.nodes();
-		const nodesIds : string[] = [];
-		nodes.each(function(node){
-			nodesIds.push(node.data("id"));
+		const nodesIds: string[] = [];
+		nodes.each(function (node) {
+			nodesIds.push(node.data('id'));
 		});
 		return nodesIds;
 	}
 
 	public getAdjacentNodes(key: string): Array<string> {
-		const nodesIds : string[] = [];
+		const nodesIds: string[] = [];
 		const nodes = this.graph.elements(`edge[source = "${key}"]`);
-		nodes.each(function(node){
-			nodesIds.push(node.data("target"));
+		nodes.each(function (node) {
+			nodesIds.push(node.data('target'));
 		});
 		return nodesIds;
 	}
 
 	public depthFirstSearch(): Array<string> {
-		const nodesIds : string[] = [];
+		const nodesIds: string[] = [];
 		const nodes = this.graph.nodes();
-		if(nodes.length > 0){
-			nodes.dfs({root:"node"}).path.each(function(node){
-				nodesIds.push(node.data("id"));
+		if (nodes.length > 0) {
+			nodes.dfs({ root: 'node' }).path.each(function (node) {
+				nodesIds.push(node.data('id'));
 			});
 		}
 		return nodesIds.reverse();
 	}
 
 	public serialize(): object {
-		const nodes : {id : string}[] = [];
-		const edges : {source : string, target: string}[] = [];
+		const nodes: { id: string }[] = [];
+		const edges: { source: string; target: string }[] = [];
 
 		this.graph.nodes().each((node) => {
-			nodes.push({id : node.data("id")});
+			nodes.push({ id: node.data('id') });
 		});
 
 		this.graph.edges().each((edge) => {
-			edges.push({source: edge.data("source"), target: edge.data("target")});
+			edges.push({ source: edge.data('source'), target: edge.data('target') });
 		});
 
-		return {links : edges , nodes : nodes};
+		return { links: edges, nodes: nodes };
 	}
 
 	private deserialize(json: object | string): CytoscapeOptions {
-
 		if (typeof json === 'string') {
 			json = JSON.parse(json);
 		}
 
 		const jsonEdges = json['links'];
 		const jsonNodes = json['nodes'];
-		if(Array.isArray(jsonEdges) && Array.isArray(jsonNodes)){
+		if (Array.isArray(jsonEdges) && Array.isArray(jsonNodes)) {
+			const elements: ElementDefinition[] = [];
 
-			const elements : ElementDefinition[] = [];
-
-			for(let jsonEdge of jsonEdges){
-				const edge = { data : {source : jsonEdge.source, target : jsonEdge.target} };
+			for (let jsonEdge of jsonEdges) {
+				const edge = { data: { source: jsonEdge.source, target: jsonEdge.target } };
 				elements.push(edge);
 			}
-			for(let jsonNode of jsonNodes){
-				const node = { data : {id : jsonNode.id} };
+			for (let jsonNode of jsonNodes) {
+				const node = { data: { id: jsonNode.id } };
 				elements.push(node);
 			}
 
-			return {elements : elements};
-
-
+			return { elements: elements };
 		} else {
-			throw new Error("Malformed Graph JSON");
+			throw new Error('Malformed Graph JSON');
 		}
-
 	}
-
 }

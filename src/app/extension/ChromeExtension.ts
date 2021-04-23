@@ -7,14 +7,9 @@ export class ChromeExtension implements Extension {
 	public sendMessageToTab(tabId: string, message: Message): Promise<void> {
 		return new Promise(function (resolve, reject) {
 			const options = new Object();
-			chrome.tabs.sendMessage(
-				Number(tabId),
-				message,
-				options,
-				function () {
-					resolve();
-				}
-			);
+			chrome.tabs.sendMessage(Number(tabId), message, options, function () {
+				resolve();
+			});
 		});
 	}
 
@@ -35,10 +30,7 @@ export class ChromeExtension implements Extension {
 		});
 	}
 
-	public setBrowserActionListener(
-		action: ExtensionBrowserAction,
-		callback: (tab: Tab) => void
-	): void {
+	public setBrowserActionListener(action: ExtensionBrowserAction, callback: (tab: Tab) => void): void {
 		const cb = function (tab: chrome.tabs.Tab) {
 			if (tab && tab.id) {
 				callback(new Tab(tab.id.toString()));
@@ -51,47 +43,44 @@ export class ChromeExtension implements Extension {
 		}
 	}
 
-	public reloadTab(tabId: string) : Promise<void> {
+	public reloadTab(tabId: string): Promise<void> {
 		console.log(tabId);
-		return new Promise(function(resolve){
-			chrome.tabs.reload(Number(tabId),{},function(){
+		return new Promise(function (resolve) {
+			chrome.tabs.reload(Number(tabId), {}, function () {
 				resolve();
 			});
 		});
 	}
 
-	public reload() : void {
+	public reload(): void {
 		chrome.runtime.reload();
 	}
 
-	public getFileSystemEntry(path : string) : Promise<FileEntry> {
-		return new Promise(function(resolve,reject){
-			chrome.runtime.getPackageDirectoryEntry (function(dir){
-				dir.getFile(path,{},function(file){
+	public getFileSystemEntry(path: string): Promise<FileEntry> {
+		return new Promise(function (resolve, reject) {
+			chrome.runtime.getPackageDirectoryEntry(function (dir) {
+				dir.getFile(path, {}, function (file) {
 					resolve(file);
 				});
 			});
 		});
 	}
 
-	public searchTab(queryInfo : Object) : Promise<Tab[]> {
-		return new Promise(resolve => {
-			chrome.tabs.query(queryInfo, tabs => {
-				resolve(tabs.reduce((mappedTabs : Tab[],tab) => {
-					if(tab.id) mappedTabs.push(new Tab(tab.id.toString()));
-					return mappedTabs;
-				},[]))
+	public searchTab(queryInfo: Object): Promise<Tab[]> {
+		return new Promise((resolve) => {
+			chrome.tabs.query(queryInfo, (tabs) => {
+				resolve(
+					tabs.reduce((mappedTabs: Tab[], tab) => {
+						if (tab.id) mappedTabs.push(new Tab(tab.id.toString()));
+						return mappedTabs;
+					}, [])
+				);
 			});
 		});
 	}
 
 	//procurar maneira mais correta de fazer que nao envolva ifs nem switch
-	private getChromeActionName(
-		action: ExtensionBrowserAction
-	): string | undefined {
-		if (action == ExtensionBrowserAction.ExtensionIconClicked)
-			return 'onClicked';
+	private getChromeActionName(action: ExtensionBrowserAction): string | undefined {
+		if (action == ExtensionBrowserAction.ExtensionIconClicked) return 'onClicked';
 	}
-
-
 }

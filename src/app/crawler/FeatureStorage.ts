@@ -58,15 +58,8 @@ export class FeatureStorage {
 	}
 
 	private createVariantSentence(json: object): VariantSentence {
-		const type: VariantSentenceType = this.getEnumKeyByEnumValue(
-			VariantSentenceType,
-			json['type']
-		);
-		const sentence: VariantSentence = new VariantSentence(
-			type,
-			json['action'],
-			json['targets']
-		);
+		const type: VariantSentenceType = this.getEnumKeyByEnumValue(VariantSentenceType, json['type']);
+		const sentence: VariantSentence = new VariantSentence(type, json['action'], json['targets']);
 		return sentence;
 	}
 

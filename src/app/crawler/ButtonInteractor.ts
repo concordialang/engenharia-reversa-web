@@ -11,10 +11,7 @@ export class ButtonInteractor implements ElementInteractor<HTMLButtonElement> {
 
 	//UTIL
 
-	private dispatchEvent(
-		element: HTMLElement,
-		eventType: HTMLEventType
-	): void {
+	private dispatchEvent(element: HTMLElement, eventType: HTMLEventType): void {
 		var evt = document.createEvent('HTMLEvents');
 		evt.initEvent(eventType, false, true);
 		element.dispatchEvent(evt);

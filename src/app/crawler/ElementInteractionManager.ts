@@ -43,16 +43,9 @@ export class ElementInteractionManager {
 		const element = interaction.getElement();
 		const type = element.tagName;
 		if (type == HTMLElementType.Input) {
-			this.inputInteractor.execute(
-				<ElementInteraction<HTMLInputElement>>interaction
-			);
-		} else if (
-			type == HTMLElementType.Button &&
-			element.getAttribute('type') != 'submit'
-		) {
-			this.buttonInteractor.execute(
-				<ElementInteraction<HTMLButtonElement>>interaction
-			);
+			this.inputInteractor.execute(<ElementInteraction<HTMLInputElement>>interaction);
+		} else if (type == HTMLElementType.Button && element.getAttribute('type') != 'submit') {
+			this.buttonInteractor.execute(<ElementInteraction<HTMLButtonElement>>interaction);
 		}
 		//Verificar se essa interação já foi salva ?
 		if (saveInteractionInGraph) {
@@ -61,22 +54,15 @@ export class ElementInteractionManager {
 			this.elementInteractionStorage.save(key, interaction);
 			this.lastInteraction = interaction;
 			this.mutex.lock().then(() => {
-				const graph = this.graphStorage.get(
-					this.elementInteractionGraphKey
-				);
+				const graph = this.graphStorage.get(this.elementInteractionGraphKey);
 				const depthFirstSearch = graph.depthFirstSearch();
 				if (depthFirstSearch.length) {
 					const lastInteractionId = depthFirstSearch[0];
 					if (lastInteractionId) {
 						this.addElementInteractionKeyToGraph(key);
-						this.addElementInteractionKeyLinkToGraph(
-							lastInteractionId,
-							key
-						);
+						this.addElementInteractionKeyLinkToGraph(lastInteractionId, key);
 					} else {
-						throw new Error(
-							'Last element interaction needs an id to be linked to the current element interaction'
-						);
+						throw new Error('Last element interaction needs an id to be linked to the current element interaction');
 					}
 				} else {
 					this.addElementInteractionKeyToGraph(key);
@@ -94,9 +80,7 @@ export class ElementInteractionManager {
 		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
-	public executeInteractions(
-		interactions: ElementInteraction<HTMLElement>[]
-	) {
+	public executeInteractions(interactions: ElementInteraction<HTMLElement>[]) {
 		for (const interaction of interactions) {
 			this.execute(interaction, false);
 		}
@@ -104,21 +88,14 @@ export class ElementInteractionManager {
 
 	//refatorar função
 	private addElementInteractionKeyToGraph(key: string): void {
-		let graph: Graph = this.graphStorage.get(
-			this.elementInteractionGraphKey
-		);
+		let graph: Graph = this.graphStorage.get(this.elementInteractionGraphKey);
 		graph.addNode(key);
 		this.graphStorage.save(this.elementInteractionGraphKey, graph);
 	}
 
 	//refatorar função
-	private addElementInteractionKeyLinkToGraph(
-		keyFrom: string,
-		keyTo: string
-	): void {
-		let graph: Graph = this.graphStorage.get(
-			this.elementInteractionGraphKey
-		);
+	private addElementInteractionKeyLinkToGraph(keyFrom: string, keyTo: string): void {
+		let graph: Graph = this.graphStorage.get(this.elementInteractionGraphKey);
 		graph.addEdge(keyFrom, keyTo);
 		this.graphStorage.save(this.elementInteractionGraphKey, graph);
 	}

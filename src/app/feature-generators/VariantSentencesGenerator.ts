@@ -7,9 +7,7 @@ import { VariantSentence } from '../feature-structure/VariantSentence';
 import { Util } from '../Util';
 
 export class VariantSentencesGenerator {
-	public generateVariantSentenceFromUIElement(
-		uiElment: UIElement
-	): VariantSentence | null {
+	public generateVariantSentenceFromUIElement(uiElment: UIElement): VariantSentence | null {
 		let type: string = '';
 		let target: string | null = null;
 		let editable: boolean | null = null;
@@ -32,11 +30,7 @@ export class VariantSentencesGenerator {
 			}
 		}
 
-		if (
-			!Util.isNotEmpty(target) ||
-			!Util.isNotEmpty(editable) ||
-			!Util.isNotEmpty(type)
-		) {
+		if (!Util.isNotEmpty(target) || !Util.isNotEmpty(editable) || !Util.isNotEmpty(type)) {
 			return null;
 		}
 
@@ -59,17 +53,12 @@ export class VariantSentencesGenerator {
 				break;
 		}
 
-		let sentence = new VariantSentence(VariantSentenceType.WHEN, action, [
-			'{' + target + '}',
-		]);
+		let sentence = new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']);
 
 		return sentence;
 	}
 
-	public generateVariantSentencesFromMutations(
-		uiElment: UIElement,
-		mutations
-	) {
+	public generateVariantSentencesFromMutations(uiElment: UIElement, mutations) {
 		let sentences: VariantSentence[] = [];
 
 		for (let mutation of mutations) {
@@ -78,45 +67,21 @@ export class VariantSentencesGenerator {
 					if (mutation.oldValue !== null) {
 						let oldValueArray = mutation.oldValue.split(':');
 						let attribute = oldValueArray[0];
-						let oldValue = oldValueArray[1]
-							.replace(';', '')
-							.replace(' ', '');
+						let oldValue = oldValueArray[1].replace(';', '').replace(' ', '');
 
 						if (attribute === 'display') {
-							if (
-								oldValue === 'none' &&
-								mutation.target.style.display === 'block'
-							) {
-								console.log(
-									'E eu vejo o elemento {#' +
-										mutation.target.id +
-										'}'
-								);
+							if (oldValue === 'none' && mutation.target.style.display === 'block') {
+								console.log('E eu vejo o elemento {#' + mutation.target.id + '}');
 								//gerar nome para mutacao
 								sentences.push(
-									new VariantSentence(
-										VariantSentenceType.WHEN,
-										VariantSentenceActions.SEE,
-										['{' + mutation.target.id + '}']
-									)
+									new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.SEE, ['{' + mutation.target.id + '}'])
 								);
 							}
 
-							if (
-								oldValue === 'block' &&
-								mutation.target.style.display === 'none'
-							) {
-								console.log(
-									'E eu não vejo o elemento {#' +
-										mutation.target.id +
-										'}'
-								);
+							if (oldValue === 'block' && mutation.target.style.display === 'none') {
+								console.log('E eu não vejo o elemento {#' + mutation.target.id + '}');
 								sentences.push(
-									new VariantSentence(
-										VariantSentenceType.WHEN,
-										VariantSentenceActions.NOTSEE,
-										['{' + mutation.target.id + '}']
-									)
+									new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.NOTSEE, ['{' + mutation.target.id + '}'])
 								);
 							}
 						}

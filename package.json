@@ -31,7 +31,11 @@
 		"preset": "ts-jest",
 		"testEnvironment": "jsdom"
 	},
-	"husky": {},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
 	"lint-staged": {
 		"*.{ts,js,json,css,md}": [
 			"prettier ./ --write"

@@ -4,18 +4,18 @@ const srcDir = '../src/';
 const CreateFileWebpack = require('create-file-webpack');
 
 // vue.config.js
-const ArbitraryCodeAfterReload = function(cb) {
-	this.apply = function(compiler) {
-	  if (compiler.hooks && compiler.hooks.done) {
-		  console.log("23423342");
-		compiler.hooks.done.tap('webpack-arbitrary-code', cb);
-	  }
+const ArbitraryCodeAfterReload = function (cb) {
+	this.apply = function (compiler) {
+		if (compiler.hooks && compiler.hooks.done) {
+			console.log('23423342');
+			compiler.hooks.done.tap('webpack-arbitrary-code', cb);
+		}
 	};
-  };
-  
-  const myCallback = function() {
+};
+
+const myCallback = function () {
 	console.log('Implementing alien intelligence');
-  };
+};
 
 module.exports = {
 	entry: {
@@ -25,15 +25,15 @@ module.exports = {
 	output: {
 		path: path.join(__dirname, '../dist'),
 		filename: '[name].js',
-		sourceMapFilename: "[name].js.map"
+		sourceMapFilename: '[name].js.map',
 	},
 	optimization: {
 		splitChunks: {
 			cacheGroups: {
-				default: false
-			}
+				default: false,
+			},
 		},
-		runtimeChunk : false
+		runtimeChunk: false,
 	},
 	module: {
 		rules: [
@@ -54,7 +54,7 @@ module.exports = {
 			// file name
 			fileName: 'reload',
 			// content of the file
-			content: ''
-		})
-	]
+			content: '',
+		}),
+	],
 };

@@ -41,11 +41,7 @@ const elementInteractionManager = new ElementInteractionManager(
 	interactionsGraphMutex
 );
 const pageUrl: URL = new URL(window.location.href);
-const formFiller: FormFiller = new FormFiller(
-	elementInteractionManager,
-	pageUrl,
-	spec
-);
+const formFiller: FormFiller = new FormFiller(elementInteractionManager, pageUrl, spec);
 const crawler: Crawler = new Crawler(
 	document,
 	pageUrl,

@@ -13,9 +13,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 	}
 
 	//se o sender foi a propria extensão, sender vem undefined
-	public setMessageListener(
-		callback: (message: Message, sender?: Tab) => void
-	): void {
+	public setMessageListener(callback: (message: Message, sender?: Tab) => void): void {
 		//criando função no formato que a interface do chrome espera
 		const _this = this;
 		const cb = function (
@@ -23,11 +21,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 			sender: chrome.runtime.MessageSender,
 			sendResponse: (response?: any) => void
 		) {
-			const actions:
-				| Array<Command>
-				| Array<AppEvent> = message.actions.map((action) =>
-				_this.mapToActionEnum(action)
-			);
+			const actions: Array<Command> | Array<AppEvent> = message.actions.map((action) => _this.mapToActionEnum(action));
 			const messageObj = new Message(actions, message.extra);
 
 			//se mensagem veio de uma tab, sender.tab é preenchido pelo chrome, se não, veio da extensão

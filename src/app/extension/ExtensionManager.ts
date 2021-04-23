@@ -15,11 +15,7 @@ export class ExtensionManager {
 	private openedTabsLimit: number;
 	private extensionIsEnabled: boolean;
 
-	constructor(
-		extension: Extension,
-		communicationChannel: CommunicationChannel,
-		openedTabsLimit: number
-	) {
+	constructor(extension: Extension, communicationChannel: CommunicationChannel, openedTabsLimit: number) {
 		this.openedTabs = [];
 		this.extension = extension;
 		this.communicationChannel = communicationChannel;
@@ -31,29 +27,22 @@ export class ExtensionManager {
 
 	public setup(): void {
 		let _this = this;
-		this.extension.setBrowserActionListener(
-			ExtensionBrowserAction.ExtensionIconClicked,
-			function (tab: Tab) {
-				if (!_this.extensionIsEnabled) {
-					_this.extensionIsEnabled = true;
-					_this.openedTabs.push(tab);
-					_this.openedTabsCounter++;
-					_this.sendOrderToCrawlTab(tab, true);
-				} else {
-					_this.extensionIsEnabled = false;
-				}
+		this.extension.setBrowserActionListener(ExtensionBrowserAction.ExtensionIconClicked, function (tab: Tab) {
+			if (!_this.extensionIsEnabled) {
+				_this.extensionIsEnabled = true;
+				_this.openedTabs.push(tab);
+				_this.openedTabsCounter++;
+				_this.sendOrderToCrawlTab(tab, true);
+			} else {
+				_this.extensionIsEnabled = false;
 			}
-		);
+		});
 
-		this.communicationChannel.setMessageListener(function (
-			message: Message,
-			sender?: Tab
-		) {
+		this.communicationChannel.setMessageListener(function (message: Message, sender?: Tab) {
 			if (_this.extensionIsEnabled) {
 				if (message.includesAction(Command.OpenNewTab)) {
 					const extra = message.getExtra();
-					if (extra && extra.url)
-						_this.openNewTab(new URL(extra.url));
+					if (extra && extra.url) _this.openNewTab(new URL(extra.url));
 				} else if (
 					message.includesAction(AppEvent.Loaded) &&
 					sender instanceof Tab &&
@@ -64,7 +53,6 @@ export class ExtensionManager {
 				}
 			}
 		});
-
 	}
 
 	public openNewTab(url: URL): void {
@@ -90,10 +78,7 @@ export class ExtensionManager {
 			commands.push(Command.CleanGraph);
 		}
 		let idTab = tab.getId() ?? 0;
-		const promise: Promise<void> = this.extension.sendMessageToTab(
-			idTab.toString(),
-			new Message(commands)
-		);
+		const promise: Promise<void> = this.extension.sendMessageToTab(idTab.toString(), new Message(commands));
 		const _this = this;
 		// promise.then(function () {
 		// 	_this.removeTab(tab);

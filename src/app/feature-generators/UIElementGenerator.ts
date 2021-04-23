@@ -8,11 +8,7 @@ import { Util } from '../Util';
 export class UIElementGenerator {
 	private checkValidNode(node: HTMLElement): boolean {
 		// return false if node is not treatable for UIElement
-		if (
-			node.nodeName !== NodeTypes.INPUT &&
-			node.nodeName !== NodeTypes.SELECT &&
-			node.nodeName !== NodeTypes.TEXTAREA
-		) {
+		if (node.nodeName !== NodeTypes.INPUT && node.nodeName !== NodeTypes.SELECT && node.nodeName !== NodeTypes.TEXTAREA) {
 			return false;
 		}
 
@@ -199,12 +195,9 @@ export class UIElementGenerator {
 			name = this.generateNameFromLabel(elm as HTMLInputElement);
 		} else if (
 			elm.parentElement?.nodeName === NodeTypes.DIV &&
-			elm.parentElement?.previousElementSibling?.nodeName ===
-				NodeTypes.LABEL
+			elm.parentElement?.previousElementSibling?.nodeName === NodeTypes.LABEL
 		) {
-			name = this.generateNameFromLabel(
-				elm.parentElement as HTMLInputElement
-			);
+			name = this.generateNameFromLabel(elm.parentElement as HTMLInputElement);
 		} else {
 			name = this.generateNameFromNode(elm);
 		}

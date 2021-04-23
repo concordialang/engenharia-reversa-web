@@ -111,18 +111,10 @@ describe('Graph', () => {
 		expect(nodes.includes(url3)).toBe(true);
 		expect(nodes.length).toBe(3);
 
-		expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(
-			true
-		);
+		expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(true);
 	});
 
 	it('creates graph instance from json string', () => {
@@ -139,17 +131,9 @@ describe('Graph', () => {
 		expect(nodes.includes(url2)).toBe(true);
 		expect(nodes.includes(url3)).toBe(true);
 
-		expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(
-			true
-		);
-		expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(
-			true
-		);
+		expect(deserializedGraph.getAdjacentNodes(url1).includes(url2)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url1).includes(url3)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url2).includes(url3)).toBe(true);
+		expect(deserializedGraph.getAdjacentNodes(url3).includes(url1)).toBe(true);
 	});
 });

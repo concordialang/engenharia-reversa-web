@@ -20,18 +20,12 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 
 	//RADIO
 
-	private fillRadioInput(
-		interaction: ElementInteraction<HTMLInputElement>
-	): void {
+	private fillRadioInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const element = interaction.getElement();
 		const name = element.getAttribute('name');
 		const value = interaction.getValue();
 		if (name && element.form && value) {
-			const radioGroup = this.getFormInputElementsByNameAttributeAndValue(
-				element.form,
-				name,
-				String(value)
-			);
+			const radioGroup = this.getFormInputElementsByNameAttributeAndValue(element.form, name, String(value));
 			if (radioGroup && radioGroup.length) {
 				const chosenRadio = radioGroup[0];
 				if (chosenRadio) {
@@ -44,9 +38,7 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 
 	//TEXT
 
-	private fillTextInput(
-		interaction: ElementInteraction<HTMLInputElement>
-	): void {
+	private fillTextInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const value = interaction.getValue();
 		if (value) {
 			const element = interaction.getElement();
@@ -61,9 +53,7 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 
 	//CHECKBOX
 
-	private fillCheckboxInput(
-		interaction: ElementInteraction<HTMLInputElement>
-	): void {
+	private fillCheckboxInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const value = interaction.getValue();
 		if (value) {
 			const element = interaction.getElement();
@@ -74,10 +64,7 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 
 	//UTIL
 
-	private dispatchEvent(
-		element: HTMLElement,
-		eventType: HTMLEventType
-	): void {
+	private dispatchEvent(element: HTMLElement, eventType: HTMLEventType): void {
 		var evt = document.createEvent('HTMLEvents');
 		evt.initEvent(eventType, false, true);
 		element.dispatchEvent(evt);
@@ -93,12 +80,7 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 		for (const input of inputs) {
 			const inputNameAttr = input.getAttribute('name');
 			const inputValue = input.getAttribute('value');
-			if (
-				inputNameAttr &&
-				inputNameAttr == name &&
-				inputValue &&
-				inputValue == value
-			) {
+			if (inputNameAttr && inputNameAttr == name && inputValue && inputValue == value) {
 				matchedInputs.push(input as HTMLInputElement);
 			}
 		}

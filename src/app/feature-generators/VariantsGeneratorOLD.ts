@@ -7,10 +7,7 @@ import { VariantSentence } from '../feature-structure/VariantSentence';
 import { Util } from '../Util';
 
 export class VariantSentencesGenerator {
-	public generateVariantFromUIElements(
-		uiElements: Array<UIElement>,
-		onlyMandatoryElements: boolean = false
-	): Variant {
+	public generateVariantFromUIElements(uiElements: Array<UIElement>, onlyMandatoryElements: boolean = false): Variant {
 		let variant = new Variant();
 
 		for (let uiElm of uiElements) {
@@ -43,11 +40,7 @@ export class VariantSentencesGenerator {
 				}
 			}
 
-			if (
-				!Util.isNotEmpty(target) ||
-				!Util.isNotEmpty(editable) ||
-				!Util.isNotEmpty(type)
-			) {
+			if (!Util.isNotEmpty(target) || !Util.isNotEmpty(editable) || !Util.isNotEmpty(type)) {
 				continue;
 			}
 
@@ -70,20 +63,13 @@ export class VariantSentencesGenerator {
 					break;
 			}
 
-			variant.setVariantSentence(
-				new VariantSentence(VariantSentenceType.WHEN, action, [
-					'{' + target + '}',
-				])
-			);
+			variant.setVariantSentence(new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']));
 		}
 
 		return variant;
 	}
 
-	public generateVariantSentenceFromUIElement(
-		variant: Variant,
-		uiElment: UIElement
-	): Variant {
+	public generateVariantSentenceFromUIElement(variant: Variant, uiElment: UIElement): Variant {
 		return variant;
 	}
 }
