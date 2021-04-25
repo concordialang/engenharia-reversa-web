@@ -1,12 +1,36 @@
 import { HTMLEventType } from '../html/HTMLEventType';
+import { Util } from '../Util';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractor } from './ElementInteractor';
+import { InteractionResult } from './InteractionResult';
 
 export class ButtonInteractor implements ElementInteractor<HTMLButtonElement> {
-	public execute(interaction: ElementInteraction<HTMLButtonElement>): void {
-		const element = interaction.getElement();
-		element.click();
-		this.dispatchEvent(element, HTMLEventType.Click);
+	private document: HTMLDocument;
+
+	constructor(document: HTMLDocument) {
+		this.document = document;
+	}
+
+	public execute(interaction: ElementInteraction<HTMLButtonElement>): Promise<InteractionResult> {
+		return new Promise((resolve) => {
+			const element = interaction.getElement();
+			let triggeredUnload = false;
+			document.addEventListener(HTMLEventType.Unload, () => {
+				triggeredUnload = true;
+			});
+			element.click();
+			this.dispatchEvent(element, HTMLEventType.Click);
+
+			let timePassed = 0;
+			const timeLimit = 300;
+			const timeBetweenChecks = 5;
+			while (timePassed < timeLimit) {
+				if (triggeredUnload) resolve(new InteractionResult(true));
+				timePassed += timeBetweenChecks;
+				Util.sleep(timeBetweenChecks);
+			}
+			resolve(new InteractionResult(false));
+		});
 	}
 
 	//UTIL

@@ -3,19 +3,25 @@ import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractor } from './ElementInteractor';
+import { InteractionResult } from './InteractionResult';
 
 export class InputInteractor implements ElementInteractor<HTMLInputElement> {
-	public execute(interaction: ElementInteraction<HTMLInputElement>): void {
-		const input = interaction.getElement();
-		const type = input.getAttribute('type');
+	public execute(interaction: ElementInteraction<HTMLInputElement>): Promise<InteractionResult> {
+		return new Promise((resolve) => {
+			const input = interaction.getElement();
+			const type = input.getAttribute('type');
 
-		if (type == HTMLInputType.Text) {
-			this.fillTextInput(interaction);
-		} else if (type == HTMLInputType.Radio) {
-			this.fillRadioInput(interaction);
-		} else if (type == HTMLInputType.Checkbox) {
-			this.fillCheckboxInput(interaction);
-		}
+			if (type == HTMLInputType.Text) {
+				this.fillTextInput(interaction);
+			} else if (type == HTMLInputType.Radio) {
+				this.fillRadioInput(interaction);
+			} else if (type == HTMLInputType.Checkbox) {
+				this.fillCheckboxInput(interaction);
+			}
+
+			//refatorar para verificar se causou redirecionamento
+			resolve(new InteractionResult(false));
+		});
 	}
 
 	//RADIO

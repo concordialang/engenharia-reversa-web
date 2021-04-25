@@ -28,7 +28,7 @@ const elementInteractionGraphKey = 'interactions-graph';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
 const inputInteractor = new InputInteractor();
-const buttonInteractor = new ButtonInteractor();
+const buttonInteractor = new ButtonInteractor(document);
 const elementInteracationStorage = new ElementInteractionStorage(document);
 const spec: Spec = new Spec('pt-br');
 

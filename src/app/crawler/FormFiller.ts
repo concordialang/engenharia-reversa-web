@@ -7,6 +7,7 @@ import { InputInteractor } from './InputInteractor';
 import { Spec } from '../analysis/Spec';
 import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
 import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
+import { InteractionResult } from './InteractionResult';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -39,10 +40,18 @@ export class FormFiller {
 			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
 			if (element instanceof HTMLInputElement) {
-				interaction = await this.fillInput(element);
+				interaction = this.generateInputInteraction(element);
 			} else if (element instanceof HTMLButtonElement) {
 				interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
-				this.elementInteractionManager.execute(interaction);
+			}
+
+			if (interaction) {
+				const result = await this.elementInteractionManager.execute(interaction);
+				if (result) {
+					if (result.getTriggeredRedirection()) {
+						break;
+					}
+				}
 			}
 
 			if (!interaction) continue;
@@ -83,20 +92,21 @@ export class FormFiller {
 		this.radioGroupsAlreadyFilled = [];
 	}
 
-	private async fillInput(input: HTMLInputElement) {
+	private generateInputInteraction(input: HTMLInputElement): ElementInteraction<HTMLInputElement> | null {
 		const type = input.getAttribute('type');
 		if (type == HTMLInputType.Text) {
-			return await this.fillTextInput(input);
+			return this.generateTextInputInteraction(input);
 		} else if (type == HTMLInputType.Radio) {
-			return await this.fillRadioInput(input);
+			return this.generateRadioInputInteraction(input);
 		} else if (type == HTMLInputType.Checkbox) {
-			return await this.fillCheckboxInput(input);
+			return this.generateCheckboxInputInteraction(input);
 		}
+		return null;
 	}
 
 	//RADIO
 
-	private async fillRadioInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement> | null> {
+	private generateRadioInputInteraction(element: HTMLInputElement): ElementInteraction<HTMLInputElement> | null {
 		const name = element.getAttribute('name');
 		const form = element.form;
 		if (name && form) {
@@ -111,7 +121,6 @@ export class FormFiller {
 							this.pageUrl,
 							chosenRadio.value
 						);
-						await this.elementInteractionManager.execute(interaction, true);
 						this.radioGroupsAlreadyFilled.push(name);
 						return interaction;
 					}
@@ -130,17 +139,15 @@ export class FormFiller {
 
 	//TEXT
 
-	private async fillTextInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement>> {
+	private generateTextInputInteraction(element: HTMLInputElement): ElementInteraction<HTMLInputElement> {
 		const interaction = new ElementInteraction<HTMLInputElement>(element, HTMLEventType.Change, this.pageUrl, 'teste');
-		await this.elementInteractionManager.execute(interaction, true);
 		return interaction;
 	}
 
 	//CHECKBOX
 
-	private async fillCheckboxInput(element: HTMLInputElement): Promise<ElementInteraction<HTMLElement>> {
+	private generateCheckboxInputInteraction(element: HTMLInputElement): ElementInteraction<HTMLInputElement> {
 		const interaction = new ElementInteraction<HTMLInputElement>(element, HTMLEventType.Change, this.pageUrl, true);
-		await this.elementInteractionManager.execute(interaction, true);
 		return interaction;
 	}
 

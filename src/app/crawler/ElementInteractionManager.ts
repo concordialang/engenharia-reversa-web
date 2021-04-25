@@ -8,6 +8,7 @@ import { Mutex } from '../mutex/Mutex';
 import { Graph } from '../graph/Graph';
 import { InputInteractor } from './InputInteractor';
 import { ButtonInteractor } from './ButtonInteractor';
+import { InteractionResult } from './InteractionResult';
 
 export class ElementInteractionManager {
 	private inputInteractor: InputInteractor;
@@ -38,14 +39,15 @@ export class ElementInteractionManager {
 	public async execute(
 		interaction: ElementInteraction<HTMLElement>,
 		saveInteractionInGraph: boolean = true
-	): Promise<void> {
+	): Promise<InteractionResult | null> {
 		await this.delay(400);
 		const element = interaction.getElement();
 		const type = element.tagName;
+		let result: InteractionResult | null = null;
 		if (type == HTMLElementType.Input) {
-			this.inputInteractor.execute(<ElementInteraction<HTMLInputElement>>interaction);
+			result = await this.inputInteractor.execute(<ElementInteraction<HTMLInputElement>>interaction);
 		} else if (type == HTMLElementType.Button && element.getAttribute('type') != 'submit') {
-			this.buttonInteractor.execute(<ElementInteraction<HTMLButtonElement>>interaction);
+			result = await this.buttonInteractor.execute(<ElementInteraction<HTMLButtonElement>>interaction);
 		}
 		//Verificar se essa interação já foi salva ?
 		if (saveInteractionInGraph) {
@@ -70,6 +72,8 @@ export class ElementInteractionManager {
 				return this.mutex.unlock();
 			});
 		}
+
+		return result;
 	}
 
 	public getLastInteraction(): ElementInteraction<HTMLElement> | null {
