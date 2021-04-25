@@ -1,3 +1,4 @@
+import { Util } from '../Util';
 import { Extension } from './Extension';
 
 export class CodeChangeMonitor {
@@ -11,14 +12,11 @@ export class CodeChangeMonitor {
 
 	public async checkForModification(callback: Function) {
 		while (true) {
-			await sleep(5);
+			await Util.sleep(5);
 			const wasModified = await this.wasCodeModified();
 			if (wasModified) {
 				callback();
 			}
-		}
-		function sleep(ms) {
-			return new Promise((resolve) => setTimeout(resolve, ms));
 		}
 	}
 

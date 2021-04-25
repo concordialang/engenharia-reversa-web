@@ -12,4 +12,8 @@ export class Util {
 
 		return true;
 	}
+
+	static sleep(ms) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	}
 }
