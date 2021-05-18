@@ -1,4 +1,5 @@
 import { DiffDOM } from "diff-dom";
+import getXPath from 'get-xpath';
 
 export class DiffDomManipulator {
     
@@ -47,8 +48,21 @@ export class DiffDomManipulator {
         return this.diffDom;
     }
 
+    public getPreviousHtml(): HTMLElement{
+        return this.previousHtml;
+    }
+
+    public getCurrentHtml(): HTMLElement{
+        return this.currentHtml;
+    }
+
     // returns the parent of the element that has changed
-    public getFirstElementDiffParent(): HTMLElement | null {
+    public getXPathParentFirstElementDiff(): string | null {
+
+        if(this.diffDom[0] == undefined){
+            return null;
+        }
+
         let firstElementDiff = this.diffDom[0];
 
         // find the first element of the DiffDOM in current html
@@ -57,6 +71,7 @@ export class DiffDomManipulator {
             htmlElement = htmlElement.childNodes[firstElementDiff.route[i]];
         }
 
-        return htmlElement.parentElement;
+        return getXPath(htmlElement.parentElement);
+
     }
 }

@@ -18,7 +18,7 @@ import { FormFiller } from './FormFiller';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
 import { DiffDomManipulator } from "../analysis/DiffDomManipulator";
-
+import { NodeTypes } from '../node/NodeTypes';
 
 
 //classe deve ser refatorada
@@ -70,52 +70,51 @@ export class Crawler {
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 
 		const previousDoc = document.implementation.createHTMLDocument();
-		previousDoc.body.innerHTML += 
-            `<header id="menu">
-				<button id="alert">Alert</button>
-				<button id="confirm">Confirm</button>
-				<button id="prompt">Prompt</button>
-				<button id="teste">teste</button>
-			</header>
+		// previousDoc.body.innerHTML += 
+        //     `<header id="menu">
+		// 		<button id="alert">Alert</button>
+		// 		<button id="confirm">Confirm</button>
+		// 		<button id="prompt">Prompt</button>
+		// 		<button id="teste">teste</button>
+		// 	</header>
 		
-			<section>
-				<form action="" method="POST">
-					<ul>
-					<li>
-						<label for="name">Name:</label>
-						<input type="text" id="name" name="user_name">
-					</li>
-					<li>
-						<label for="mail">E-mail:</label>
-						<input type="text" id="mail" name="user_email">
-					</li>
-					<li>
-						<label for="msg">Message:</label>
-						<input type="text" id="msg" name="user_message"></input>
-					</li>
-					<li class="button">
-						<button type="submit">Send your message</button>
-						</li>
-					</ul>
-				</form>
-			</section>
+		// 	<section>
+		// 		<form action="" method="POST">
+		// 			<ul>
+		// 			<li>
+		// 				<label for="name">Name:</label>
+		// 				<input type="text" id="name" name="user_name">
+		// 			</li>
+		// 			<li>
+		// 				<label for="mail">E-mail:</label>
+		// 				<input type="text" id="mail" name="user_email">
+		// 			</li>
+		// 			<li>
+		// 				<label for="msg">Message:</label>
+		// 				<input type="text" id="msg" name="user_message"></input>
+		// 			</li>
+		// 			<li class="button">
+		// 				<button type="submit">Send your message</button>
+		// 				</li>
+		// 			</ul>
+		// 		</form>
+		// 	</section>
 		
-			<footer>
-				<p>Footer<p>
-			</footer>`;
+		// 	<footer>
+		// 		<p>Footer<p>
+		// 	</footer>`;
 
-		const currentDoc = document.implementation.createHTMLDocument();
-		currentDoc.body.innerHTML += 
-            `<header id="menu">
+		previousDoc.body.innerHTML += 
+			`<header id="menu">
 				<button id="alert">Alert</button>
 				<button id="confirm">Confirm</button>
 				<button id="prompt">Prompt</button>
 				<button id="teste">teste</button>
 			</header>
-		
+
 			<section>
-				<form method="POST" 	action="">
-					<label for="fname">First name:</label><br>
+				<form action="" method="POST" id="funcionalidade">
+					<label for="fnamee">First name:</label><br>
 					<input type="text" id="fname" name="fname"><br>
 			
 					<label for="lname">Last name:</label><br>
@@ -155,25 +154,42 @@ export class Crawler {
 					<input type="submit" value="Submit">
 				</form>
 			</section>
-		
+
 			<footer id="footer">
 				<p>Footer</p>
 			</footer>`;
 
-		console.log("previousDoc body", previousDoc.body);
-		console.log("currentDoc body", currentDoc.body);
-		let diffDomManipulator = new DiffDomManipulator(previousDoc.body, currentDoc.body);
-		let parentElementDiff = diffDomManipulator.getFirstElementDiffParent();
-		console.log("parent", parentElementDiff);
-		// dd.apply(html1, diff);
+		let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
+		let xPathParentElementDiff = diffDomManipulator.getXPathParentFirstElementDiff();
+		console.log("xPathParentElementDiff", xPathParentElementDiff);
 
-		// const forms = this.document.getElementsByTagName('form');
-		// for (const form of forms) {
-		// 	// preenche formulario
-		// 	await this.formFiller.fill(form);
-		// }
+		if(xPathParentElementDiff !== null){
+			let xpathResult = this.document.evaluate(
+				xPathParentElementDiff,
+				this.document,
+				null,
+				XPathResult.FIRST_ORDERED_NODE_TYPE, 
+				null
+			);
 
-		//this.closeWindow = true;
+			if(xpathResult.singleNodeValue !== null){
+				const analysisElement = xpathResult.singleNodeValue as HTMLElement;
+				console.log("analysisElement", analysisElement.nodeName);
+				
+				if(analysisElement.nodeName === NodeTypes.FORM){
+					this.formFiller.fill(analysisElement as HTMLFormElement);
+				} else {
+					const forms = analysisElement.getElementsByTagName('form');
+					console.log("forms", forms)
+					for (const form of forms) {
+						await this.formFiller.fill(form);
+					}
+				}
+				
+			}
+		}
+
+		this.closeWindow = true;
 	}
 
 	private searchForLinks(): HTMLCollectionOf<HTMLAnchorElement> {
