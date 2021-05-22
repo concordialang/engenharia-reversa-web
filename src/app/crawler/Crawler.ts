@@ -65,11 +65,68 @@ export class Crawler {
 		this.formFiller = formFiller;
 	}
 
+	// find common parent of two html elements 
+	private commonParent(a, b){
+		var pa: any = [], L;
+		while(a){
+			pa[pa.length]=a;
+			a= a.parentNode;
+		}
+
+		L=pa.length;
+
+		while(b){  
+			for(var i=0; i<L; i++){
+				if(pa[i]==b) return b;
+			}
+
+			b= b.parentNode;
+		}
+	}
+
 	public async crawl() {
 		this.addUrlToGraph(this.pageUrl);
 		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 
 		const previousDoc = document.implementation.createHTMLDocument();
+		previousDoc.body.innerHTML += 
+            `<header id="menu">
+				<button id="alert">Alert</button>
+				<button id="confirm">Confirm</button>
+				<button id="prompt">Prompt</button>
+				<button id="teste">teste</button>
+			</header>
+		
+			<section>
+				<div>
+					<div>
+						<label id='labelteste' for="fname">First name:</label><br>
+						<input type="text" id="fname" name="fname"><br>
+					</div>
+					<ul>
+						<li>
+							<label for="name">Name:</label>
+							<input type="text" id="name" name="user_name">
+						</li>
+						<li>
+							<label for="mail">E-mail:</label>
+							<input type="text" id="mail" name="user_email">
+						</li>
+						<li>
+							<label for="msg">Message:</label>
+							<input type="text" id="msg" name="user_message"></input>
+						</li>
+						<li class="button">
+							<button type="submit">Send your message</button>
+						</li>
+					</ul>
+				</div>
+			</section>
+		
+			<footer>
+				<p>Footer<p>
+			</footer>`;
+
 		// previousDoc.body.innerHTML += 
         //     `<header id="menu">
 		// 		<button id="alert">Alert</button>
@@ -81,20 +138,20 @@ export class Crawler {
 		// 	<section>
 		// 		<form action="" method="POST">
 		// 			<ul>
-		// 			<li>
-		// 				<label for="name">Name:</label>
-		// 				<input type="text" id="name" name="user_name">
-		// 			</li>
-		// 			<li>
-		// 				<label for="mail">E-mail:</label>
-		// 				<input type="text" id="mail" name="user_email">
-		// 			</li>
-		// 			<li>
-		// 				<label for="msg">Message:</label>
-		// 				<input type="text" id="msg" name="user_message"></input>
-		// 			</li>
-		// 			<li class="button">
-		// 				<button type="submit">Send your message</button>
+		// 				<li>
+		// 					<label for="name">Name:</label>
+		// 					<input type="text" id="name" name="user_name">
+		// 				</li>
+		// 				<li>
+		// 					<label for="mail">E-mail:</label>
+		// 					<input type="text" id="mail" name="user_email">
+		// 				</li>
+		// 				<li>
+		// 					<label for="msg">Message:</label>
+		// 					<input type="text" id="msg" name="user_message"></input>
+		// 				</li>
+		// 				<li class="button">
+		// 					<button type="submit">Send your message</button>
 		// 				</li>
 		// 			</ul>
 		// 		</form>
@@ -104,92 +161,127 @@ export class Crawler {
 		// 		<p>Footer<p>
 		// 	</footer>`;
 
-		previousDoc.body.innerHTML += 
-			`<header id="menu">
-				<button id="alert">Alert</button>
-				<button id="confirm">Confirm</button>
-				<button id="prompt">Prompt</button>
-				<button id="teste">teste</button>
-			</header>
+		// previousDoc.body.innerHTML += 
+		// 	`<header id="menu">
+		// 		<button id="alert">Alert</button>
+		// 		<button id="confirm">Confirm</button>
+		// 		<button id="prompt">Prompt</button>
+		// 		<button id="teste">teste</button>
+		// 	</header>
 
-			<section>
-				<form action="" method="POST" id="funcionalidade">
-					<label for="fnamee">First name:</label><br>
-					<input type="text" id="fname" name="fname"><br>
+		// 	<section>
+		// 		<form action="" method="POST" id="funcionalidade">
+		// 			<label for="fnamee">First name:</label><br>
+		// 			<input type="text" id="fname" name="fname"><br>
 			
-					<label for="lname">Last name:</label><br>
-					<input type="text" id="lname" name="lname"><br><br>
+		// 			<label for="lname">Last name:</label><br>
+		// 			<input type="text" id="lname" name="lname"><br><br>
 			
-					<button id="outro-form" type="button">Outro Formulario</button><br><br>
+		// 			<button id="outro-form" type="button">Outro Formulario</button><br><br>
 			
-					<input type="radio" id="male" name="gender" value="male">
-					<label for="male">Male</label><br>
-					<input type="radio" id="female" name="gender" value="female">
-					<label for="female">Female</label><br>
-					<input type="radio" id="other" name="gender" value="other">
-					<label for="other">Other</label><br><br>
+		// 			<input type="radio" id="male" name="gender" value="male">
+		// 			<label for="male">Male</label><br>
+		// 			<input type="radio" id="female" name="gender" value="female">
+		// 			<label for="female">Female</label><br>
+		// 			<input type="radio" id="other" name="gender" value="other">
+		// 			<label for="other">Other</label><br><br>
 			
-					<input type="radio" id="pessoafisica" name="tipopessoa" value="1" onchange="toggleFieldTipoPessoa(1)">
-					<label for="pessoafisica">Pessoa Física</label><br>
-					<input type="radio" id="pessoajurifica" name="tipopessoa" value="2" onchange="toggleFieldTipoPessoa(2)">
-					<label for="pessoajurifica">Pessoa Jurídica</label><br><br>
+		// 			<input type="radio" id="pessoafisica" name="tipopessoa" value="1" onchange="toggleFieldTipoPessoa(1)">
+		// 			<label for="pessoafisica">Pessoa Física</label><br>
+		// 			<input type="radio" id="pessoajurifica" name="tipopessoa" value="2" onchange="toggleFieldTipoPessoa(2)">
+		// 			<label for="pessoajurifica">Pessoa Jurídica</label><br><br>
 			
-					<div id="divcpf" style='display: none'>
-						<label for="cpf">CPF:</label><br>
-						<input type="text" id="cpf" name="cpf"><br><br>
-					</div>  
+		// 			<div id="divcpf" style='display: none'>
+		// 				<label for="cpf">CPF:</label><br>
+		// 				<input type="text" id="cpf" name="cpf"><br><br>
+		// 			</div>  
 			
-					<div id="divcnpj" style='display: none'>
-						<label for="cnpj">CNPJ:</label><br>
-						<input type="text" id="cnpj" name="cnpj"><br><br>
-					</div>
+		// 			<div id="divcnpj" style='display: none'>
+		// 				<label for="cnpj">CNPJ:</label><br>
+		// 				<input type="text" id="cnpj" name="cnpj"><br><br>
+		// 			</div>
 					
-					<input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
-					<label for="vehicle1"> I have a bike</label><br>
-					<input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
-					<label for="vehicle2"> I have a car</label><br>
-					<input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
-					<label for="vehicle3"> I have a boat</label><br><br>
+		// 			<input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+		// 			<label for="vehicle1"> I have a bike</label><br>
+		// 			<input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
+		// 			<label for="vehicle2"> I have a car</label><br>
+		// 			<input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
+		// 			<label for="vehicle3"> I have a boat</label><br><br>
 			
-					<input type="submit" value="Submit">
-				</form>
-			</section>
+		// 			<input type="submit" value="Submit">
+		// 		</form>
+		// 	</section>
 
-			<footer id="footer">
-				<p>Footer</p>
-			</footer>`;
+		// 	<footer id="footer">
+		// 		<p>Footer</p>
+		// 	</footer>`;
 
-		let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
-		let xPathParentElementDiff = diffDomManipulator.getXPathParentFirstElementDiff();
-		console.log("xPathParentElementDiff", xPathParentElementDiff);
+		let analysisElement: any = null;
+		const featureTags = this.document.body.querySelectorAll('form, table');
 
-		if(xPathParentElementDiff !== null){
-			let xpathResult = this.document.evaluate(
-				xPathParentElementDiff,
-				this.document,
-				null,
-				XPathResult.FIRST_ORDERED_NODE_TYPE, 
-				null
-			);
+		// let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
 
-			if(xpathResult.singleNodeValue !== null){
-				const analysisElement = xpathResult.singleNodeValue as HTMLElement;
-				console.log("analysisElement", analysisElement.nodeName);
-				
-				if(analysisElement.nodeName === NodeTypes.FORM){
-					this.formFiller.fill(analysisElement as HTMLFormElement);
-				} else {
-					const forms = analysisElement.getElementsByTagName('form');
-					console.log("forms", forms)
-					for (const form of forms) {
-						await this.formFiller.fill(form);
-					}
-				}
-				
-			}
+		// conditions to check which element to analyze
+		if(featureTags.length == 1){
+			analysisElement = featureTags[0] as HTMLElement;
+		} else if(featureTags.length > 1){
+			console.log("mais de um");
+			let commonParent = this.commonParent(featureTags[0] as HTMLElement, featureTags[1] as HTMLElement);
+		} else if(featureTags.length == 0){
+			console.log("nenhum");
 		}
 
-		this.closeWindow = true;
+		console.log("analysisElement", analysisElement);
+
+		// const forms = this.document.body.getElementsByTagName('form,table');
+		// const tables = this.document.body.getElementsByTagName('table');
+
+		// // conditions to check which element to analyze
+		// const cond = {
+		// 	hasOnlyOneForm: forms.length == 1 && tables.length == 0,
+		// 	hasOnlyOneTable: forms.length == 0 && tables.length == 1,
+		// 	hasFormAndTable: forms.length >= 1 && tables.length >= 1
+		// }
+
+		// if(cond.hasOnlyOneForm){
+		// 	analysisElement = forms[0];
+		// } else if(cond.hasOnlyOneTable){
+		// 	analysisElement = tables[0];
+		// } else if(cond.hasFormAndTable){
+		// 	console.log("foi");
+		// }
+
+		// let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
+		// let xPathParentElementDiff = diffDomManipulator.getXPathParentFirstElementDiff();
+		// console.log("xPathParentElementDiff", xPathParentElementDiff);
+
+		// if(xPathParentElementDiff !== null){
+		// 	let xpathResult = this.document.evaluate(
+		// 		xPathParentElementDiff,
+		// 		this.document,
+		// 		null,
+		// 		XPathResult.FIRST_ORDERED_NODE_TYPE, 
+		// 		null
+		// 	);
+
+		// 	if(xpathResult.singleNodeValue !== null){
+		// 		const analysisElement = xpathResult.singleNodeValue as HTMLElement;
+		// 		console.log("analysisElement", analysisElement.nodeName);
+				
+		// 		if(analysisElement.nodeName === NodeTypes.FORM){
+		// 			this.formFiller.fill(analysisElement as HTMLFormElement);
+		// 		} else {
+		// 			const forms = analysisElement.getElementsByTagName('form');
+		// 			console.log("forms", forms)
+		// 			for (const form of forms) {
+		// 				await this.formFiller.fill(form);
+		// 			}
+		// 		}
+				
+		// 	}
+		// }
+
+		// this.closeWindow = true;
 	}
 
 	private searchForLinks(): HTMLCollectionOf<HTMLAnchorElement> {
