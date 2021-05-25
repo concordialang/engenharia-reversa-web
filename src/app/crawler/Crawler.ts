@@ -65,24 +65,72 @@ export class Crawler {
 		this.formFiller = formFiller;
 	}
 
-	// find common parent of two html elements 
-	private commonParent(a, b){
-		var pa: any = [], L;
-		while(a){
-			pa[pa.length]=a;
-			a= a.parentNode;
-		}
-
-		L=pa.length;
-
-		while(b){  
-			for(var i=0; i<L; i++){
-				if(pa[i]==b) return b;
-			}
-
-			b= b.parentNode;
-		}
+	// find the most internal parent in common of nodes 
+	private getCommonAncestor(elements: Element[]) {
+		const reducer = (prev, current) => current.parentElement.contains(prev) ? current.parentElement : prev;
+		return elements.reduce(reducer, elements[0]);
 	}
+	
+	// private getParentsNode(node: any) {
+	// 	let nodesParents = [] as any;
+		
+	// 	while(node){
+	// 		nodesParents.unshift(node);
+	// 		node = node.parentNode;
+	// 	}
+
+	// 	return nodesParents;
+	// }
+
+	// private commonParent(nodeList: NodeListOf<Element>){
+	// 	let parentsNodes = [] as any;
+	// 	nodeList.forEach(node => parentsNodes.push(this.getParentsNode(node)));
+
+	// 	console.log("parentsNodes", parentsNodes);
+
+	// 	// checks if all nodes have at least one parent in common
+	// 	let mostExternalParentInCommon = parentsNodes[0][0];
+	// 	let validNodes = parentsNodes.every(parentNode => parentNode[0] === mostExternalParentInCommon);
+
+	// 	if(validNodes){
+
+	// 	}
+
+	// 	// const parentsNode1 = this.parents(node1);
+	// 	// const parentsNode2 = this.parents(node2);
+
+	// 	// if (parentsNode1[0] != parentsNode2[0]){
+	// 	// 	return null;
+	// 	// } 
+
+	// 	// console.log("tiodos parentsNodes", parentsNodes);
+	// 	// const parentsNode1 = parentsNodes[0];
+	// 	// for(let parentNode1 of parentsNodes[0]){
+	// 	// 	console.log("parentNode1", parentNode1);
+	// 	// }
+		
+	// 	let commonParent = parentsNodes[0][0];
+	// 	for(let parentNode of parentsNodes){
+	// 		for (let i = 0; i < parentsNodes[0].length; i++) {
+	// 			console.log("parentNode[i]", parentNode[i]);
+	// 			console.log("segundo", parentsNodes[0][i]);
+	// 			console.log(parentNode[i] == parentsNodes[0][i]);
+	// 			console.log("");
+	// 			if(parentNode[i] == parentsNodes[0][i]){
+	// 				commonParent = parentNode[i];
+	// 			}
+	// 		}
+	// 	}
+
+	// 	console.log("commonParent", commonParent);
+
+	// 	for (let i = 0; i < parentsNodes[0].length; i++) {
+	// 		// if (parentsNode1[i] != parentsNode2[i]) {
+	// 		// 	// common parent
+	// 		// 	return parentsNode1[i - 1];
+	// 		// }
+	// 	}
+	// }
 
 	public async crawl() {
 		this.addUrlToGraph(this.pageUrl);
@@ -216,40 +264,23 @@ export class Crawler {
 		// 		<p>Footer</p>
 		// 	</footer>`;
 
-		let analysisElement: any = null;
+		let analysisElement: HTMLElement | null = null;
 		const featureTags = this.document.body.querySelectorAll('form, table');
 
-		// let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
+		let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
+		let xPathParentElementDiff = diffDomManipulator.getXPathParentOfMoreExternalElementDiff();
 
-		// conditions to check which element to analyze
+		// find element to analisy based on body tags form and table
 		if(featureTags.length == 1){
 			analysisElement = featureTags[0] as HTMLElement;
 		} else if(featureTags.length > 1){
-			console.log("mais de um");
-			let commonParent = this.commonParent(featureTags[0] as HTMLElement, featureTags[1] as HTMLElement);
+			analysisElement = this.getCommonAncestor(Array.from(featureTags));
 		} else if(featureTags.length == 0){
-			console.log("nenhum");
+			let inputFieldTags = this.document.body.querySelectorAll('input, select, textarea');
+			analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
 		}
 
 		console.log("analysisElement", analysisElement);
-
-		// const forms = this.document.body.getElementsByTagName('form,table');
-		// const tables = this.document.body.getElementsByTagName('table');
-
-		// // conditions to check which element to analyze
-		// const cond = {
-		// 	hasOnlyOneForm: forms.length == 1 && tables.length == 0,
-		// 	hasOnlyOneTable: forms.length == 0 && tables.length == 1,
-		// 	hasFormAndTable: forms.length >= 1 && tables.length >= 1
-		// }
-
-		// if(cond.hasOnlyOneForm){
-		// 	analysisElement = forms[0];
-		// } else if(cond.hasOnlyOneTable){
-		// 	analysisElement = tables[0];
-		// } else if(cond.hasFormAndTable){
-		// 	console.log("foi");
-		// }
 
 		// let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
 		// let xPathParentElementDiff = diffDomManipulator.getXPathParentFirstElementDiff();

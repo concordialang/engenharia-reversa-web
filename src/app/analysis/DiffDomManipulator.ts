@@ -56,19 +56,39 @@ export class DiffDomManipulator {
         return this.currentHtml;
     }
 
+    // // returns the parent of the element that has changed
+    // public getXPathParentFirstElementDiff(): string | null {
+
+    //     if(this.diffDom[0] == undefined){
+    //         return null;
+    //     }
+
+    //     let firstElementDiff = this.diffDom[0];
+
+    //     // find the first element of the DiffDOM in current html
+    //     let htmlElement: HTMLElement | ChildNode = this.currentHtml;
+    //     for(let i = 0; i < firstElementDiff.route.length; i++){
+    //         htmlElement = htmlElement.childNodes[firstElementDiff.route[i]];
+    //     }
+
+    //     return getXPath(htmlElement.parentElement);
+
+    // }
+
     // returns the parent of the element that has changed
-    public getXPathParentFirstElementDiff(): string | null {
+    public getXPathParentOfMoreExternalElementDiff(): string | null {
 
         if(this.diffDom[0] == undefined){
             return null;
         }
 
-        let firstElementDiff = this.diffDom[0];
+        //change
+        console.log("DIFF", this.diffDom);
+        let moreExternalElementDiff = this.diffDom[0];
 
-        // find the first element of the DiffDOM in current html
         let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-        for(let i = 0; i < firstElementDiff.route.length; i++){
-            htmlElement = htmlElement.childNodes[firstElementDiff.route[i]];
+        for(let i = 0; i < moreExternalElementDiff.route.length; i++){
+            htmlElement = htmlElement.childNodes[moreExternalElementDiff.route[i]];
         }
 
         return getXPath(htmlElement.parentElement);
