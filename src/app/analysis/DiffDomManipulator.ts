@@ -1,5 +1,6 @@
 import { DiffDOM } from "diff-dom";
 import getXPath from 'get-xpath';
+import { NodeTypes } from "../node/NodeTypes";
 
 export class DiffDomManipulator {
     
@@ -15,14 +16,15 @@ export class DiffDomManipulator {
         this.previousHtml = this.formatedHtml(previousHtml);
         this.currentHtml = this.formatedHtml(currentHtml);
 
-        //console.log("previousBodyFormated", previousBodyFormated)
-        //console.log("currentBodyFormated", currentBodyFormated)
-
-		this.diffDom = dd.diff(this.previousHtml, this.currentHtml);
+		let diffDom = dd.diff(this.previousHtml, this.currentHtml);
+        this.diffDom = this.formatArrayDiffDom(diffDom);
     }
 
     private formatedHtml(html: HTMLElement) : HTMLElement{
         let htmlString = html.outerHTML;
+
+        // remove comments
+        htmlString = htmlString.replace(/<!--[\s\S]*?-->/g, "");
 
         // remove newline / carriage return
         htmlString = htmlString.replace(/\n/g, "");
@@ -39,9 +41,24 @@ export class DiffDomManipulator {
         var parser = new DOMParser();
 	    var doc = parser.parseFromString(htmlString, 'text/html');
         
-        const htmlElement = doc.body;
+        return doc.body;
+    }
 
-        return htmlElement;
+    private formatArrayDiffDom(diffDom): Object[] {
+        // disregard script tag
+        diffDom = diffDom.filter( diff => diff.element === undefined || (diff.element !== undefined && diff.element.nodeName !== NodeTypes.SCRIPT) );
+
+        return diffDom;
+    }
+
+    private getOutermostElementDiff(){
+        let outermostElementDiff = this.diffDom[0];
+
+        for(let diff of this.diffDom){
+            outermostElementDiff = diff.route.length <= outermostElementDiff.route.length ? diff : outermostElementDiff;
+        }
+
+        return outermostElementDiff;
     }
 
     public getDiff(): DiffDOM{
@@ -56,42 +73,23 @@ export class DiffDomManipulator {
         return this.currentHtml;
     }
 
-    // // returns the parent of the element that has changed
-    // public getXPathParentFirstElementDiff(): string | null {
-
-    //     if(this.diffDom[0] == undefined){
-    //         return null;
-    //     }
-
-    //     let firstElementDiff = this.diffDom[0];
-
-    //     // find the first element of the DiffDOM in current html
-    //     let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-    //     for(let i = 0; i < firstElementDiff.route.length; i++){
-    //         htmlElement = htmlElement.childNodes[firstElementDiff.route[i]];
-    //     }
-
-    //     return getXPath(htmlElement.parentElement);
-
-    // }
-
-    // returns the parent of the element that has changed
-    public getXPathParentOfMoreExternalElementDiff(): string | null {
+    // returns the parent xpath of the outermost element that has changed
+    public getParentXPathOfTheOutermostElementDiff(): string | null {
 
         if(this.diffDom[0] == undefined){
             return null;
         }
 
-        //change
-        console.log("DIFF", this.diffDom);
-        let moreExternalElementDiff = this.diffDom[0];
+        let outermostElementDiff: any = this.getOutermostElementDiff();
+        if(outermostElementDiff != null){
+            let htmlElement: HTMLElement | ChildNode = this.currentHtml;
+            for(let i = 0; i < outermostElementDiff.route.length; i++){
+                htmlElement = htmlElement.childNodes[outermostElementDiff.route[i]];
+            }
 
-        let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-        for(let i = 0; i < moreExternalElementDiff.route.length; i++){
-            htmlElement = htmlElement.childNodes[moreExternalElementDiff.route[i]];
+            return getXPath(htmlElement.parentElement);
         }
 
-        return getXPath(htmlElement.parentElement);
-
+        return null;
     }
 }
