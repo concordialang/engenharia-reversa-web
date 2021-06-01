@@ -9,7 +9,7 @@ import { Crawler } from './app/crawler/Crawler';
 import { ElementInteractionManager } from './app/crawler/ElementInteractionManager';
 import { ElementInteractionStorage } from './app/crawler/ElementInteractionStorage';
 import { FeatureStorage } from './app/crawler/FeatureStorage';
-import { FormFiller } from './app/crawler/FormFiller';
+import { FeatureInterector } from './app/crawler/FeatureInterector';
 import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
@@ -41,7 +41,7 @@ const elementInteractionManager = new ElementInteractionManager(
 	interactionsGraphMutex
 );
 const pageUrl: URL = new URL(window.location.href);
-const formFiller: FormFiller = new FormFiller(
+const featureInterector: FeatureInterector = new FeatureInterector(
 	elementInteractionManager,
 	pageUrl,
 	spec
@@ -57,7 +57,7 @@ const crawler: Crawler = new Crawler(
 	graphKey,
 	crawledUrlsKey,
 	visitedPagesGraphMutex,
-	formFiller
+	featureInterector
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

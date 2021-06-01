@@ -2,7 +2,7 @@ import { DiffDOM } from "diff-dom";
 import getXPath from 'get-xpath';
 import { NodeTypes } from "../node/NodeTypes";
 
-export class DiffDomManipulator {
+export class DiffDomManager {
     
     private diffDom: DiffDOM;
     private previousHtml: HTMLElement;

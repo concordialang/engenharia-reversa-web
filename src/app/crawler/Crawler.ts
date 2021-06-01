@@ -14,10 +14,10 @@ import { Mutex } from '../mutex/Mutex';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
 import { FeatureStorage } from './FeatureStorage';
-import { FormFiller } from './FormFiller';
+import { FeatureInterector } from './FeatureInterector';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
-import { DiffDomManipulator } from "../analysis/DiffDomManipulator";
+import { DiffDomManager } from "../analysis/DiffDomManager";
 import { NodeTypes } from '../node/NodeTypes';
 
 
@@ -34,7 +34,7 @@ export class Crawler {
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
 	private crawledUrlsKey: string;
-	private formFiller: FormFiller;
+	private featureInterector: FeatureInterector;
 
 	//aux variables
 	private closeWindow = false;
@@ -50,7 +50,7 @@ export class Crawler {
 		graphKey: string,
 		crawledUrlsKey: string,
 		mutex: Mutex,
-		formFiller: FormFiller,
+		featureInterector: FeatureInterector,
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
@@ -62,7 +62,7 @@ export class Crawler {
 		this.crawledUrlsKey = crawledUrlsKey;
 		this.communicationChannel = communicationChannel;
 		this.featureAnalyzer = featureAnalyzer;
-		this.formFiller = formFiller;
+		this.featureInterector = featureInterector;
 	}
 
 	// find the most internal parent in common of nodes 
@@ -180,8 +180,8 @@ export class Crawler {
 					<p>Footer</p>
 				</footer>`;
 
-			let diffDomManipulator = new DiffDomManipulator(previousDoc.body, this.document.body);
-			let xPathParentElementDiff = diffDomManipulator.getParentXPathOfTheOutermostElementDiff();
+			let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
+			let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
 			
 			let xpathResult = 
 				xPathParentElementDiff !== null
@@ -207,12 +207,13 @@ export class Crawler {
 			analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
 		}
 
-		console.log("analysisElement", analysisElement);
+		if(analysisElement !== null){
+			await this.featureInterector.interact(analysisElement);
+		}
 
 		// const forms = analysisContext.getElementsByTagName('form');
 		// console.log("forms", forms)
 		// for (const form of forms) {
-		// 	await this.formFiller.fill(form);
 		// }
 
 		// this.closeWindow = true;

@@ -6,11 +6,12 @@ import { ElementInteractionManager } from './ElementInteractionManager';
 import { InputInteractor } from './InputInteractor';
 import { Spec } from '../analysis/Spec';
 import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
-import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
+import { MutationObserverManager } from '../mutationobserver/MutationObserverManager';
+import { NodeTypes } from '../node/NodeTypes';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
-export class FormFiller {
+export class FeatureInterector {
 	private radioGroupsAlreadyFilled: string[];
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;
@@ -27,11 +28,19 @@ export class FormFiller {
 		this.spec = spec;
 	}
 
-	public async fill(form: HTMLFormElement) {
+	public async interact(element: HTMLElement){
+		element.querySelectorAll('*').forEach(node => {
+			if(node.nodeName === NodeTypes.FORM){
+				this.fillForm(node as HTMLFormElement)
+			}
+		})
+	}
+
+	public async fillForm(form: HTMLFormElement) {
 		const featureAnalyzer = new FeatureAnalyzer();
 
 		// add observer on form
-		let observer = new MutationObserverCreator(form);
+		let observer = new MutationObserverManager(form);
 
 		// start feature analysis
 		const feature = featureAnalyzer.createFeatureFromForm(form, this.spec);

@@ -1,4 +1,5 @@
-export class MutationObserverCreator {
+export class MutationObserverManager {
+	
 	private observer: MutationObserver;
 	private mutations: MutationRecord[] = [];
 
