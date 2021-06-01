@@ -5,20 +5,23 @@ export class ElementInteraction<T extends HTMLElement> {
 	private eventType: HTMLEventType;
 	private pageUrl: URL;
 	private value: string | boolean | null;
-	private id: string | null;
+	private id: string;
+	private elementSelector: string | null;
 
 	constructor(
 		element: T,
 		eventType: HTMLEventType,
 		pageUrl: URL,
 		value: string | boolean | null = null,
-		id: string | null = null
+		id: string | null = null,
+		elementSelector?: string | null
 	) {
 		this.element = element;
 		this.eventType = eventType;
 		this.pageUrl = pageUrl;
 		this.value = value;
-		this.id = id;
+		this.id = id || Math.random().toString(18).substring(2);
+		this.elementSelector = elementSelector ? elementSelector : null;
 	}
 
 	public getElement(): T {
@@ -37,7 +40,11 @@ export class ElementInteraction<T extends HTMLElement> {
 		return this.value;
 	}
 
-	public getId(): string | null {
+	public getId(): string {
 		return this.id;
+	}
+
+	public getElementSelector(): string | null {
+		return this.elementSelector;
 	}
 }

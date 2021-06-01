@@ -4,6 +4,7 @@ import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChanne
 import { Command } from './app/comm/Command';
 import { CommunicationChannel } from './app/comm/CommunicationChannel';
 import { Message } from './app/comm/Message';
+import { AnalyzedElementStorage } from './app/crawler/AnalyzedElementStorage';
 import { ButtonInteractor } from './app/crawler/ButtonInteractor';
 import { Crawler } from './app/crawler/Crawler';
 import { ElementInteractionManager } from './app/crawler/ElementInteractionManager';
@@ -15,6 +16,9 @@ import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
 import { Mutex } from './app/mutex/Mutex';
 import { Spec } from './app/analysis/Spec';
+import { ElementInteraction } from './app/crawler/ElementInteraction';
+import { HTMLEventType } from './app/html/HTMLEventType';
+import { ElementInteractionGraph } from './app/crawler/ElementInteractionGraph';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -25,12 +29,14 @@ const crawledUrlsStorage: UrlListStorage = new UrlListStorage();
 const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
 const elementInteractionGraphKey = 'interactions-graph';
+const lastElementInteractionKey = 'last-interaction';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor(document);
 const elementInteracationStorage = new ElementInteractionStorage(document);
 const spec: Spec = new Spec('pt-br');
+const analyzedElementStorage = new AnalyzedElementStorage(document);
 
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,
@@ -38,22 +44,31 @@ const elementInteractionManager = new ElementInteractionManager(
 	elementInteractionGraphKey,
 	graphStorage,
 	elementInteracationStorage,
-	interactionsGraphMutex
+	interactionsGraphMutex,
+	lastElementInteractionKey
 );
+
 const pageUrl: URL = new URL(window.location.href);
-const formFiller: FormFiller = new FormFiller(elementInteractionManager, pageUrl, spec);
+const formFiller: FormFiller = new FormFiller(
+	elementInteractionManager,
+	pageUrl,
+	spec,
+	graphStorage,
+	elementInteracationStorage,
+	elementInteractionGraphKey,
+	lastElementInteractionKey
+);
 const crawler: Crawler = new Crawler(
 	document,
 	pageUrl,
-	communicationChannel,
 	graphStorage,
-	crawledUrlsStorage,
-	featureStorage,
-	featureAnalyzer,
 	graphKey,
-	crawledUrlsKey,
 	visitedPagesGraphMutex,
-	formFiller
+	formFiller,
+	analyzedElementStorage,
+	elementInteracationStorage,
+	elementInteractionGraphKey,
+	lastElementInteractionKey
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

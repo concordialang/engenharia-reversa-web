@@ -4,14 +4,14 @@ import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractor } from './ElementInteractor';
 import { InteractionResult } from './InteractionResult';
 
-export class ButtonInteractor implements ElementInteractor<HTMLButtonElement> {
+export class ButtonInteractor implements ElementInteractor<HTMLButtonElement | HTMLInputElement> {
 	private document: HTMLDocument;
 
 	constructor(document: HTMLDocument) {
 		this.document = document;
 	}
 
-	public execute(interaction: ElementInteraction<HTMLButtonElement>): Promise<InteractionResult> {
+	public execute(interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>): Promise<InteractionResult> {
 		return new Promise((resolve) => {
 			const element = interaction.getElement();
 			let triggeredUnload = false;

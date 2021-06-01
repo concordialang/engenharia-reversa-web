@@ -9,6 +9,8 @@ import { Graph } from '../graph/Graph';
 import { InputInteractor } from './InputInteractor';
 import { ButtonInteractor } from './ButtonInteractor';
 import { InteractionResult } from './InteractionResult';
+import { HTMLInputType } from '../html/HTMLInputType';
+import { Util } from '../Util';
 
 export class ElementInteractionManager {
 	private inputInteractor: InputInteractor;
@@ -18,6 +20,7 @@ export class ElementInteractionManager {
 	private elementInteractionStorage: ElementInteractionStorage;
 	private mutex: Mutex;
 	private lastInteraction: ElementInteraction<HTMLElement> | null;
+	private lastInteractionKey: string;
 
 	constructor(
 		inputInteractor: InputInteractor,
@@ -25,7 +28,8 @@ export class ElementInteractionManager {
 		elementInteractionGraphKey: string,
 		graphStorage: GraphStorage,
 		elementInteractionStorage: ElementInteractionStorage,
-		mutex: Mutex
+		mutex: Mutex,
+		lastInteractionKey: string
 	) {
 		this.inputInteractor = inputInteractor;
 		this.buttonInteractor = buttonInteractor;
@@ -33,45 +37,48 @@ export class ElementInteractionManager {
 		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.mutex = mutex;
+		this.lastInteractionKey = lastInteractionKey;
 		this.lastInteraction = null;
 	}
 
 	public async execute(
 		interaction: ElementInteraction<HTMLElement>,
-		saveInteractionInGraph: boolean = true
+		saveInteractionInGraph: boolean = true,
+		previousInteraction: ElementInteraction<HTMLElement> | null = null
 	): Promise<InteractionResult | null> {
 		await this.delay(400);
 		const element = interaction.getElement();
 		const type = element.tagName;
 		let result: InteractionResult | null = null;
 		if (type == HTMLElementType.Input) {
-			result = await this.inputInteractor.execute(<ElementInteraction<HTMLInputElement>>interaction);
-		} else if (type == HTMLElementType.Button && element.getAttribute('type') != 'submit') {
+			const inputType = element.getAttribute('type');
+			if (inputType == HTMLInputType.Submit) {
+				result = await this.buttonInteractor.execute(<ElementInteraction<HTMLButtonElement>>interaction);
+			} else {
+				result = await this.inputInteractor.execute(<ElementInteraction<HTMLInputElement>>interaction);
+			}
+		} else if (type == HTMLElementType.Button) {
 			result = await this.buttonInteractor.execute(<ElementInteraction<HTMLButtonElement>>interaction);
 		}
 		//Verificar se essa interação já foi salva ?
 		if (saveInteractionInGraph) {
-			const id = uuid();
-			const key = interaction.getPageUrl().href + ':' + id;
-			this.elementInteractionStorage.save(key, interaction);
-			this.lastInteraction = interaction;
-			this.mutex.lock().then(() => {
-				const graph = this.graphStorage.get(this.elementInteractionGraphKey);
-				const depthFirstSearch = graph.depthFirstSearch();
-				if (depthFirstSearch.length) {
-					const lastInteractionId = depthFirstSearch[0];
-					if (lastInteractionId) {
-						this.addElementInteractionKeyToGraph(key);
-						this.addElementInteractionKeyLinkToGraph(lastInteractionId, key);
-					} else {
-						throw new Error('Last element interaction needs an id to be linked to the current element interaction');
-					}
+			const id = interaction.getId();
+			this.elementInteractionStorage.save(id, interaction);
+			await this.mutex.lock();
+			this.addElementInteractionKeyToGraph(id);
+			if (previousInteraction) {
+				const previousInteractionId = previousInteraction.getId();
+				if (previousInteractionId) {
+					this.addElementInteractionKeyLinkToGraph(previousInteractionId, id);
 				} else {
-					this.addElementInteractionKeyToGraph(key);
+					throw new Error('Previous element interaction needs an id to be linked to the current element interaction');
 				}
-				return this.mutex.unlock();
-			});
+			}
+			this.mutex.unlock();
 		}
+
+		this.lastInteraction = interaction;
+		this.elementInteractionStorage.save(this.lastInteractionKey, interaction);
 
 		return result;
 	}

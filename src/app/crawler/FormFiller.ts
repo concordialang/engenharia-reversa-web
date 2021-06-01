@@ -8,6 +8,10 @@ import { Spec } from '../analysis/Spec';
 import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
 import { MutationObserverCreator } from '../mutationobserver/MutationObserverCreator';
 import { InteractionResult } from './InteractionResult';
+import { ElementInteractionStorage } from './ElementInteractionStorage';
+import { GraphStorage } from '../graph/GraphStorage';
+import { Util } from '../Util';
+import { Graph } from '../graph/Graph';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -16,15 +20,46 @@ export class FormFiller {
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;
 	private spec: Spec;
+	private graphStorage: GraphStorage;
+	private elementInteractionStorage: ElementInteractionStorage;
+	private elementInteractionGraphKey: string;
+	private lastInteractionKey: string;
 
-	constructor(elementInteractionManager: ElementInteractionManager, pageUrl: URL, spec: Spec) {
+	constructor(
+		elementInteractionManager: ElementInteractionManager,
+		pageUrl: URL,
+		spec: Spec,
+		graphStorage: GraphStorage,
+		elementInteractionStorage: ElementInteractionStorage,
+		elementInteractionGraphKey: string,
+		lastInteractionKey: string
+	) {
 		this.radioGroupsAlreadyFilled = [];
 		this.elementInteractionManager = elementInteractionManager;
 		this.pageUrl = pageUrl;
 		this.spec = spec;
+		this.graphStorage = graphStorage;
+		this.elementInteractionStorage = elementInteractionStorage;
+		this.elementInteractionGraphKey = elementInteractionGraphKey;
+		this.lastInteractionKey = lastInteractionKey;
 	}
 
-	public async fill(form: HTMLFormElement) {
+	public async fill(form: HTMLFormElement, interactions: ElementInteraction<HTMLElement>[] = []) {
+		const interactionGraph = new GraphStorage().get('interactions-graph');
+		const edges = interactionGraph.serialize()['links'];
+
+		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+
+		for (let interaction of interactions) {
+			if (!this.redirectsToAnotherUrl(interaction.getElement(), this.pageUrl, edges)) {
+				await this.elementInteractionManager.execute(interaction, false);
+			}
+		}
+
+		if (interactions.length > 0) {
+			previousInteraction = interactions[interactions.length - 1];
+		}
+
 		const featureAnalyzer = new FeatureAnalyzer();
 
 		// add observer on form
@@ -35,7 +70,7 @@ export class FormFiller {
 		const scenario = featureAnalyzer.createScenario(feature);
 		const variant = featureAnalyzer.createVariant();
 
-		const elements = form.elements;
+		const elements = this.getElements(form, interactions);
 		for (const element of elements) {
 			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
@@ -45,11 +80,27 @@ export class FormFiller {
 				interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
 			}
 
-			if (interaction) {
-				const result = await this.elementInteractionManager.execute(interaction);
-				if (result) {
-					if (result.getTriggeredRedirection()) {
-						break;
+			if (element instanceof HTMLElement) {
+				const interactionGraph = new GraphStorage().get('interactions-graph');
+				const edges = interactionGraph.serialize()['links'];
+				if (!this.redirectsToAnotherUrl(element, this.pageUrl, edges)) {
+					if (interaction) {
+						let result: InteractionResult | null;
+						if (!previousInteraction) {
+							result = await this.elementInteractionManager.execute(
+								interaction,
+								true,
+								this.elementInteractionStorage.get(this.lastInteractionKey)
+							);
+						} else {
+							result = await this.elementInteractionManager.execute(interaction, true, previousInteraction);
+							previousInteraction = null;
+						}
+						if (result) {
+							if (result.getTriggeredRedirection()) {
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -86,10 +137,29 @@ export class FormFiller {
 		feature.addScenario(scenario);
 		this.spec.addFeature(feature);
 
-		console.log('spec', this.spec);
+		//console.log('spec', this.spec);
 
 		observer.disconnect();
+
 		this.radioGroupsAlreadyFilled = [];
+	}
+
+	private getElements(form: HTMLFormElement, previousInteractions?: ElementInteraction<HTMLElement>[]): HTMLElement[] {
+		const elements: HTMLElement[] = [];
+		if (!previousInteractions || previousInteractions.length == 0) {
+			for (let element of form.elements) {
+				elements.push(<HTMLElement>element);
+			}
+			return elements;
+		} else {
+			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+			for (let i = form.elements.length - 1; i >= 0; i--) {
+				const element = <HTMLElement>form.elements[i];
+				if (Util.getPathTo(element) == Util.getPathTo(lastInteraction.getElement())) break;
+				elements.unshift(element);
+			}
+			return elements;
+		}
 	}
 
 	private generateInputInteraction(input: HTMLInputElement): ElementInteraction<HTMLInputElement> | null {
@@ -100,6 +170,8 @@ export class FormFiller {
 			return this.generateRadioInputInteraction(input);
 		} else if (type == HTMLInputType.Checkbox) {
 			return this.generateCheckboxInputInteraction(input);
+		} else if (type == HTMLInputType.Submit) {
+			return new ElementInteraction(input, HTMLEventType.Click, this.pageUrl);
 		}
 		return null;
 	}
@@ -163,9 +235,24 @@ export class FormFiller {
 		return matchedInputs;
 	}
 
-	// private getRandomInt(min : number, max : number) {
-	//     min = Math.ceil(min);
-	//     max = Math.floor(max);
-	//     return Math.floor(Math.random() * (max - min + 1)) + min;
-	// }
+	private redirectsToAnotherUrl(element, url, edges) {
+		const storage = new ElementInteractionStorage(document);
+		for (let edge of edges) {
+			const sourceInteraction = storage.get(edge.source);
+			if (sourceInteraction) {
+				if (sourceInteraction.getPageUrl().href == url.href) {
+					const path = Util.getPathTo(element);
+					const path2 = Util.getPathTo(sourceInteraction.getElement());
+					if (path == path2) {
+						const targetInteraction = storage.get(edge.target);
+						if (targetInteraction) {
+							if (targetInteraction.getPageUrl().href != sourceInteraction.getPageUrl().href) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

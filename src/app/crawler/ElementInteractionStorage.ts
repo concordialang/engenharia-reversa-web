@@ -1,4 +1,6 @@
+import { stringify } from 'uuid';
 import { HTMLEventType } from '../html/HTMLEventType';
+import { Util } from '../Util';
 import { ElementInteraction } from './ElementInteraction';
 
 export class ElementInteractionStorage {
@@ -9,21 +11,25 @@ export class ElementInteractionStorage {
 	}
 
 	public save(key: string, elementInteraction: ElementInteraction<HTMLElement>): void {
-		const pathToElement = this.getPathTo(elementInteraction.getElement());
+		const pathToElement = Util.getPathTo(elementInteraction.getElement());
 		const eventType = elementInteraction.getEventType();
 		const value = elementInteraction.getValue();
 		const pageUrl = elementInteraction.getPageUrl();
 		if (pathToElement) {
 			const json: {
+				id: string;
 				element: string;
 				eventType: string;
 				pageUrl: string;
 				value: string | boolean | null;
+				elementSelector: string | null;
 			} = {
+				id: elementInteraction.getId(),
 				element: pathToElement,
 				eventType: eventType,
 				pageUrl: pageUrl.toString(),
 				value: value,
+				elementSelector: Util.getPathTo(elementInteraction.getElement()),
 			};
 			window.localStorage.setItem(key, JSON.stringify(json));
 		} else {
@@ -35,10 +41,12 @@ export class ElementInteractionStorage {
 		const item: string | null = window.localStorage.getItem(key);
 		if (item && item.length !== 0 && item.trim()) {
 			const json: {
+				id: string;
 				element: string;
 				eventType: string;
 				pageUrl: string;
 				value: string | boolean | null;
+				elementSelector: string | null;
 			} = JSON.parse(item);
 			const interaction = this.createElementInteraction(json, key);
 			return interaction;
@@ -54,40 +62,34 @@ export class ElementInteractionStorage {
 
 	private createElementInteraction(
 		json: {
+			id: string;
 			element: string;
 			eventType: string;
 			pageUrl: string;
 			value: string | boolean | null;
+			elementSelector: string | null;
 		},
 		key: string
 	): ElementInteraction<HTMLElement> | null {
-		const element = this.getElementByXpath(json.element, this.document);
+		let element: HTMLElement | null = this.getElementByXpath(json.element, this.document);
+		if (!element) {
+			//GAMBIARRA, REFATORAR DEPOIS
+			element = document.body;
+		}
 		const eventType = this.getEnumKeyByEnumValue(HTMLEventType, json.eventType);
 		const pageUrl = json.pageUrl;
-		if (element && eventType) {
-			return new ElementInteraction(element, HTMLEventType[json.eventType], new URL(pageUrl), json.value, key);
+		if (eventType) {
+			return new ElementInteraction(
+				element,
+				HTMLEventType[json.eventType],
+				new URL(pageUrl),
+				json.value,
+				json.id,
+				json.elementSelector
+			);
 		}
 		return null;
 	} // source https://stackoverflow.com/a/2631931/14729456
-
-	/* REFATORAR, colocar em util ou helper */ private getPathTo(element: HTMLElement): string | null {
-		if (element.id !== '') return 'id("' + element.id + '")';
-		if (element === document.body) return element.tagName;
-
-		var ix = 0;
-		const parentNode = element.parentNode;
-		if (parentNode) {
-			var siblings = parentNode.childNodes;
-			for (var i = 0; i < siblings.length; i++) {
-				var sibling = <HTMLElement>siblings[i];
-				if (sibling === element)
-					return this.getPathTo(<HTMLElement>parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
-				if (sibling.nodeType === 1 && sibling.tagName === element.tagName) ix++;
-			}
-		}
-
-		return null;
-	}
 
 	/* REFATORAR, colocar em util ou helper */
 

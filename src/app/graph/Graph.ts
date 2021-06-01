@@ -67,6 +67,18 @@ export class Graph {
 		return { links: edges, nodes: nodes };
 	}
 
+	public getParentNodeKey(key: string): string | boolean | null {
+		const edge = this.graph.elements(`edge[target = "${key}"]`);
+		if (edge) {
+			const source = edge.data('source');
+			if (source) {
+				return source;
+			}
+			return null;
+		}
+		return false;
+	}
+
 	private deserialize(json: object | string): CytoscapeOptions {
 		if (typeof json === 'string') {
 			json = JSON.parse(json);

@@ -1,130 +1,109 @@
-import { v4 as uuid } from 'uuid';
-
-import { Spec } from '../analysis/Spec';
-import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
-import { Command } from '../comm/Command';
-import { CommunicationChannel } from '../comm/CommunicationChannel';
-import { Message } from '../comm/Message';
 import { Graph } from '../graph/Graph';
 import { GraphStorage } from '../graph/GraphStorage';
-import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLEventType } from '../html/HTMLEventType';
-import { HTMLInputType } from '../html/HTMLInputType';
 import { Mutex } from '../mutex/Mutex';
+import { AnalyzedElement } from './AnalyzedElement';
+import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
-import { ElementInteractionManager } from './ElementInteractionManager';
-import { FeatureStorage } from './FeatureStorage';
+import { ElementInteractionStorage } from './ElementInteractionStorage';
 import { FormFiller } from './FormFiller';
-import { InputInteractor } from './InputInteractor';
-import { UrlListStorage } from './UrlListStorage';
+import { Util } from '../Util';
+import { ElementInteractionGraph } from './ElementInteractionGraph';
 
 //classe deve ser refatorada
 export class Crawler {
 	private document: HTMLDocument;
 	private pageUrl: URL;
-	private communicationChannel: CommunicationChannel;
 	private graphStorage: GraphStorage;
-	private crawledUrlsStorage: UrlListStorage;
-	private featureStorage: FeatureStorage;
-	private featureAnalyzer: FeatureAnalyzer;
 	//abstrair mutex em classe
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
-	private crawledUrlsKey: string;
 	private formFiller: FormFiller;
-
-	//aux variables
+	private analyzedElementStorage: AnalyzedElementStorage;
+	private interactionStorage: ElementInteractionStorage;
+	private interactionsGraphKey: string;
+	private lastInteractionKey: string; //aux variables
 	private closeWindow = false;
 
 	constructor(
 		document: HTMLDocument,
 		pageUrl: URL,
-		communicationChannel: CommunicationChannel,
 		graphStorage: GraphStorage,
-		crawledUrlsStorage: UrlListStorage,
-		featureStorage: FeatureStorage,
-		featureAnalyzer: FeatureAnalyzer,
 		graphKey: string,
-		crawledUrlsKey: string,
 		mutex: Mutex,
-		formFiller: FormFiller
+		formFiller: FormFiller,
+		analyzedElementStorage: AnalyzedElementStorage,
+		interactionStorage: ElementInteractionStorage,
+		interactionsGraphKey: string,
+		lastInteractionKey: string
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
 		this.graphStorage = graphStorage;
-		this.crawledUrlsStorage = crawledUrlsStorage;
-		this.featureStorage = featureStorage;
 		this.visitedPagesGraphMutex = mutex;
 		this.graphKey = graphKey;
-		this.crawledUrlsKey = crawledUrlsKey;
-		this.communicationChannel = communicationChannel;
-		this.featureAnalyzer = featureAnalyzer;
 		this.formFiller = formFiller;
+		this.analyzedElementStorage = analyzedElementStorage;
+		this.interactionStorage = interactionStorage;
+		this.interactionsGraphKey = interactionsGraphKey;
+		this.lastInteractionKey = lastInteractionKey;
 	}
 
 	public async crawl() {
-		this.addUrlToGraph(this.pageUrl);
-		const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
+		const _this = this;
+		//this.addUrlToGraph(this.pageUrl);
 
-		// COMENTATO PARA TESTE
-		// let foundUrl: URL;
-		// for (const link of links) {
-		// 	try {
-		// 		foundUrl = new URL(link.href);
-		// 	} catch (_) {
-		// 		continue;
-		// 	}
-		// 	this.addUrlToGraph(foundUrl);
-		// 	this.addUrlsLinkToGraph(pageUrl, foundUrl);
-		// 	if (
-		// 		this.sameHostname(foundUrl, pageUrl) &&
-		// 		!this.wasUrlAlreadyCrawled(foundUrl)
-		// 	) {
-		// 		this.crawledUrlsStorage.add(
-		// 			this.crawledUrlsKey,
-		// 			new URL(foundUrl.href)
-		// 		);
-		// 		const message: Message = new Message([Command.OpenNewTab], {
-		// 			url: foundUrl.href,
-		// 		});
-		// 		this.communicationChannel.sendMessageToAll(message);
-		// 	}
-		// }
-		//ANÁLISE
+		const graph = this.graphStorage.get(this.interactionsGraphKey);
+		let elementInteractionGraph: ElementInteractionGraph | null = null;
+		if (graph) {
+			elementInteractionGraph = new ElementInteractionGraph(graph, this.interactionStorage, this.analyzedElementStorage);
+		}
 
-		// for (const feature of specAnalyzed.features) {
-		// 	const id: string = uuid();
-		// 	const key = this.pageUrl.href + ':' + id;
-		// 	this.featureStorage.save(key, feature);
-		// 	//temporario
-		// 	// console.log(this.featureStorage.get(key));
-		// }
-
-		// const element = document.getElementById('fname');
-		// if(element){
-		// 	const interaction = new ElementInteraction(<HTMLInputElement>element, HTMLEventType.Change, 'oaspkdaposkd');
-		// 	const inputInteractor = new InputInteractor();
-		// 	inputInteractor.execute(interaction);
-		// }
-
-		// const forms = this.document.getElementsByTagName('form');
-		// for (const form of forms) {
-
-		// 	// preenche formulario
-		// 	await this.formFiller.fill(form);
-		// }
+		//obtem ultima interacao que não está dentro de form já analisado
+		let lastUnanalyzed: ElementInteraction<HTMLElement> | null = null;
+		if (elementInteractionGraph) {
+			lastUnanalyzed = this.getLastUnanalyzedInteraction(elementInteractionGraph);
+		}
 
 		const forms = this.document.getElementsByTagName('form');
 		for (const form of forms) {
-			// preenche formulario
-			await this.formFiller.fill(form);
+			const xPath = Util.getPathTo(form);
+			if (xPath) {
+				if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
+					form.addEventListener(HTMLEventType.Submit, function () {
+						_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
+						this.setFormChildElementsAsAnalyzed(form);
+					});
+
+					//se ultima interacao que não está dentro de form já analisado está nessa página e também nesse form
+					let previousInteractions: ElementInteraction<HTMLElement>[] = [];
+					if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href == this.pageUrl.href) {
+						const urlCriteria = { interactionUrl: this.pageUrl, isEqual: true };
+						previousInteractions =
+							elementInteractionGraph?.pathToInteraction(lastUnanalyzed, false, urlCriteria, null, false) || [];
+						//previousInteractions = Util.getPreviousInteractions(this.interactionStorage,edges,lastUnanalyzed,this.pageUrl,form);
+						/*pega todas interações que foram feitas antes dessa ultima interação dentro desse form
+						  e preenche o formulário, sem salvar no grafo, pois essas interações já foram salvas previamente
+						*/
+					}
+
+					await this.formFiller.fill(form, previousInteractions.reverse());
+				}
+			} else {
+				throw new Error('Unable to get element XPath');
+			}
+
+			//flags form element as analyzed in case it doesn't trigger the submit event
+			this.analyzedElementStorage.save(new AnalyzedElement(form, this.pageUrl));
+			this.setFormChildElementsAsAnalyzed(form);
+		}
+
+		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página
+		if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href != this.pageUrl.href) {
+			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
 
 		//this.closeWindow = true;
-	}
-
-	private searchForLinks(): HTMLCollectionOf<HTMLAnchorElement> {
-		return document.getElementsByTagName('a');
 	}
 
 	//refatorar função
@@ -143,27 +122,25 @@ export class Crawler {
 			});
 	}
 
-	//refatorar função
-	private addUrlsLinkToGraph(urlFrom: URL, urlTo: URL): void {
-		//mutex deveria ficar dentro de GraphStorage ou em Crawler ?
-		this.visitedPagesGraphMutex
-			.lock()
-			.then(() => {
-				let graph: Graph = this.graphStorage.get(this.graphKey);
-				graph.addEdge(urlFrom.toString(), urlTo.toString());
-				this.graphStorage.save(this.graphKey, graph);
-				return this.visitedPagesGraphMutex.unlock();
-			})
-			.then(() => {
-				if (this.closeWindow === true) window.close();
-			});
+	private setFormChildElementsAsAnalyzed(form) {
+		for (let element of form.querySelectorAll('input,textarea,select,button')) {
+			//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
+			this.analyzedElementStorage.save(new AnalyzedElement(element, this.pageUrl));
+		}
 	}
 
-	private wasUrlAlreadyCrawled(url: URL): boolean {
-		return this.crawledUrlsStorage.isUrlInList(this.crawledUrlsKey, url);
-	}
+	private getLastUnanalyzedInteraction(
+		elementInteractionGraph: ElementInteractionGraph
+	): ElementInteraction<HTMLElement> | null {
+		const currentInteraction = this.interactionStorage.get(this.lastInteractionKey);
+		if (currentInteraction) {
+			const path = elementInteractionGraph.pathToInteraction(currentInteraction, true, null, null, false);
+			const lastUnanalyzed = path.pop();
+			if (lastUnanalyzed) {
+				return lastUnanalyzed;
+			}
+		}
 
-	private sameHostname(url1: URL, url2: URL): boolean {
-		return url1.hostname === url2.hostname;
+		return null;
 	}
 }
