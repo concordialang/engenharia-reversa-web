@@ -11,7 +11,7 @@ import { NodeTypes } from '../node/NodeTypes';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
-export class FeatureInterector {
+export class FeatureCreator {
 	private radioGroupsAlreadyFilled: string[];
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;

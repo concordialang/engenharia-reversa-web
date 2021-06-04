@@ -14,7 +14,7 @@ import { Mutex } from '../mutex/Mutex';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
 import { FeatureStorage } from './FeatureStorage';
-import { FeatureInterector } from './FeatureInterector';
+import { FeatureCreator } from './FeatureCreator';
 import { InputInteractor } from './InputInteractor';
 import { UrlListStorage } from './UrlListStorage';
 import { DiffDomManager } from "../analysis/DiffDomManager";
@@ -34,7 +34,7 @@ export class Crawler {
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
 	private crawledUrlsKey: string;
-	private featureInterector: FeatureInterector;
+	private featureCreator: FeatureCreator;
 
 	//aux variables
 	private closeWindow = false;
@@ -50,7 +50,7 @@ export class Crawler {
 		graphKey: string,
 		crawledUrlsKey: string,
 		mutex: Mutex,
-		featureInterector: FeatureInterector,
+		featureCreator: FeatureCreator,
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
@@ -62,7 +62,7 @@ export class Crawler {
 		this.crawledUrlsKey = crawledUrlsKey;
 		this.communicationChannel = communicationChannel;
 		this.featureAnalyzer = featureAnalyzer;
-		this.featureInterector = featureInterector;
+		this.featureCreator = featureCreator;
 	}
 
 	// find the most internal parent in common of nodes 
@@ -203,12 +203,12 @@ export class Crawler {
 		} else if(featureTags.length > 1){
 			analysisElement = this.getCommonAncestor(Array.from(featureTags));
 		} else if(featureTags.length == 0){
-			let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea');
+			let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
 			analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
 		}
 
 		if(analysisElement !== null){
-			await this.featureInterector.interact(analysisElement);
+			await this.featureCreator.interact(analysisElement);
 		}
 
 		// const forms = analysisContext.getElementsByTagName('form');
