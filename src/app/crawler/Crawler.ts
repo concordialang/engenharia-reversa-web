@@ -57,67 +57,6 @@ export class Crawler {
 		return elements.reduce(reducer, elements[0]);
 	}
 
-	// private getParentsNode(node: any) {
-	// 	let nodesParents = [] as any;
-
-	// 	while(node){
-	// 		nodesParents.unshift(node);
-	// 		node = node.parentNode;
-	// 	}
-
-	// 	return nodesParents;
-	// }
-
-	// private commonParent(nodeList: NodeListOf<Element>){
-	// 	let parentsNodes = [] as any;
-	// 	nodeList.forEach(node => parentsNodes.push(this.getParentsNode(node)));
-
-	// 	console.log("parentsNodes", parentsNodes);
-
-	// 	// checks if all nodes have at least one parent in common
-	// 	let mostExternalParentInCommon = parentsNodes[0][0];
-	// 	let validNodes = parentsNodes.every(parentNode => parentNode[0] === mostExternalParentInCommon);
-
-	// 	if(validNodes){
-
-	// 	}
-
-	// 	// const parentsNode1 = this.parents(node1);
-	// 	// const parentsNode2 = this.parents(node2);
-
-	// 	// if (parentsNode1[0] != parentsNode2[0]){
-	// 	// 	return null;
-	// 	// }
-
-	// 	// console.log("tiodos parentsNodes", parentsNodes);
-	// 	// const parentsNode1 = parentsNodes[0];
-	// 	// for(let parentNode1 of parentsNodes[0]){
-	// 	// 	console.log("parentNode1", parentNode1);
-	// 	// }
-
-	// 	let commonParent = parentsNodes[0][0];
-	// 	for(let parentNode of parentsNodes){
-	// 		for (let i = 0; i < parentsNodes[0].length; i++) {
-	// 			console.log("parentNode[i]", parentNode[i]);
-	// 			console.log("segundo", parentsNodes[0][i]);
-	// 			console.log(parentNode[i] == parentsNodes[0][i]);
-	// 			console.log("");
-	// 			if(parentNode[i] == parentsNodes[0][i]){
-	// 				commonParent = parentNode[i];
-	// 			}
-	// 		}
-	// 	}
-
-	// 	console.log("commonParent", commonParent);
-
-	// 	for (let i = 0; i < parentsNodes[0].length; i++) {
-	// 		// if (parentsNode1[i] != parentsNode2[i]) {
-	// 		// 	// common parent
-	// 		// 	return parentsNode1[i - 1];
-	// 		// }
-	// 	}
-	// }
-
 	public async crawl() {
 		const _this = this;
 		//this.addUrlToGraph(this.pageUrl);
@@ -171,9 +110,6 @@ export class Crawler {
 		if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href != this.pageUrl.href) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
-
-		// this.addUrlToGraph(this.pageUrl);
-		// const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
 
 		// let analysisContext: HTMLElement = this.document.body;
 		// let analysisWithDiff = true;
