@@ -10,7 +10,7 @@ import { Crawler } from './app/crawler/Crawler';
 import { ElementInteractionManager } from './app/crawler/ElementInteractionManager';
 import { ElementInteractionStorage } from './app/crawler/ElementInteractionStorage';
 import { FeatureStorage } from './app/crawler/FeatureStorage';
-import { FormFiller } from './app/crawler/FormFiller';
+import { FeatureCreator } from './app/crawler/FeatureCreator';
 import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
@@ -49,7 +49,7 @@ const elementInteractionManager = new ElementInteractionManager(
 );
 
 const pageUrl: URL = new URL(window.location.href);
-const formFiller: FormFiller = new FormFiller(
+const featureCreator: FeatureCreator = new FeatureCreator(
 	elementInteractionManager,
 	pageUrl,
 	spec,
@@ -64,7 +64,7 @@ const crawler: Crawler = new Crawler(
 	graphStorage,
 	graphKey,
 	visitedPagesGraphMutex,
-	formFiller,
+	featureCreator,
 	analyzedElementStorage,
 	elementInteracationStorage,
 	elementInteractionGraphKey,

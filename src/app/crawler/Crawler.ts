@@ -6,9 +6,11 @@ import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from './ElementInteractionStorage';
-import { FormFiller } from './FormFiller';
+import { FeatureCreator } from './FeatureCreator';
 import { Util } from '../Util';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
+import { DiffDomManager } from '../analysis/DiffDomManager';
+import { NodeTypes } from '../node/NodeTypes';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -18,7 +20,7 @@ export class Crawler {
 	//abstrair mutex em classe
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
-	private formFiller: FormFiller;
+	private featureCreator: FeatureCreator;
 	private analyzedElementStorage: AnalyzedElementStorage;
 	private interactionStorage: ElementInteractionStorage;
 	private interactionsGraphKey: string;
@@ -31,7 +33,7 @@ export class Crawler {
 		graphStorage: GraphStorage,
 		graphKey: string,
 		mutex: Mutex,
-		formFiller: FormFiller,
+		featureCreator: FeatureCreator,
 		analyzedElementStorage: AnalyzedElementStorage,
 		interactionStorage: ElementInteractionStorage,
 		interactionsGraphKey: string,
@@ -42,12 +44,79 @@ export class Crawler {
 		this.graphStorage = graphStorage;
 		this.visitedPagesGraphMutex = mutex;
 		this.graphKey = graphKey;
-		this.formFiller = formFiller;
+		this.featureCreator = featureCreator;
 		this.analyzedElementStorage = analyzedElementStorage;
 		this.interactionStorage = interactionStorage;
 		this.interactionsGraphKey = interactionsGraphKey;
 		this.lastInteractionKey = lastInteractionKey;
 	}
+
+	// find the most internal parent in common of nodes
+	private getCommonAncestor(elements: Element[]) {
+		const reducer = (prev, current) => (current.parentElement.contains(prev) ? current.parentElement : prev);
+		return elements.reduce(reducer, elements[0]);
+	}
+
+	// private getParentsNode(node: any) {
+	// 	let nodesParents = [] as any;
+
+	// 	while(node){
+	// 		nodesParents.unshift(node);
+	// 		node = node.parentNode;
+	// 	}
+
+	// 	return nodesParents;
+	// }
+
+	// private commonParent(nodeList: NodeListOf<Element>){
+	// 	let parentsNodes = [] as any;
+	// 	nodeList.forEach(node => parentsNodes.push(this.getParentsNode(node)));
+
+	// 	console.log("parentsNodes", parentsNodes);
+
+	// 	// checks if all nodes have at least one parent in common
+	// 	let mostExternalParentInCommon = parentsNodes[0][0];
+	// 	let validNodes = parentsNodes.every(parentNode => parentNode[0] === mostExternalParentInCommon);
+
+	// 	if(validNodes){
+
+	// 	}
+
+	// 	// const parentsNode1 = this.parents(node1);
+	// 	// const parentsNode2 = this.parents(node2);
+
+	// 	// if (parentsNode1[0] != parentsNode2[0]){
+	// 	// 	return null;
+	// 	// }
+
+	// 	// console.log("tiodos parentsNodes", parentsNodes);
+	// 	// const parentsNode1 = parentsNodes[0];
+	// 	// for(let parentNode1 of parentsNodes[0]){
+	// 	// 	console.log("parentNode1", parentNode1);
+	// 	// }
+
+	// 	let commonParent = parentsNodes[0][0];
+	// 	for(let parentNode of parentsNodes){
+	// 		for (let i = 0; i < parentsNodes[0].length; i++) {
+	// 			console.log("parentNode[i]", parentNode[i]);
+	// 			console.log("segundo", parentsNodes[0][i]);
+	// 			console.log(parentNode[i] == parentsNodes[0][i]);
+	// 			console.log("");
+	// 			if(parentNode[i] == parentsNodes[0][i]){
+	// 				commonParent = parentNode[i];
+	// 			}
+	// 		}
+	// 	}
+
+	// 	console.log("commonParent", commonParent);
+
+	// 	for (let i = 0; i < parentsNodes[0].length; i++) {
+	// 		// if (parentsNode1[i] != parentsNode2[i]) {
+	// 		// 	// common parent
+	// 		// 	return parentsNode1[i - 1];
+	// 		// }
+	// 	}
+	// }
 
 	public async crawl() {
 		const _this = this;
@@ -87,7 +156,7 @@ export class Crawler {
 						*/
 					}
 
-					await this.formFiller.fill(form, previousInteractions.reverse());
+					await this.featureCreator.fillForm(form, previousInteractions.reverse());
 				}
 			} else {
 				throw new Error('Unable to get element XPath');
@@ -103,7 +172,90 @@ export class Crawler {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
 
-		//this.closeWindow = true;
+		// this.addUrlToGraph(this.pageUrl);
+		// const links: HTMLCollectionOf<HTMLAnchorElement> = this.searchForLinks();
+
+		// let analysisContext: HTMLElement = this.document.body;
+		// let analysisWithDiff = true;
+
+		// if(analysisWithDiff){
+		// 	// temporary for testing
+		// 	const previousDoc = document.implementation.createHTMLDocument();
+		// 	previousDoc.body.innerHTML +=
+		// 		`<header id="menu">
+		// 			<button id="alert">Alert</button>
+		// 			<button id="confirm">Confirm</button>
+		// 			<button id="prompt">Prompt</button>
+		// 			<button id="teste">teste</button>
+		// 		</header>
+
+		// 		<section>
+		// 			<div>
+		// 				<div>
+		// 					<label id='labelteste' for="fname">First name:</label><br>
+		// 					<input type="text" id="fname" name="fname"><br>
+		// 				</div>
+		// 				<ul>
+		// 					<li>
+		// 						<label for="name">Name:</label>
+		// 						<input type="text" id="name" name="user_name">
+		// 					</li>
+		// 					<li>
+		// 						<label for="mail">E-mail:</label>
+		// 						<input type="text" id="mail" name="user_email">
+		// 					</li>
+		// 					<li>
+		// 						<label for="msg">Message:</label>
+		// 						<input type="text" id="msg" name="user_message"></input>
+		// 					</li>
+		// 					<li class="button">
+		// 						<button type="submit">Send your message</button>
+		// 					</li>
+		// 				</ul>
+		// 			</div>
+		// 		</section>
+
+		// 		<footer>
+		// 			<p>Footer</p>
+		// 		</footer>`;
+
+		// 	let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
+		// 	let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+
+		// 	let xpathResult =
+		// 		xPathParentElementDiff !== null
+		// 			? this.document.evaluate( xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+		// 			: null;
+
+		// 	analysisContext =
+		// 		xpathResult !== null && xpathResult.singleNodeValue !== null
+		// 			? xpathResult.singleNodeValue as HTMLElement
+		// 			: this.document.body;
+		// }
+
+		// let analysisElement: HTMLElement | null = null;
+		// const featureTags = analysisContext.querySelectorAll('form, table');
+
+		// // find element to analisy based on body tags form and table
+		// if(featureTags.length == 1){
+		// 	analysisElement = featureTags[0] as HTMLElement;
+		// } else if(featureTags.length > 1){
+		// 	analysisElement = this.getCommonAncestor(Array.from(featureTags));
+		// } else if(featureTags.length == 0){
+		// 	let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
+		// 	analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
+		// }
+
+		// if(analysisElement !== null){
+		// 	await this.featureCreator.interact(analysisElement);
+		// }
+
+		// const forms = analysisContext.getElementsByTagName('form');
+		// console.log("forms", forms)
+		// for (const form of forms) {
+		// }
+
+		// this.closeWindow = true;
 	}
 
 	//refatorar função

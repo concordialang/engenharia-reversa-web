@@ -13,6 +13,7 @@ export enum NodeTypes {
 	LABEL = 'LABEL',
 	LI = 'LI',
 	LEGEND = 'LEGEND',
+	SCRIPT = 'SCRIPT',
 	SELECT = 'SELECT',
 	OPTION = 'OPTION',
 	TABLE = 'TABLE',
