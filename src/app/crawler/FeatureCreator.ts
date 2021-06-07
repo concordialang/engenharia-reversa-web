@@ -13,6 +13,9 @@ import { Util } from '../Util';
 import { Graph } from '../graph/Graph';
 import { MutationObserverManager } from '../mutationobserver/MutationObserverManager';
 import { NodeTypes } from '../node/NodeTypes';
+import { AnalyzedElement } from './AnalyzedElement';
+import { ElementInteractionGraph } from './ElementInteractionGraph';
+import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -25,6 +28,7 @@ export class FeatureCreator {
 	private elementInteractionStorage: ElementInteractionStorage;
 	private elementInteractionGraphKey: string;
 	private lastInteractionKey: string;
+	private analyzedElementStorage: AnalyzedElementStorage;
 
 	constructor(
 		elementInteractionManager: ElementInteractionManager,
@@ -33,7 +37,8 @@ export class FeatureCreator {
 		graphStorage: GraphStorage,
 		elementInteractionStorage: ElementInteractionStorage,
 		elementInteractionGraphKey: string,
-		lastInteractionKey: string
+		lastInteractionKey: string,
+		analyzedElementStorage: AnalyzedElementStorage
 	) {
 		this.radioGroupsAlreadyFilled = [];
 		this.elementInteractionManager = elementInteractionManager;
@@ -43,30 +48,71 @@ export class FeatureCreator {
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementInteractionGraphKey = elementInteractionGraphKey;
 		this.lastInteractionKey = lastInteractionKey;
+		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
-	public async interact(element: HTMLElement) {
-		element.querySelectorAll('*').forEach((node) => {
-			if (node.nodeName === NodeTypes.FORM) {
-				this.fillForm(node as HTMLFormElement);
+	public async interact(
+		element: HTMLElement,
+		elementInteractionGraph: ElementInteractionGraph | null = null,
+		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
+	) {
+		if (element.nodeName == NodeTypes.FORM) {
+			const form = <HTMLFormElement>element;
+			await this.fillForm(form, elementInteractionGraph, lastInteractionFromUnalyzedForm);
+		}
+
+		// element.querySelectorAll('*').forEach(async (node) => {
+
+		// });
+	}
+
+	public async fillForm(
+		form: HTMLFormElement,
+		elementInteractionGraph: ElementInteractionGraph | null = null,
+		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
+	) {
+		const xPath = Util.getPathTo(form);
+		//se ultima interacao que não está dentro de form já analisado está nessa página e também nesse form
+		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
+		if (xPath) {
+			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
+				const _this = this;
+				form.addEventListener(HTMLEventType.Submit, function () {
+					_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
+					this.setFormChildElementsAsAnalyzed(form);
+				});
+
+				if (lastInteractionFromUnalyzedForm && lastInteractionFromUnalyzedForm.getPageUrl().href == this.pageUrl.href) {
+					const urlCriteria = { interactionUrl: this.pageUrl, isEqual: true };
+					previousInteractions =
+						elementInteractionGraph
+							?.pathToInteraction(lastInteractionFromUnalyzedForm, false, urlCriteria, null, false)
+							.reverse() || [];
+					//previousInteractions = Util.getPreviousInteractions(this.interactionStorage,edges,lastUnanalyzed,this.pageUrl,form);
+					/*pega todas interações que foram feitas antes dessa ultima interação dentro desse form
+					e preenche o formulário, sem salvar no grafo, pois essas interações já foram salvas previamente
+					*/
+				}
+			} else {
+				return null;
 			}
-		});
-	}
+		} else {
+			throw new Error('Unable to get element XPath');
+		}
 
-	public async fillForm(form: HTMLFormElement, interactions: ElementInteraction<HTMLElement>[] = []) {
 		const interactionGraph = new GraphStorage().get('interactions-graph');
 		const edges = interactionGraph.serialize()['links'];
 
 		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
 
-		for (let interaction of interactions) {
+		for (let interaction of previousInteractions) {
 			if (!this.redirectsToAnotherUrl(interaction.getElement(), this.pageUrl, edges)) {
 				await this.elementInteractionManager.execute(interaction, false);
 			}
 		}
 
-		if (interactions.length > 0) {
-			previousInteraction = interactions[interactions.length - 1];
+		if (previousInteractions.length > 0) {
+			previousInteraction = previousInteractions[previousInteractions.length - 1];
 		}
 
 		const featureAnalyzer = new FeatureAnalyzer();
@@ -79,7 +125,7 @@ export class FeatureCreator {
 		const scenario = featureAnalyzer.createScenario(feature);
 		const variant = featureAnalyzer.createVariant();
 
-		const elements = this.getElements(form, interactions);
+		const elements = this.getElements(form, previousInteractions);
 		for (const element of elements) {
 			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
@@ -151,6 +197,10 @@ export class FeatureCreator {
 		observer.disconnect();
 
 		this.radioGroupsAlreadyFilled = [];
+
+		//flags form element as analyzed in case it doesn't trigger the submit event
+		this.analyzedElementStorage.save(new AnalyzedElement(form, this.pageUrl));
+		this.setFormChildElementsAsAnalyzed(form);
 	}
 
 	private getElements(form: HTMLFormElement, previousInteractions?: ElementInteraction<HTMLElement>[]): HTMLElement[] {
@@ -262,6 +312,13 @@ export class FeatureCreator {
 					}
 				}
 			}
+		}
+	}
+
+	private setFormChildElementsAsAnalyzed(form) {
+		for (let element of form.querySelectorAll('input,textarea,select,button')) {
+			//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
+			this.analyzedElementStorage.save(new AnalyzedElement(element, this.pageUrl));
 		}
 	}
 }

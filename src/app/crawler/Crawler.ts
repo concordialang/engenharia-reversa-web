@@ -73,118 +73,84 @@ export class Crawler {
 			lastUnanalyzed = this.getLastUnanalyzedInteraction(elementInteractionGraph);
 		}
 
-		const forms = this.document.getElementsByTagName('form');
-		for (const form of forms) {
-			const xPath = Util.getPathTo(form);
-			if (xPath) {
-				if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
-					form.addEventListener(HTMLEventType.Submit, function () {
-						_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
-						this.setFormChildElementsAsAnalyzed(form);
-					});
+		let analysisContext: HTMLElement = this.document.body;
+		let analysisWithDiff = true;
 
-					//se ultima interacao que não está dentro de form já analisado está nessa página e também nesse form
-					let previousInteractions: ElementInteraction<HTMLElement>[] = [];
-					if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href == this.pageUrl.href) {
-						const urlCriteria = { interactionUrl: this.pageUrl, isEqual: true };
-						previousInteractions =
-							elementInteractionGraph?.pathToInteraction(lastUnanalyzed, false, urlCriteria, null, false) || [];
-						//previousInteractions = Util.getPreviousInteractions(this.interactionStorage,edges,lastUnanalyzed,this.pageUrl,form);
-						/*pega todas interações que foram feitas antes dessa ultima interação dentro desse form
-						  e preenche o formulário, sem salvar no grafo, pois essas interações já foram salvas previamente
-						*/
-					}
+		if (analysisWithDiff) {
+			// temporary for testing
+			const previousDoc = document.implementation.createHTMLDocument();
+			previousDoc.body.innerHTML += `<header id="menu">
+					<button id="alert">Alert</button>
+					<button id="confirm">Confirm</button>
+					<button id="prompt">Prompt</button>
+					<button id="teste">teste</button>
+				</header>
 
-					await this.featureCreator.fillForm(form, previousInteractions.reverse());
-				}
-			} else {
-				throw new Error('Unable to get element XPath');
-			}
+				<section>
+					<div>
+						<div>
+							<label id='labelteste' for="fname">First name:</label><br>
+							<input type="text" id="fname" name="fname"><br>
+						</div>
+						<ul>
+							<li>
+								<label for="name">Name:</label>
+								<input type="text" id="name" name="user_name">
+							</li>
+							<li>
+								<label for="mail">E-mail:</label>
+								<input type="text" id="mail" name="user_email">
+							</li>
+							<li>
+								<label for="msg">Message:</label>
+								<input type="text" id="msg" name="user_message"></input>
+							</li>
+							<li class="button">
+								<button type="submit">Send your message</button>
+							</li>
+						</ul>
+					</div>
+				</section>
 
-			//flags form element as analyzed in case it doesn't trigger the submit event
-			this.analyzedElementStorage.save(new AnalyzedElement(form, this.pageUrl));
-			this.setFormChildElementsAsAnalyzed(form);
+				<footer>
+					<p>Footer</p>
+				</footer>`;
+
+			let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
+			let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+
+			let xpathResult =
+				xPathParentElementDiff !== null
+					? this.document.evaluate(xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+					: null;
+
+			analysisContext =
+				xpathResult !== null && xpathResult.singleNodeValue !== null
+					? (xpathResult.singleNodeValue as HTMLElement)
+					: this.document.body;
+		}
+
+		let analysisElement: HTMLElement | null = null;
+		const featureTags = analysisContext.querySelectorAll('form, table');
+
+		// find element to analisy based on body tags form and table
+		if (featureTags.length == 1) {
+			analysisElement = featureTags[0] as HTMLElement;
+		} else if (featureTags.length > 1) {
+			analysisElement = this.getCommonAncestor(Array.from(featureTags));
+		} else if (featureTags.length == 0) {
+			let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
+			analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
+		}
+
+		if (analysisElement !== null) {
+			await this.featureCreator.interact(analysisElement, elementInteractionGraph, lastUnanalyzed);
 		}
 
 		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página
 		if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href != this.pageUrl.href) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
-
-		// let analysisContext: HTMLElement = this.document.body;
-		// let analysisWithDiff = true;
-
-		// if(analysisWithDiff){
-		// 	// temporary for testing
-		// 	const previousDoc = document.implementation.createHTMLDocument();
-		// 	previousDoc.body.innerHTML +=
-		// 		`<header id="menu">
-		// 			<button id="alert">Alert</button>
-		// 			<button id="confirm">Confirm</button>
-		// 			<button id="prompt">Prompt</button>
-		// 			<button id="teste">teste</button>
-		// 		</header>
-
-		// 		<section>
-		// 			<div>
-		// 				<div>
-		// 					<label id='labelteste' for="fname">First name:</label><br>
-		// 					<input type="text" id="fname" name="fname"><br>
-		// 				</div>
-		// 				<ul>
-		// 					<li>
-		// 						<label for="name">Name:</label>
-		// 						<input type="text" id="name" name="user_name">
-		// 					</li>
-		// 					<li>
-		// 						<label for="mail">E-mail:</label>
-		// 						<input type="text" id="mail" name="user_email">
-		// 					</li>
-		// 					<li>
-		// 						<label for="msg">Message:</label>
-		// 						<input type="text" id="msg" name="user_message"></input>
-		// 					</li>
-		// 					<li class="button">
-		// 						<button type="submit">Send your message</button>
-		// 					</li>
-		// 				</ul>
-		// 			</div>
-		// 		</section>
-
-		// 		<footer>
-		// 			<p>Footer</p>
-		// 		</footer>`;
-
-		// 	let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
-		// 	let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
-
-		// 	let xpathResult =
-		// 		xPathParentElementDiff !== null
-		// 			? this.document.evaluate( xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
-		// 			: null;
-
-		// 	analysisContext =
-		// 		xpathResult !== null && xpathResult.singleNodeValue !== null
-		// 			? xpathResult.singleNodeValue as HTMLElement
-		// 			: this.document.body;
-		// }
-
-		// let analysisElement: HTMLElement | null = null;
-		// const featureTags = analysisContext.querySelectorAll('form, table');
-
-		// // find element to analisy based on body tags form and table
-		// if(featureTags.length == 1){
-		// 	analysisElement = featureTags[0] as HTMLElement;
-		// } else if(featureTags.length > 1){
-		// 	analysisElement = this.getCommonAncestor(Array.from(featureTags));
-		// } else if(featureTags.length == 0){
-		// 	let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
-		// 	analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
-		// }
-
-		// if(analysisElement !== null){
-		// 	await this.featureCreator.interact(analysisElement);
-		// }
 
 		// const forms = analysisContext.getElementsByTagName('form');
 		// console.log("forms", forms)
@@ -208,13 +174,6 @@ export class Crawler {
 			.then(() => {
 				if (this.closeWindow === true) window.close();
 			});
-	}
-
-	private setFormChildElementsAsAnalyzed(form) {
-		for (let element of form.querySelectorAll('input,textarea,select,button')) {
-			//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
-			this.analyzedElementStorage.save(new AnalyzedElement(element, this.pageUrl));
-		}
 	}
 
 	private getLastUnanalyzedInteraction(

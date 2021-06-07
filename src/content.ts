@@ -56,7 +56,8 @@ const featureCreator: FeatureCreator = new FeatureCreator(
 	graphStorage,
 	elementInteracationStorage,
 	elementInteractionGraphKey,
-	lastElementInteractionKey
+	lastElementInteractionKey,
+	analyzedElementStorage
 );
 const crawler: Crawler = new Crawler(
 	document,
