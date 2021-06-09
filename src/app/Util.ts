@@ -20,6 +20,32 @@ export class Util {
 		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
+	// find the most internal parent in common of nodes
+	static getCommonAncestorElement(elements: Element[]) {
+		const reducer = (prev, current) => (current.parentElement.contains(prev) ? current.parentElement : prev);
+
+		// testar
+		// const reducer = function(prev, current) {
+		// 	console.log("prev", prev)
+		// 	console.log("prev parentElement", prev.parentElement)
+		// 	console.log("current", current)
+		// 	console.log("current parentElement", current.parentElement)
+
+		// 	if(current.parentElement.contains(prev)){
+		// 		console.log("sim")
+		// 		console.log("")
+		// 		return current.parentElement
+		// 	}
+		// 	else {
+		// 		console.log("nao")
+		// 		console.log("")
+		// 		return prev;
+		// 	}
+		// };
+
+		return elements.reduce(reducer, elements[0]);
+	}
+
 	static getPathTo(element: HTMLElement): string | null {
 		if (element.id !== '') return 'id("' + element.id + '")';
 		if (element === document.body) return element.tagName;

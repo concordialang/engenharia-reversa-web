@@ -17,7 +17,7 @@ export class FeatureAnalyzer {
 		this.variantSentencesGenerator = new VariantSentencesGenerator();
 	}
 
-	createFeatureFromForm(f: HTMLFormElement, spec: Spec): Feature {
+	createFeatureFromForm(f: HTMLElement, spec: Spec): Feature {
 		const title: HTMLElement | null = this.titleBeforeForm(f);
 
 		const feature = new Feature();
