@@ -51,14 +51,18 @@ export class FeatureCreator {
 		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
-	public async interact(
-		element: HTMLElement,
-		elementInteractionGraph: ElementInteractionGraph | null = null,
-		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
-	) {
+	public async interact(element: HTMLElement) {
 		if (element.nodeName == NodeTypes.FORM) {
 			const form = <HTMLFormElement>element;
-			await this.fillForm(form, elementInteractionGraph, lastInteractionFromUnalyzedForm);
+
+			const xPath = Util.getPathTo(form);
+			if (xPath) {
+				if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
+					await this.fillForm(form);
+				}
+			} else {
+				throw new Error('Unable to get element XPath');
+			}
 		}
 
 		// element.querySelectorAll('*').forEach(async (node) => {
@@ -66,54 +70,14 @@ export class FeatureCreator {
 		// });
 	}
 
-	public async fillForm(
-		form: HTMLFormElement,
-		elementInteractionGraph: ElementInteractionGraph | null = null,
-		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
-	) {
-		const xPath = Util.getPathTo(form);
-		//se ultima interacao que não está dentro de form já analisado está nessa página e também nesse form
-		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
-		if (xPath) {
-			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
-				const _this = this;
-				form.addEventListener(HTMLEventType.Submit, function () {
-					_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
-					this.setFormChildElementsAsAnalyzed(form);
-				});
-
-				if (lastInteractionFromUnalyzedForm && lastInteractionFromUnalyzedForm.getPageUrl().href == this.pageUrl.href) {
-					const urlCriteria = { interactionUrl: this.pageUrl, isEqual: true };
-					previousInteractions =
-						elementInteractionGraph
-							?.pathToInteraction(lastInteractionFromUnalyzedForm, false, urlCriteria, null, false)
-							.reverse() || [];
-					//previousInteractions = Util.getPreviousInteractions(this.interactionStorage,edges,lastUnanalyzed,this.pageUrl,form);
-					/*pega todas interações que foram feitas antes dessa ultima interação dentro desse form
-					e preenche o formulário, sem salvar no grafo, pois essas interações já foram salvas previamente
-					*/
-				}
-			} else {
-				return null;
-			}
-		} else {
-			throw new Error('Unable to get element XPath');
-		}
-
-		const interactionGraph = new GraphStorage().get('interactions-graph');
-		const edges = interactionGraph.serialize()['links'];
+	public async fillForm(form: HTMLFormElement) {
+		const _this = this;
+		form.addEventListener(HTMLEventType.Submit, function () {
+			_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
+			this.setFormChildElementsAsAnalyzed(form);
+		});
 
 		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-
-		for (let interaction of previousInteractions) {
-			if (!this.redirectsToAnotherUrl(interaction.getElement(), this.pageUrl, edges)) {
-				await this.elementInteractionManager.execute(interaction, false);
-			}
-		}
-
-		if (previousInteractions.length > 0) {
-			previousInteraction = previousInteractions[previousInteractions.length - 1];
-		}
 
 		const featureAnalyzer = new FeatureAnalyzer();
 
@@ -125,7 +89,7 @@ export class FeatureCreator {
 		const scenario = featureAnalyzer.createScenario(feature);
 		const variant = featureAnalyzer.createVariant();
 
-		const elements = this.getElements(form, previousInteractions);
+		const elements = this.getElements(form);
 		for (const element of elements) {
 			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
@@ -203,22 +167,12 @@ export class FeatureCreator {
 		this.setFormChildElementsAsAnalyzed(form);
 	}
 
-	private getElements(form: HTMLFormElement, previousInteractions?: ElementInteraction<HTMLElement>[]): HTMLElement[] {
+	private getElements(form: HTMLFormElement): HTMLElement[] {
 		const elements: HTMLElement[] = [];
-		if (!previousInteractions || previousInteractions.length == 0) {
-			for (let element of form.elements) {
-				elements.push(<HTMLElement>element);
-			}
-			return elements;
-		} else {
-			const lastInteraction = previousInteractions[previousInteractions.length - 1];
-			for (let i = form.elements.length - 1; i >= 0; i--) {
-				const element = <HTMLElement>form.elements[i];
-				if (Util.getPathTo(element) == Util.getPathTo(lastInteraction.getElement())) break;
-				elements.unshift(element);
-			}
-			return elements;
+		for (let element of form.elements) {
+			elements.push(<HTMLElement>element);
 		}
+		return elements;
 	}
 
 	private generateInputInteraction(input: HTMLInputElement): ElementInteraction<HTMLInputElement> | null {
