@@ -30,10 +30,11 @@ const graphKey = 'graph';
 const crawledUrlsKey = 'crawled-urls';
 const elementInteractionGraphKey = 'interactions-graph';
 const lastElementInteractionKey = 'last-interaction';
+const lastElementInteractionBeforeRedirectKey = 'last-interaction-before-redirect';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
 const inputInteractor = new InputInteractor();
-const buttonInteractor = new ButtonInteractor(document);
+const buttonInteractor = new ButtonInteractor(window);
 const elementInteracationStorage = new ElementInteractionStorage(document);
 const spec: Spec = new Spec('pt-br');
 const analyzedElementStorage = new AnalyzedElementStorage(document);
@@ -56,6 +57,7 @@ const featureCreator: FeatureCreator = new FeatureCreator(
 	graphStorage,
 	elementInteracationStorage,
 	elementInteractionGraphKey,
+	lastElementInteractionBeforeRedirectKey,
 	lastElementInteractionKey,
 	analyzedElementStorage
 );

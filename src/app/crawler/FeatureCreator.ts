@@ -27,6 +27,7 @@ export class FeatureCreator {
 	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
 	private elementInteractionGraphKey: string;
+	private lastInteractionBeforeRedirectKey: string;
 	private lastInteractionKey: string;
 	private analyzedElementStorage: AnalyzedElementStorage;
 
@@ -37,6 +38,7 @@ export class FeatureCreator {
 		graphStorage: GraphStorage,
 		elementInteractionStorage: ElementInteractionStorage,
 		elementInteractionGraphKey: string,
+		lastInteractionBeforeRedirectKey: string,
 		lastInteractionKey: string,
 		analyzedElementStorage: AnalyzedElementStorage
 	) {
@@ -47,6 +49,7 @@ export class FeatureCreator {
 		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementInteractionGraphKey = elementInteractionGraphKey;
+		this.lastInteractionBeforeRedirectKey = lastInteractionBeforeRedirectKey;
 		this.lastInteractionKey = lastInteractionKey;
 		this.analyzedElementStorage = analyzedElementStorage;
 	}
@@ -77,8 +80,6 @@ export class FeatureCreator {
 			this.setFormChildElementsAsAnalyzed(form);
 		});
 
-		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-
 		const featureAnalyzer = new FeatureAnalyzer();
 
 		// add observer on form
@@ -90,6 +91,15 @@ export class FeatureCreator {
 		const variant = featureAnalyzer.createVariant();
 
 		const elements = this.getElements(form);
+
+		const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionBeforeRedirectKey);
+
+		if (!lastInteraction) {
+			const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionKey);
+		}
+
+		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+
 		for (const element of elements) {
 			// interacts with the element
 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
@@ -104,22 +114,20 @@ export class FeatureCreator {
 				const edges = interactionGraph.serialize()['links'];
 				if (!this.redirectsToAnotherUrl(element, this.pageUrl, edges)) {
 					if (interaction) {
-						let result: InteractionResult | null;
 						if (!previousInteraction) {
-							result = await this.elementInteractionManager.execute(
-								interaction,
-								true,
-								this.elementInteractionStorage.get(this.lastInteractionKey)
-							);
-						} else {
-							result = await this.elementInteractionManager.execute(interaction, true, previousInteraction);
-							previousInteraction = null;
+							previousInteraction = lastInteraction;
+							//pode ter problema de concorrencia
+							this.elementInteractionStorage.remove(this.lastInteractionBeforeRedirectKey);
 						}
+						const result = await this.elementInteractionManager.execute(interaction, true, previousInteraction);
 						if (result) {
 							if (result.getTriggeredRedirection()) {
+								//pode ter problema de concorrencia
+								this.elementInteractionStorage.save(this.lastInteractionBeforeRedirectKey, interaction);
 								break;
 							}
 						}
+						previousInteraction = interaction;
 					}
 				}
 			}
@@ -161,10 +169,6 @@ export class FeatureCreator {
 		observer.disconnect();
 
 		this.radioGroupsAlreadyFilled = [];
-
-		//flags form element as analyzed in case it doesn't trigger the submit event
-		this.analyzedElementStorage.save(new AnalyzedElement(form, this.pageUrl));
-		this.setFormChildElementsAsAnalyzed(form);
 	}
 
 	private getElements(form: HTMLFormElement): HTMLElement[] {
