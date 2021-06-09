@@ -33,9 +33,9 @@ export class ElementInteractionGraph {
 		}
 
 		if (currentInteractionId) {
-			const parentInteractionKey = this.graph.getParentNodeKey(currentInteractionId);
-			if (typeof parentInteractionKey === 'string') {
-				const nextInteraction = this.elementInteractionStorage.get(parentInteractionKey);
+			const nextInteractionKey = this.graph.getParentNodeKey(currentInteractionId);
+			if (typeof nextInteractionKey === 'string') {
+				const nextInteraction = this.elementInteractionStorage.get(nextInteractionKey);
 
 				if (!nextInteraction) {
 					throw new Error('Error while fetching next interaction');
@@ -101,7 +101,7 @@ export class ElementInteractionGraph {
 				return [currentInteraction].concat(nextInteractionResult);
 			} else if (!searchForClosest) {
 				return [currentInteraction];
-			} else if (parentInteractionKey === false) {
+			} else if (nextInteractionKey === false) {
 				throw new Error('Error while fetching parent interaction key');
 			} else {
 				return [];
