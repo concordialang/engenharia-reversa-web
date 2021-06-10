@@ -68,71 +68,69 @@ export class Crawler {
 		}
 
 		let analysisContext: HTMLElement = this.document.body;
-		// let analysisWithDiff = false;
+		let analysisWithDiff = true;
 
-		// if (analysisWithDiff) {
-		// 	// temporary for testing
-		// 	const previousDoc = document.implementation.createHTMLDocument();
-		// 	previousDoc.body.innerHTML += `<header id="menu">
-		// 			<button id="alert">Alert</button>
-		// 			<button id="confirm">Confirm</button>
-		// 			<button id="prompt">Prompt</button>
-		// 			<button id="teste">teste</button>
-		// 		</header>
+		if (analysisWithDiff) {
+			// temporary for testing
+			const previousDoc = document.implementation.createHTMLDocument();
+			previousDoc.body.innerHTML += `<header id="menu">
+					<button id="alert">Alert</button>
+					<button id="confirm">Confirm</button>
+					<button id="prompt">Prompt</button>
+					<button id="teste">teste</button>
+				</header>
 
-		// 		<section>
-		// 			<div>
-		// 				<div>
-		// 					<label id='labelteste' for="fname">First name:</label><br>
-		// 					<input type="text" id="fname" name="fname"><br>
-		// 				</div>
-		// 				<ul>
-		// 					<li>
-		// 						<label for="name">Name:</label>
-		// 						<input type="text" id="name" name="user_name">
-		// 					</li>
-		// 					<li>
-		// 						<label for="mail">E-mail:</label>
-		// 						<input type="text" id="mail" name="user_email">
-		// 					</li>
-		// 					<li>
-		// 						<label for="msg">Message:</label>
-		// 						<input type="text" id="msg" name="user_message"></input>
-		// 					</li>
-		// 					<li class="button">
-		// 						<button type="submit">Send your message</button>
-		// 					</li>
-		// 				</ul>
-		// 			</div>
-		// 		</section>
+				<section>
+					<div>
+						<div>
+							<label id='labelteste' for="fname">First name:</label><br>
+							<input type="text" id="fname" name="fname"><br>
+						</div>
+						<ul>
+							<li>
+								<label for="name">Name:</label>
+								<input type="text" id="name" name="user_name">
+							</li>
+							<li>
+								<label for="mail">E-mail:</label>
+								<input type="text" id="mail" name="user_email">
+							</li>
+							<li>
+								<label for="msg">Message:</label>
+								<input type="text" id="msg" name="user_message"></input>
+							</li>
+							<li class="button">
+								<button type="submit">Send your message</button>
+							</li>
+						</ul>
+					</div>
+				</section>
 
-		// 		<footer>
-		// 			<p>Footer</p>
-		// 		</footer>`;
+				<footer>
+					<p>Footer</p>
+				</footer>`;
 
-		// 	let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
-		// 	let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+			let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
+			let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
 
-		// 	let xpathResult =
-		// 		xPathParentElementDiff !== null
-		// 			? this.document.evaluate(xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
-		// 			: null;
+			let xpathResult =
+				xPathParentElementDiff !== null
+					? this.document.evaluate(xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+					: null;
 
-		// 	analysisContext =
-		// 		xpathResult !== null && xpathResult.singleNodeValue !== null
-		// 			? (xpathResult.singleNodeValue as HTMLElement)
-		// 			: this.document.body;
-		// }
+			analysisContext =
+				xpathResult !== null && xpathResult.singleNodeValue !== null
+					? (xpathResult.singleNodeValue as HTMLElement)
+					: this.document.body;
+		}
 
 		let analysisElement: HTMLElement | null = null;
 		const featureTags = analysisContext.querySelectorAll('form, table');
-		console.log('featureTags', featureTags);
 
 		// find element to analisy based on body tags form and table
-		// if(featureTags.length == 1){
-		// 	analysisElement = featureTags[0] as HTMLElement;
-		// } else
-		if (featureTags.length >= 1) {
+		if (featureTags.length == 1) {
+			analysisElement = featureTags[0] as HTMLElement;
+		} else if (featureTags.length >= 1) {
 			analysisElement = Util.getCommonAncestorElement(Array.from(featureTags));
 		} else if (featureTags.length == 0) {
 			let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
@@ -140,18 +138,13 @@ export class Crawler {
 		}
 
 		if (analysisElement !== null) {
-			await this.featureCreator.interact(analysisElement, elementInteractionGraph, lastUnanalyzed);
+			await this.featureCreator.interact(analysisElement as HTMLFormElement, elementInteractionGraph, lastUnanalyzed);
 		}
 
 		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página
 		if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href != this.pageUrl.href) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
-
-		// const forms = analysisContext.getElementsByTagName('form');
-		// console.log("forms", forms)
-		// for (const form of forms) {
-		// }
 
 		// this.closeWindow = true;
 	}

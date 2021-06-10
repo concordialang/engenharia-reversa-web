@@ -24,7 +24,7 @@ export class Util {
 	static getCommonAncestorElement(elements: Element[]) {
 		const reducer = (prev, current) => (current.parentElement.contains(prev) ? current.parentElement : prev);
 
-		// testar
+		//testar
 		// const reducer = function(prev, current) {
 		// 	console.log("prev", prev)
 		// 	console.log("prev parentElement", prev.parentElement)

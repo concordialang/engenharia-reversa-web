@@ -323,7 +323,7 @@ export class FeatureCreator {
 	// }
 
 	public async interact(
-		analysisElement: HTMLElement,
+		analysisElement: HTMLFormElement,
 		elementInteractionGraph: ElementInteractionGraph | null = null,
 		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
 	) {
@@ -335,7 +335,7 @@ export class FeatureCreator {
 	}
 
 	public async fillForm(
-		context: HTMLElement,
+		context: HTMLFormElement,
 		elementInteractionGraph: ElementInteractionGraph | null = null,
 		lastInteractionFromUnalyzedForm: ElementInteraction<HTMLElement> | null = null
 	) {
@@ -471,17 +471,17 @@ export class FeatureCreator {
 		this.setFormChildElementsAsAnalyzed(context);
 	}
 
-	private getElements(form: HTMLElement, previousInteractions?: ElementInteraction<HTMLElement>[]): HTMLElement[] {
-		const elements: HTMLElement[] = [];
+	private getElements(form: HTMLFormElement, previousInteractions?: ElementInteraction<HTMLElement>[]): HTMLElement[] {
+		const elements: HTMLFormElement[] = [];
 		if (!previousInteractions || previousInteractions.length == 0) {
 			for (let element of form.elements) {
-				elements.push(<HTMLElement>element);
+				elements.push(<HTMLFormElement>element);
 			}
 			return elements;
 		} else {
 			const lastInteraction = previousInteractions[previousInteractions.length - 1];
 			for (let i = form.elements.length - 1; i >= 0; i--) {
-				const element = <HTMLElement>form.elements[i];
+				const element = <HTMLFormElement>form.elements[i];
 				if (Util.getPathTo(element) == Util.getPathTo(lastInteraction.getElement())) break;
 				elements.unshift(element);
 			}
