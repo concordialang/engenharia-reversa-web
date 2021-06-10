@@ -138,7 +138,7 @@ export class Crawler {
 		}
 
 		if (analysisElement !== null) {
-			await this.featureCreator.interact(analysisElement as HTMLFormElement, elementInteractionGraph, lastUnanalyzed);
+			await this.featureCreator.interact(analysisElement);
 		}
 
 		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página

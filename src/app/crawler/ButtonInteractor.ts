@@ -5,17 +5,17 @@ import { ElementInteractor } from './ElementInteractor';
 import { InteractionResult } from './InteractionResult';
 
 export class ButtonInteractor implements ElementInteractor<HTMLButtonElement | HTMLInputElement> {
-	private document: HTMLDocument;
+	private window: Window;
 
-	constructor(document: HTMLDocument) {
-		this.document = document;
+	constructor(window: Window) {
+		this.window = window;
 	}
 
 	public execute(interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>): Promise<InteractionResult> {
 		return new Promise((resolve) => {
 			const element = interaction.getElement();
 			let triggeredUnload = false;
-			document.addEventListener(HTMLEventType.Unload, () => {
+			this.window.addEventListener('beforeunload', (event) => {
 				triggeredUnload = true;
 			});
 			element.click();
