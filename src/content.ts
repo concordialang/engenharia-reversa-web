@@ -19,9 +19,13 @@ import { Spec } from './app/analysis/Spec';
 import { ElementInteraction } from './app/crawler/ElementInteraction';
 import { HTMLEventType } from './app/html/HTMLEventType';
 import { ElementInteractionGraph } from './app/crawler/ElementInteractionGraph';
+import { PageStorage } from './app/crawler/PageStorage';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
+
+const lastPageKey = 'lastPage';
+const pageStorage = new PageStorage('engenharia-reversa-web');
 
 const graphStorage: GraphStorage = new GraphStorage();
 const featureStorage: FeatureStorage = new FeatureStorage();
@@ -71,7 +75,10 @@ const crawler: Crawler = new Crawler(
 	analyzedElementStorage,
 	elementInteracationStorage,
 	elementInteractionGraphKey,
-	lastElementInteractionKey
+	lastElementInteractionKey,
+	window,
+	pageStorage,
+	lastPageKey
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

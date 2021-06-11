@@ -11,6 +11,7 @@ import { Util } from '../Util';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { DiffDomManager } from '../analysis/DiffDomManager';
 import { NodeTypes } from '../node/NodeTypes';
+import { PageStorage } from './PageStorage';
 
 //classe deve ser refatorada
 export class Crawler {
@@ -25,6 +26,10 @@ export class Crawler {
 	private interactionStorage: ElementInteractionStorage;
 	private interactionsGraphKey: string;
 	private lastInteractionKey: string; //aux variables
+	private window: Window;
+	private pageStorage: PageStorage;
+	private lastPageKey: string;
+
 	private closeWindow = false;
 
 	constructor(
@@ -37,7 +42,10 @@ export class Crawler {
 		analyzedElementStorage: AnalyzedElementStorage,
 		interactionStorage: ElementInteractionStorage,
 		interactionsGraphKey: string,
-		lastInteractionKey: string
+		lastInteractionKey: string,
+		window: Window,
+		pageStorage: PageStorage,
+		lastPageKey: string
 	) {
 		this.document = document;
 		this.pageUrl = pageUrl;
@@ -49,6 +57,9 @@ export class Crawler {
 		this.interactionStorage = interactionStorage;
 		this.interactionsGraphKey = interactionsGraphKey;
 		this.lastInteractionKey = lastInteractionKey;
+		this.window = window;
+		this.pageStorage = pageStorage;
+		this.lastPageKey = lastPageKey;
 	}
 
 	// find the most internal parent in common of nodes
@@ -60,6 +71,10 @@ export class Crawler {
 	public async crawl() {
 		const _this = this;
 		//this.addUrlToGraph(this.pageUrl);
+
+		this.window.addEventListener('beforeunload', async (e) => {
+			await _this.pageStorage.setPage(_this.lastPageKey, _this.window.document.body.outerHTML);
+		});
 
 		const graph = this.graphStorage.get(this.interactionsGraphKey);
 		let elementInteractionGraph: ElementInteractionGraph | null = null;
