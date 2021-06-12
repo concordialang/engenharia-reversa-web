@@ -5,7 +5,7 @@ import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
 import { InputInteractor } from './InputInteractor';
 import { Spec } from '../analysis/Spec';
-import { FeatureAnalyzer } from '../analysis/FeatureAnalyzer';
+import { FeatureCollection } from '../analysis/FeatureCollection';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionStorage } from './ElementInteractionStorage';
 import { GraphStorage } from '../graph/GraphStorage';
@@ -19,7 +19,7 @@ import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
-export class FeatureCreator {
+export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;
@@ -54,122 +54,146 @@ export class FeatureCreator {
 		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
-	public async interact(element: HTMLElement) {
-		// if (element.nodeName == NodeTypes.FORM) {
-		// const form = <HTMLFormElement>element;
-
-		const xPath = Util.getPathTo(element);
+	public async analyse(contextElement: HTMLElement) {
+		const xPath = Util.getPathTo(contextElement);
 		if (xPath) {
 			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
-				await this.fill(element);
+				contextElement.querySelectorAll('form').forEach(async (element) => {
+					await this.generate(element as HTMLElement);
+				});
+
+				await this.generate(contextElement as HTMLElement, true);
 			}
 		} else {
 			throw new Error('Unable to get element XPath');
 		}
-		// }
-
-		// element.querySelectorAll('*').forEach(async (node) => {
-
-		// });
 	}
 
-	public async fill(element: HTMLElement) {
+	public async generate(contextElement: HTMLElement, ignoreFormElements: boolean = false) {
 		const _this = this;
-		const featureAnalyzer = new FeatureAnalyzer();
 
-		// add observer on form
-		let observer = new MutationObserverManager(element);
-
-		// start feature analysis
-		const feature = featureAnalyzer.createFeatureFromForm(element, this.spec);
-		const scenario = featureAnalyzer.createScenario(feature);
-		const variant = featureAnalyzer.createVariant();
-
-		const elements = this.getElements(element);
-
-		const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionBeforeRedirectKey);
-
-		if (!lastInteraction) {
-			const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionKey);
+		let interactableElements: ChildNode[] = [];
+		if (ignoreFormElements) {
+			interactableElements = this.getInteractableElementsIgnoringForm(contextElement);
+		} else {
+			interactableElements = this.getInteractableElements(contextElement);
 		}
 
-		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+		if (interactableElements.length > 0) {
+			const featureCollection = new FeatureCollection();
 
-		for (const element of elements) {
-			// interacts with the element
-			let interaction: ElementInteraction<HTMLElement> | null | undefined;
-			if (element instanceof HTMLInputElement) {
-				interaction = this.generateInputInteraction(element);
-			} else if (element instanceof HTMLButtonElement) {
-				interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
+			// add observer on form
+			let observer = new MutationObserverManager(contextElement);
+
+			// start feature analysis
+			const feature = featureCollection.createFeatureFromForm(contextElement, this.spec);
+			const scenario = featureCollection.createScenario(feature);
+			const variant = featureCollection.createVariant();
+
+			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+			const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionBeforeRedirectKey);
+
+			if (!lastInteraction) {
+				const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionKey);
 			}
 
-			if (element instanceof HTMLElement) {
-				const interactionGraph = new GraphStorage().get('interactions-graph');
-				const edges = interactionGraph.serialize()['links'];
-				if (!this.redirectsToAnotherUrl(element, this.pageUrl, edges)) {
-					if (interaction) {
-						if (!previousInteraction) {
-							previousInteraction = lastInteraction;
-							//pode ter problema de concorrencia
-							this.elementInteractionStorage.remove(this.lastInteractionBeforeRedirectKey);
-						}
-						const result = await this.elementInteractionManager.execute(interaction, true, previousInteraction);
-						if (result) {
-							if (result.getTriggeredRedirection()) {
+			for (const element of interactableElements) {
+				// interacts with the element
+				let interaction: ElementInteraction<HTMLElement> | null | undefined;
+				if (element instanceof HTMLInputElement) {
+					interaction = this.generateInputInteraction(element);
+				} else if (element instanceof HTMLButtonElement) {
+					interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
+				}
+
+				if (element instanceof HTMLElement) {
+					const interactionGraph = new GraphStorage().get('interactions-graph');
+					const edges = interactionGraph.serialize()['links'];
+					if (!this.redirectsToAnotherUrl(element, this.pageUrl, edges)) {
+						if (interaction) {
+							if (!previousInteraction) {
+								previousInteraction = lastInteraction;
 								//pode ter problema de concorrencia
-								this.elementInteractionStorage.save(this.lastInteractionBeforeRedirectKey, interaction);
-								break;
+								this.elementInteractionStorage.remove(this.lastInteractionBeforeRedirectKey);
 							}
+							const result = await this.elementInteractionManager.execute(interaction, true, previousInteraction);
+							if (result) {
+								if (result.getTriggeredRedirection()) {
+									//pode ter problema de concorrencia
+									this.elementInteractionStorage.save(this.lastInteractionBeforeRedirectKey, interaction);
+									break;
+								}
+							}
+							previousInteraction = interaction;
 						}
-						previousInteraction = interaction;
+					}
+				}
+
+				if (!interaction) continue;
+
+				// analyzes the interaction
+				const uiElment = featureCollection.createUiElment(interaction.getElement());
+
+				if (uiElment !== null && uiElment !== undefined) {
+					feature.setUiElement(uiElment);
+
+					const variantSentence = featureCollection.createVariantSentence(uiElment);
+
+					if (variantSentence !== null) {
+						variant.setVariantSentence(variantSentence);
+					}
+
+					const mutations = observer.getMutations();
+
+					if (mutations.length > 0) {
+						const mutationSentences = featureCollection.createMutationVariantSentences(uiElment, mutations);
+
+						for (let sentence of mutationSentences) {
+							variant.setVariantSentence(sentence);
+						}
+
+						observer.resetMutations();
 					}
 				}
 			}
 
-			if (!interaction) continue;
+			scenario.addVariant(variant);
+			feature.addScenario(scenario);
+			this.spec.addFeature(feature);
 
-			// analyzes the interaction
-			const uiElment = featureAnalyzer.createUiElment(interaction.getElement());
+			observer.disconnect();
 
-			if (uiElment !== null && uiElment !== undefined) {
-				feature.setUiElement(uiElment);
+			console.log('spec', this.spec);
 
-				const variantSentence = featureAnalyzer.createVariantSentence(uiElment);
-
-				if (variantSentence !== null) {
-					variant.setVariantSentence(variantSentence);
-				}
-
-				const mutations = observer.getMutations();
-
-				if (mutations.length > 0) {
-					const mutationSentences = featureAnalyzer.createMutationVariantSentences(uiElment, mutations);
-
-					for (let sentence of mutationSentences) {
-						variant.setVariantSentence(sentence);
-					}
-
-					observer.resetMutations();
-				}
-			}
+			this.radioGroupsAlreadyFilled = [];
 		}
-
-		scenario.addVariant(variant);
-		feature.addScenario(scenario);
-		this.spec.addFeature(feature);
-
-		//console.log('spec', this.spec);
-
-		observer.disconnect();
-
-		this.radioGroupsAlreadyFilled = [];
 	}
 
-	private getElements(element: HTMLElement): HTMLElement[] {
-		const elements: HTMLElement[] = [];
-		// fazer funcao que retorna todos os elementos interagiveis
-		return elements;
+	private getInteractableElements(element: HTMLElement): ChildNode[] {
+		return Array.from(element.querySelectorAll('input, select, textarea, button'));
+	}
+
+	private getInteractableElementsIgnoringForm(element): ChildNode[] {
+		let interactableElements: ChildNode[] = [];
+
+		for (let el of element.childNodes) {
+			if (el.nodeName !== NodeTypes.FORM) {
+				if (
+					el.nodeName === NodeTypes.INPUT ||
+					el.nodeName === NodeTypes.SELECT ||
+					el.nodeName === NodeTypes.TEXTAREA ||
+					el.nodeName === NodeTypes.BUTTON
+				) {
+					interactableElements.push(el);
+				}
+
+				if (el.childNodes.length !== 0) {
+					this.getInteractableElementsIgnoringForm(el);
+				}
+			}
+		}
+
+		return interactableElements;
 	}
 
 	private generateInputInteraction(input: HTMLInputElement): ElementInteraction<HTMLInputElement> | null {
