@@ -1,4 +1,4 @@
-import { FeatureAnalyzer } from './app/analysis/FeatureAnalyzer';
+import { FeatureCollection } from './app/analysis/FeatureCollection';
 import { AppEvent } from './app/comm/AppEvent';
 import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
 import { Command } from './app/comm/Command';
@@ -10,7 +10,7 @@ import { Crawler } from './app/crawler/Crawler';
 import { ElementInteractionManager } from './app/crawler/ElementInteractionManager';
 import { ElementInteractionStorage } from './app/crawler/ElementInteractionStorage';
 import { FeatureStorage } from './app/crawler/FeatureStorage';
-import { FeatureCreator } from './app/crawler/FeatureCreator';
+import { FeatureGenerator } from './app/crawler/FeatureGenerator';
 import { InputInteractor } from './app/crawler/InputInteractor';
 import { UrlListStorage } from './app/crawler/UrlListStorage';
 import { GraphStorage } from './app/graph/GraphStorage';
@@ -36,7 +36,7 @@ const elementInteractionGraphKey = 'interactions-graph';
 const lastElementInteractionKey = 'last-interaction';
 const lastElementInteractionBeforeRedirectKey = 'last-interaction-before-redirect';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const featureAnalyzer: FeatureAnalyzer = new FeatureAnalyzer();
+const featureAnalyzer: FeatureCollection = new FeatureCollection();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor(window);
 const elementInteracationStorage = new ElementInteractionStorage(document);
@@ -54,7 +54,7 @@ const elementInteractionManager = new ElementInteractionManager(
 );
 
 const pageUrl: URL = new URL(window.location.href);
-const featureCreator: FeatureCreator = new FeatureCreator(
+const featureGenerator: FeatureGenerator = new FeatureGenerator(
 	elementInteractionManager,
 	pageUrl,
 	spec,
@@ -71,7 +71,7 @@ const crawler: Crawler = new Crawler(
 	graphStorage,
 	graphKey,
 	visitedPagesGraphMutex,
-	featureCreator,
+	featureGenerator,
 	analyzedElementStorage,
 	elementInteracationStorage,
 	elementInteractionGraphKey,

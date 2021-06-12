@@ -24,4 +24,5 @@ export enum NodeTypes {
 	TH = 'TH',
 	THEAD = 'THEAD',
 	UL = 'UL',
+	BUTTON = 'BUTTON',
 }

@@ -6,7 +6,7 @@ import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from './ElementInteractionStorage';
-import { FeatureCreator } from './FeatureCreator';
+import { FeatureGenerator } from './FeatureGenerator';
 import { Util } from '../Util';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { DiffDomManager } from '../analysis/DiffDomManager';
@@ -21,7 +21,7 @@ export class Crawler {
 	//abstrair mutex em classe
 	private visitedPagesGraphMutex: Mutex;
 	private graphKey: string;
-	private featureCreator: FeatureCreator;
+	private featureGenerator: FeatureGenerator;
 	private analyzedElementStorage: AnalyzedElementStorage;
 	private interactionStorage: ElementInteractionStorage;
 	private interactionsGraphKey: string;
@@ -38,7 +38,7 @@ export class Crawler {
 		graphStorage: GraphStorage,
 		graphKey: string,
 		mutex: Mutex,
-		featureCreator: FeatureCreator,
+		featureGenerator: FeatureGenerator,
 		analyzedElementStorage: AnalyzedElementStorage,
 		interactionStorage: ElementInteractionStorage,
 		interactionsGraphKey: string,
@@ -52,7 +52,7 @@ export class Crawler {
 		this.graphStorage = graphStorage;
 		this.visitedPagesGraphMutex = mutex;
 		this.graphKey = graphKey;
-		this.featureCreator = featureCreator;
+		this.featureGenerator = featureGenerator;
 		this.analyzedElementStorage = analyzedElementStorage;
 		this.interactionStorage = interactionStorage;
 		this.interactionsGraphKey = interactionsGraphKey;
@@ -60,12 +60,6 @@ export class Crawler {
 		this.window = window;
 		this.pageStorage = pageStorage;
 		this.lastPageKey = lastPageKey;
-	}
-
-	// find the most internal parent in common of nodes
-	private getCommonAncestor(elements: Element[]) {
-		const reducer = (prev, current) => (current.parentElement.contains(prev) ? current.parentElement : prev);
-		return elements.reduce(reducer, elements[0]);
 	}
 
 	public async crawl() {
@@ -147,28 +141,24 @@ export class Crawler {
 		const featureTags = analysisContext.querySelectorAll('form, table');
 
 		// find element to analisy based on body tags form and table
-		if (featureTags.length == 1) {
-			analysisElement = featureTags[0] as HTMLElement;
-		} else if (featureTags.length > 1) {
-			analysisElement = this.getCommonAncestor(Array.from(featureTags));
+		// if (featureTags.length == 1) {
+		// 	analysisElement = featureTags[0] as HTMLElement;
+		// } else
+		if (featureTags.length >= 1) {
+			analysisElement = Util.getCommonAncestorElement(Array.from(featureTags));
 		} else if (featureTags.length == 0) {
 			let inputFieldTags = analysisContext.querySelectorAll('input, select, textarea, button');
-			analysisElement = this.getCommonAncestor(Array.from(inputFieldTags));
+			analysisElement = Util.getCommonAncestorElement(Array.from(inputFieldTags));
 		}
 
 		if (analysisElement !== null) {
-			await this.featureCreator.interact(analysisElement);
+			await this.featureGenerator.analyse(analysisElement);
 		}
 
 		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página
 		if (lastUnanalyzed && lastUnanalyzed.getPageUrl().href != this.pageUrl.href) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
-
-		// const forms = analysisContext.getElementsByTagName('form');
-		// console.log("forms", forms)
-		// for (const form of forms) {
-		// }
 
 		// this.closeWindow = true;
 	}

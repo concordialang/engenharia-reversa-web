@@ -8,7 +8,7 @@ import { VariantSentence } from '../feature-structure/VariantSentence';
 import { NodeTypes } from '../node/NodeTypes';
 import { Spec } from './Spec';
 
-export class FeatureAnalyzer {
+export class FeatureCollection {
 	private uiElementGenerator: UIElementGenerator;
 	private variantSentencesGenerator: VariantSentencesGenerator;
 
