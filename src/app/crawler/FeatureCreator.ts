@@ -55,42 +55,37 @@ export class FeatureCreator {
 	}
 
 	public async interact(element: HTMLElement) {
-		if (element.nodeName == NodeTypes.FORM) {
-			const form = <HTMLFormElement>element;
+		// if (element.nodeName == NodeTypes.FORM) {
+		// const form = <HTMLFormElement>element;
 
-			const xPath = Util.getPathTo(form);
-			if (xPath) {
-				if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
-					await this.fillForm(form);
-				}
-			} else {
-				throw new Error('Unable to get element XPath');
+		const xPath = Util.getPathTo(element);
+		if (xPath) {
+			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
+				await this.fill(element);
 			}
+		} else {
+			throw new Error('Unable to get element XPath');
 		}
+		// }
 
 		// element.querySelectorAll('*').forEach(async (node) => {
 
 		// });
 	}
 
-	public async fillForm(form: HTMLFormElement) {
+	public async fill(element: HTMLElement) {
 		const _this = this;
-		form.addEventListener(HTMLEventType.Submit, function () {
-			_this.analyzedElementStorage.save(new AnalyzedElement(form, _this.pageUrl));
-			this.setFormChildElementsAsAnalyzed(form);
-		});
-
 		const featureAnalyzer = new FeatureAnalyzer();
 
 		// add observer on form
-		let observer = new MutationObserverManager(form);
+		let observer = new MutationObserverManager(element);
 
 		// start feature analysis
-		const feature = featureAnalyzer.createFeatureFromForm(form, this.spec);
+		const feature = featureAnalyzer.createFeatureFromForm(element, this.spec);
 		const scenario = featureAnalyzer.createScenario(feature);
 		const variant = featureAnalyzer.createVariant();
 
-		const elements = this.getElements(form);
+		const elements = this.getElements(element);
 
 		const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionBeforeRedirectKey);
 
@@ -171,11 +166,9 @@ export class FeatureCreator {
 		this.radioGroupsAlreadyFilled = [];
 	}
 
-	private getElements(form: HTMLFormElement): HTMLElement[] {
+	private getElements(element: HTMLElement): HTMLElement[] {
 		const elements: HTMLElement[] = [];
-		for (let element of form.elements) {
-			elements.push(<HTMLElement>element);
-		}
+		// fazer funcao que retorna todos os elementos interagiveis
 		return elements;
 	}
 
