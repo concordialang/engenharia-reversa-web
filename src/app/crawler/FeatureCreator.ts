@@ -81,7 +81,7 @@ export class FeatureCreator {
 		let observer = new MutationObserverManager(element);
 
 		// start feature analysis
-		const feature = featureAnalyzer.createFeatureFromForm(element, this.spec);
+		const feature = featureAnalyzer.createFeatureFromElement(element, this.spec);
 		const scenario = featureAnalyzer.createScenario(feature);
 		const variant = featureAnalyzer.createVariant();
 

@@ -17,8 +17,8 @@ export class FeatureAnalyzer {
 		this.variantSentencesGenerator = new VariantSentencesGenerator();
 	}
 
-	createFeatureFromForm(f: HTMLFormElement, spec: Spec): Feature {
-		const title: HTMLElement | null = this.titleBeforeForm(f);
+	createFeatureFromElement(f: HTMLElement, spec: Spec): Feature {
+		const title: HTMLElement | null = this.titleBeforeElemente(f);
 
 		const feature = new Feature();
 		feature.setName(title ? title.innerHTML : this.generateFeatureName(spec.getFeatures().length, spec.language));
@@ -64,7 +64,7 @@ export class FeatureAnalyzer {
 		return mutationSentences;
 	}
 
-	private titleBeforeForm(f: HTMLElement): HTMLElement | null {
+	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {
 		if (
 			f.previousElementSibling?.nodeName === NodeTypes.H1 ||
 			f.previousElementSibling?.nodeName === NodeTypes.H2 ||

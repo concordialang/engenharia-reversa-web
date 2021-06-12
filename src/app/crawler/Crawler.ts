@@ -88,62 +88,60 @@ export class Crawler {
 			lastUnanalyzed = this.getLastUnanalyzedInteraction(elementInteractionGraph);
 		}
 
-		let analysisContext: HTMLElement = this.document.body;
-		let analysisWithDiff = true;
+		let analysisContext: HTMLElement;
 
-		if (analysisWithDiff) {
-			// temporary for testing
-			const previousDoc = document.implementation.createHTMLDocument();
-			previousDoc.body.innerHTML += `<header id="menu">
-					<button id="alert">Alert</button>
-					<button id="confirm">Confirm</button>
-					<button id="prompt">Prompt</button>
-					<button id="teste">teste</button>
-				</header>
+		// const previousDoc = this.pageStorage.getPage(this.lastPageKey);
+		// temporary for testing
+		const previousDoc = document.implementation.createHTMLDocument();
+		previousDoc.body.innerHTML += `<header id="menu">
+				<button id="alert">Alert</button>
+				<button id="confirm">Confirm</button>
+				<button id="prompt">Prompt</button>
+				<button id="teste">teste</button>
+			</header>
 
-				<section>
+			<section>
+				<div>
 					<div>
-						<div>
-							<label id='labelteste' for="fname">First name:</label><br>
-							<input type="text" id="fname" name="fname"><br>
-						</div>
-						<ul>
-							<li>
-								<label for="name">Name:</label>
-								<input type="text" id="name" name="user_name">
-							</li>
-							<li>
-								<label for="mail">E-mail:</label>
-								<input type="text" id="mail" name="user_email">
-							</li>
-							<li>
-								<label for="msg">Message:</label>
-								<input type="text" id="msg" name="user_message"></input>
-							</li>
-							<li class="button">
-								<button type="submit">Send your message</button>
-							</li>
-						</ul>
+						<label id='labelteste' for="fname">First name:</label><br>
+						<input type="text" id="fname" name="fname"><br>
 					</div>
-				</section>
+					<ul>
+						<li>
+							<label for="name">Name:</label>
+							<input type="text" id="name" name="user_name">
+						</li>
+						<li>
+							<label for="mail">E-mail:</label>
+							<input type="text" id="mail" name="user_email">
+						</li>
+						<li>
+							<label for="msg">Message:</label>
+							<input type="text" id="msg" name="user_message"></input>
+						</li>
+						<li class="button">
+							<button type="submit">Send your message</button>
+						</li>
+					</ul>
+				</div>
+			</section>
 
-				<footer>
-					<p>Footer</p>
-				</footer>`;
+			<footer>
+				<p>Footer</p>
+			</footer>`;
 
-			let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
-			let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+		let diffDomManager = new DiffDomManager(previousDoc.body, this.document.body);
+		let xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
 
-			let xpathResult =
-				xPathParentElementDiff !== null
-					? this.document.evaluate(xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
-					: null;
+		let xpathResult =
+			xPathParentElementDiff !== null
+				? this.document.evaluate(xPathParentElementDiff, this.document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+				: null;
 
-			analysisContext =
-				xpathResult !== null && xpathResult.singleNodeValue !== null
-					? (xpathResult.singleNodeValue as HTMLElement)
-					: this.document.body;
-		}
+		analysisContext =
+			xpathResult !== null && xpathResult.singleNodeValue !== null
+				? (xpathResult.singleNodeValue as HTMLElement)
+				: this.document.body;
 
 		let analysisElement: HTMLElement | null = null;
 		const featureTags = analysisContext.querySelectorAll('form, table');
