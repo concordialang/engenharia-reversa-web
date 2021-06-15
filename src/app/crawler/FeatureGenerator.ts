@@ -58,11 +58,15 @@ export class FeatureGenerator {
 		const xPath = Util.getPathTo(contextElement);
 		if (xPath) {
 			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
-				contextElement.querySelectorAll('form').forEach(async (element) => {
-					await this.generate(element as HTMLElement);
-				});
+				const forms = contextElement.querySelectorAll('form');
+				for (let form of forms) {
+					let xPathElement = Util.getPathTo(form);
+					if (xPathElement && !this.analyzedElementStorage.isElementAnalyzed(xPathElement, this.pageUrl)) {
+						await this.generate(form);
+					}
+				}
 
-				await this.generate(contextElement as HTMLElement, true);
+				await this.generate(contextElement, true);
 			}
 		} else {
 			throw new Error('Unable to get element XPath');
@@ -166,6 +170,12 @@ export class FeatureGenerator {
 			console.log('spec', this.spec);
 
 			this.radioGroupsAlreadyFilled = [];
+
+			this.analyzedElementStorage.save(new AnalyzedElement(contextElement, this.pageUrl));
+			for (let element of interactableElements) {
+				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
+				this.analyzedElementStorage.save(new AnalyzedElement(<HTMLElement>element, this.pageUrl));
+			}
 		}
 	}
 
@@ -200,6 +210,8 @@ export class FeatureGenerator {
 		const type = input.getAttribute('type');
 		if (type == HTMLInputType.Text) {
 			return this.generateTextInputInteraction(input);
+		} else if (type == HTMLInputType.Email) {
+			return this.generateRadioInputInteraction(input);
 		} else if (type == HTMLInputType.Radio) {
 			return this.generateRadioInputInteraction(input);
 		} else if (type == HTMLInputType.Checkbox) {
@@ -287,13 +299,6 @@ export class FeatureGenerator {
 					}
 				}
 			}
-		}
-	}
-
-	private setFormChildElementsAsAnalyzed(form) {
-		for (let element of form.querySelectorAll('input,textarea,select,button')) {
-			//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
-			this.analyzedElementStorage.save(new AnalyzedElement(element, this.pageUrl));
 		}
 	}
 }

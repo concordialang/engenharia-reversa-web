@@ -45,7 +45,6 @@ export class PageStorage {
 		if (transaction) {
 			const store = transaction.objectStore(this.storeName);
 			const result = await store.put(value, key);
-			console.log(result);
 			if (result) {
 				return true;
 			}

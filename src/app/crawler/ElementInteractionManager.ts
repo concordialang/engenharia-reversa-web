@@ -48,6 +48,7 @@ export class ElementInteractionManager {
 	): Promise<InteractionResult | null> {
 		await this.delay(400);
 		const element = interaction.getElement();
+		console.log(element);
 		const type = element.tagName;
 		let result: InteractionResult | null = null;
 		if (type == HTMLElementType.Input) {
@@ -87,7 +88,7 @@ export class ElementInteractionManager {
 		return this.lastInteraction;
 	}
 
-	private delay(ms: number) {
+	private delay(ms: number): Promise<void> {
 		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 

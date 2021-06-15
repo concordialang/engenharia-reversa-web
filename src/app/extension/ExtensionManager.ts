@@ -34,7 +34,7 @@ export class ExtensionManager {
 				_this.openedTabsCounter++;
 				_this.sendOrderToCrawlTab(tab, true);
 			} else {
-				_this.extensionIsEnabled = false;
+				_this.extension.reload();
 			}
 		});
 

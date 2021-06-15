@@ -3,4 +3,5 @@ export enum HTMLInputType {
 	Radio = 'radio',
 	Checkbox = 'checkbox',
 	Submit = 'submit',
+	Email = 'email',
 }
