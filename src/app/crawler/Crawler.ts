@@ -10,7 +10,7 @@ import { FeatureGenerator } from './FeatureGenerator';
 import { Util } from '../Util';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { DiffDomManager } from '../analysis/DiffDomManager';
-import { NodeTypes } from '../node/NodeTypes';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { PageStorage } from './PageStorage';
 
 //classe deve ser refatorada

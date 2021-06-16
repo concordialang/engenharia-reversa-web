@@ -1,4 +1,4 @@
-export enum NodeTypes {
+export enum HTMLNodeTypes {
 	BODY = 'BODY',
 	DIV = 'DIV',
 	FORM = 'FORM',

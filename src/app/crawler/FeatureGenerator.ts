@@ -12,18 +12,22 @@ import { GraphStorage } from '../graph/GraphStorage';
 import { Util } from '../Util';
 import { Graph } from '../graph/Graph';
 import { MutationObserverManager } from '../mutationobserver/MutationObserverManager';
-import { NodeTypes } from '../node/NodeTypes';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { AnalyzedElement } from './AnalyzedElement';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
+
+// TO-DO: Refatorar construtor
+// TO-DO: Refatorar classe
+
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
 	private elementInteractionManager: ElementInteractionManager;
 	private pageUrl: URL;
-	private spec: Spec;
+	// private spec: Spec;
 	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
 	private elementInteractionGraphKey: string;
@@ -34,7 +38,7 @@ export class FeatureGenerator {
 	constructor(
 		elementInteractionManager: ElementInteractionManager,
 		pageUrl: URL,
-		spec: Spec,
+		private spec: Spec,
 		graphStorage: GraphStorage,
 		elementInteractionStorage: ElementInteractionStorage,
 		elementInteractionGraphKey: string,
@@ -45,7 +49,7 @@ export class FeatureGenerator {
 		this.radioGroupsAlreadyFilled = [];
 		this.elementInteractionManager = elementInteractionManager;
 		this.pageUrl = pageUrl;
-		this.spec = spec;
+		// this.spec = spec;
 		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementInteractionGraphKey = elementInteractionGraphKey;
@@ -187,12 +191,12 @@ export class FeatureGenerator {
 		let interactableElements: ChildNode[] = [];
 
 		for (let el of element.childNodes) {
-			if (el.nodeName !== NodeTypes.FORM) {
+			if (el.nodeName !== HTMLNodeTypes.FORM) {
 				if (
-					el.nodeName === NodeTypes.INPUT ||
-					el.nodeName === NodeTypes.SELECT ||
-					el.nodeName === NodeTypes.TEXTAREA ||
-					el.nodeName === NodeTypes.BUTTON
+					el.nodeName === HTMLNodeTypes.INPUT ||
+					el.nodeName === HTMLNodeTypes.SELECT ||
+					el.nodeName === HTMLNodeTypes.TEXTAREA ||
+					el.nodeName === HTMLNodeTypes.BUTTON
 				) {
 					interactableElements.push(el);
 				}

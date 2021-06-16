@@ -1,6 +1,6 @@
 import { DiffDOM } from 'diff-dom';
 import getXPath from 'get-xpath';
-import { NodeTypes } from '../node/NodeTypes';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 
 export class DiffDomManager {
 	private diffDom: DiffDOM;
@@ -46,7 +46,8 @@ export class DiffDomManager {
 	private formatArrayDiffDom(diffDom): Object[] {
 		// disregard script tag
 		diffDom = diffDom.filter(
-			(diff) => diff.element === undefined || (diff.element !== undefined && diff.element.nodeName !== NodeTypes.SCRIPT)
+			(diff) =>
+				diff.element === undefined || (diff.element !== undefined && diff.element.nodeName !== HTMLNodeTypes.SCRIPT)
 		);
 
 		return diffDom;

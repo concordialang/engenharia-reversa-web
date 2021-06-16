@@ -5,7 +5,7 @@ import { Scenario } from '../feature-structure/Scenario';
 import { UIElement } from '../feature-structure/UIElement';
 import { Variant } from '../feature-structure/Variant';
 import { VariantSentence } from '../feature-structure/VariantSentence';
-import { NodeTypes } from '../node/NodeTypes';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
 export class FeatureCollection {
@@ -66,10 +66,10 @@ export class FeatureCollection {
 
 	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {
 		if (
-			f.previousElementSibling?.nodeName === NodeTypes.H1 ||
-			f.previousElementSibling?.nodeName === NodeTypes.H2 ||
-			f.previousElementSibling?.nodeName === NodeTypes.H3 ||
-			f.previousElementSibling?.nodeName === NodeTypes.LEGEND
+			f.previousElementSibling?.nodeName === HTMLNodeTypes.H1 ||
+			f.previousElementSibling?.nodeName === HTMLNodeTypes.H2 ||
+			f.previousElementSibling?.nodeName === HTMLNodeTypes.H3 ||
+			f.previousElementSibling?.nodeName === HTMLNodeTypes.LEGEND
 		) {
 			return f.previousElementSibling as HTMLElement;
 		}

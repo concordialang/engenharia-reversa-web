@@ -2,13 +2,17 @@ import getXPath from 'get-xpath';
 
 import { UIElement } from '../feature-structure/UIElement';
 import { UIProperty } from '../feature-structure/UIProperty';
-import { NodeTypes } from '../node/NodeTypes';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Util } from '../Util';
 
 export class UIElementGenerator {
 	private checkValidNode(node: HTMLElement): boolean {
 		// return false if node is not treatable for UIElement
-		if (node.nodeName !== NodeTypes.INPUT && node.nodeName !== NodeTypes.SELECT && node.nodeName !== NodeTypes.TEXTAREA) {
+		if (
+			node.nodeName !== HTMLNodeTypes.INPUT &&
+			node.nodeName !== HTMLNodeTypes.SELECT &&
+			node.nodeName !== HTMLNodeTypes.TEXTAREA
+		) {
 			return false;
 		}
 
@@ -132,7 +136,7 @@ export class UIElementGenerator {
 		if (Util.isNotEmpty(elm.type)) {
 			let type = elm.type;
 
-			if (elm.nodeName === NodeTypes.SELECT) {
+			if (elm.nodeName === HTMLNodeTypes.SELECT) {
 				type = 'select';
 			}
 
@@ -191,11 +195,11 @@ export class UIElementGenerator {
 	private generateName(elm: HTMLInputElement): string {
 		let name = '';
 
-		if (elm.previousElementSibling?.nodeName === NodeTypes.LABEL) {
+		if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
 			name = this.generateNameFromLabel(elm as HTMLInputElement);
 		} else if (
-			elm.parentElement?.nodeName === NodeTypes.DIV &&
-			elm.parentElement?.previousElementSibling?.nodeName === NodeTypes.LABEL
+			elm.parentElement?.nodeName === HTMLNodeTypes.DIV &&
+			elm.parentElement?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
 		) {
 			name = this.generateNameFromLabel(elm.parentElement as HTMLInputElement);
 		} else {
