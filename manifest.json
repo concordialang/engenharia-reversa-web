@@ -1,20 +1,18 @@
 {
-    "manifest_version": 2,
-    "name": "TCC",
-    "version": "0.1.0",
-    "background": {
-        "page": "/src/background.html"
-    },
-    "content_scripts": [
-        {
-          "matches": [
-            "<all_urls>"
-          ],
-          "js": ["/dist/content.js"]
-        }
-    ],
-    "browser_action": {
-        "default_icon": "icon.png"
-    },
-    "permissions": ["tabs", "<all_urls>"]
+	"manifest_version": 2,
+	"name": "engenharia-reversa-web",
+	"version": "0.1.0",
+	"background": {
+		"page": "/src/background.html"
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["/dist/content.js"]
+		}
+	],
+	"browser_action": {
+		"default_icon": "/assets/icon.png"
+	},
+	"permissions": ["tabs", "<all_urls>"]
 }

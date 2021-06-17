@@ -1,11 +1,11 @@
 //const bkg : Window | null = chrome.extension.getBackgroundPage();
 
-import { ExtensionManager } from './app/extension/ExtensionManager';
-import { ChromeExtension } from './app/extension/ChromeExtension';
-import { Extension } from './app/extension/Extension';
-import { CommunicationChannel } from './app/comm/CommunicationChannel';
-import { ChromeCommunicationChannel } from './app/comm/ChromeCommunicationChannel';
-import { CodeChangeMonitor } from './app/extension/CodeChangeMonitor';
+import { ExtensionManager } from './extension/ExtensionManager';
+import { ChromeExtension } from './extension/ChromeExtension';
+import { Extension } from './extension/Extension';
+import { CommunicationChannel } from './comm/CommunicationChannel';
+import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
+import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
 
 const extension: Extension = new ChromeExtension();
 
