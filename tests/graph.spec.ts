@@ -5,6 +5,20 @@ describe('Graph', () => {
 	const url2: string = 'https://www.facebook.com';
 	const url3: string = 'https://www.twitter.com';
 
+	it('returns that existent node exists', () => {
+		const graph: Graph = new Graph();
+		const key = 'test';
+		graph.addNode(key);
+		expect(graph.nodeExists(key)).toBe(true);
+	});
+
+	it("returns that non-existent node doesn't exist", () => {
+		const graph: Graph = new Graph();
+		const key = 'test';
+		graph.addNode(key);
+		expect(graph.nodeExists('test2')).toBe(false);
+	});
+
 	it('adds node', () => {
 		const graph: Graph = new Graph();
 		graph.addNode(url1);

@@ -13,7 +13,9 @@ export class Graph {
 	}
 
 	public addNode(key: string): void {
-		this.graph.add({ group: 'nodes', data: { id: key } });
+		if (!this.nodeExists(key)) {
+			this.graph.add({ group: 'nodes', data: { id: key } });
+		}
 	}
 
 	public addEdge(from: string, to: string): void {
@@ -41,6 +43,7 @@ export class Graph {
 		return nodesIds;
 	}
 
+	//FIXME Remover essa função após refatoração
 	public depthFirstSearch(): Array<string> {
 		const nodesIds: string[] = [];
 		const nodes = this.graph.nodes();
@@ -50,6 +53,26 @@ export class Graph {
 			});
 		}
 		return nodesIds.reverse();
+	}
+
+	public nodeExists(key: string): boolean {
+		const matches = this.graph.elements('node#' + key);
+		if (matches.length > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	public getParentNodeKey(key: string): string | boolean | null {
+		const edge = this.graph.elements(`edge[target = "${key}"]`);
+		if (edge) {
+			const source = edge.data('source');
+			if (source) {
+				return source;
+			}
+			return null;
+		}
+		return false;
 	}
 
 	public serialize(): object {
@@ -65,18 +88,6 @@ export class Graph {
 		});
 
 		return { links: edges, nodes: nodes };
-	}
-
-	public getParentNodeKey(key: string): string | boolean | null {
-		const edge = this.graph.elements(`edge[target = "${key}"]`);
-		if (edge) {
-			const source = edge.data('source');
-			if (source) {
-				return source;
-			}
-			return null;
-		}
-		return false;
 	}
 
 	private deserialize(json: object | string): CytoscapeOptions {
