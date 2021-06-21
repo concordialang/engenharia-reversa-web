@@ -5,34 +5,14 @@ import { VariantSentence } from '../feature/VariantSentence';
 import { VariantSentenceType } from '../types/VariantSentenceType';
 import { UIElement } from '../feature/UIElement';
 import { UIProperty } from '../feature/UIProperty';
-
-function getEnumKeyByEnumValue(myEnum, enumValue) {
-	let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
-	return keys.length > 0 ? myEnum[keys[0]] : null;
-}
-
-export class FeatureStorage {
-	public save(key: string, feature: Feature): void {
-		window.localStorage.setItem(key, JSON.stringify(feature));
+import { getEnumKeyByEnumValue } from '../util';
+import { LocalObjectStorage } from './LocalObjectStorage';
+export class FeatureStorage extends LocalObjectStorage<Feature> {
+	protected stringifyObject(obj: Feature): string {
+		return JSON.stringify(obj);
 	}
 
-	public get(key: string): Feature | null {
-		const item: string | null = window.localStorage.getItem(key);
-		if (item && item.length !== 0 && item.trim()) {
-			const json: object = JSON.parse(item);
-			const feature = this.createFeature(json);
-			return feature;
-		}
-		return null;
-	}
-
-	public remove(key: string): void {
-		window.localStorage.removeItem(key);
-	}
-
-	//criar interface serializable e colocar esses métodos nas classes respectivas
-
-	private createFeature(json: object): Feature {
+	protected mapJsonToObject(json: {}): Feature {
 		const feature = new Feature();
 		feature.setName(json['name']);
 		for (const scenario of json['scenarios']) {

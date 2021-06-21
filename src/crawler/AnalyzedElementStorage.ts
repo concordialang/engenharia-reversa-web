@@ -97,8 +97,7 @@ export class AnalyzedElementStorage {
 		return null;
 	}
 
-	/* REFATORAR, colocar em util ou helper */
-
+	//FIXME Ao jogar essa função na Util, deu algum bug no webpack
 	private getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
 		const node = document.evaluate(
 			path,
@@ -111,10 +110,5 @@ export class AnalyzedElementStorage {
 			return <HTMLElement>node;
 		}
 		return null;
-	}
-
-	private getEnumKeyByEnumValue(myEnum, enumValue) {
-		let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
-		return keys.length > 0 ? myEnum[keys[0]] : null;
 	}
 }

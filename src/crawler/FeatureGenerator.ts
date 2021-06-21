@@ -1,6 +1,6 @@
 import { FeatureCollection } from '../analysis/FeatureCollection';
 import { Spec } from '../analysis/Spec';
-import { GraphStorage } from '../graph/GraphStorage';
+import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
@@ -11,7 +11,7 @@ import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
-import { ElementInteractionStorage } from './ElementInteractionStorage';
+import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -101,12 +101,14 @@ export class FeatureGenerator {
 			const variant = featureCollection.createVariant();
 
 			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-			const lastInteraction = this.elementInteractionStorage.get(
+			const lastInteraction = await this.elementInteractionStorage.get(
 				this.lastInteractionBeforeRedirectKey
 			);
 
 			if (!lastInteraction) {
-				const lastInteraction = this.elementInteractionStorage.get(this.lastInteractionKey);
+				const lastInteraction = await this.elementInteractionStorage.get(
+					this.lastInteractionKey
+				);
 			}
 
 			for (const element of interactableElements) {
@@ -123,14 +125,26 @@ export class FeatureGenerator {
 				}
 
 				if (element instanceof HTMLElement) {
-					const interactionGraph = new GraphStorage().get('interactions-graph');
-					const edges = interactionGraph.serialize()['links'];
-					if (!this.redirectsToAnotherUrl(element, this.pageUrl, edges)) {
+					const interactionGraph = await new GraphStorage(window.localStorage).get(
+						'interactions-graph'
+					);
+					let edges: [];
+					if (interactionGraph) {
+						edges = interactionGraph.serialize()['links'];
+					} else {
+						edges = [];
+					}
+					const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
+						element,
+						this.pageUrl,
+						edges
+					);
+					if (!redirectsToAnotherUrl) {
 						if (interaction) {
 							if (!previousInteraction) {
 								previousInteraction = lastInteraction;
 								//pode ter problema de concorrencia
-								this.elementInteractionStorage.remove(
+								await this.elementInteractionStorage.remove(
 									this.lastInteractionBeforeRedirectKey
 								);
 							}
@@ -142,7 +156,7 @@ export class FeatureGenerator {
 							if (result) {
 								if (result.getTriggeredRedirection()) {
 									//pode ter problema de concorrencia
-									this.elementInteractionStorage.save(
+									await this.elementInteractionStorage.set(
 										this.lastInteractionBeforeRedirectKey,
 										interaction
 									);
@@ -328,16 +342,17 @@ export class FeatureGenerator {
 		return matchedInputs;
 	}
 
-	private redirectsToAnotherUrl(element, url, edges) {
-		const storage = new ElementInteractionStorage(document);
+	// FIXME Fazer com que essa função chame a função pathToInteraction de ElementInteractionGraph
+	private async redirectsToAnotherUrl(element, url, edges): Promise<boolean> {
+		const storage = new ElementInteractionStorage(window.localStorage, document);
 		for (let edge of edges) {
-			const sourceInteraction = storage.get(edge.source);
+			const sourceInteraction = await storage.get(edge.source);
 			if (sourceInteraction) {
 				if (sourceInteraction.getPageUrl().href == url.href) {
 					const path = getPathTo(element);
 					const path2 = getPathTo(sourceInteraction.getElement());
 					if (path == path2) {
-						const targetInteraction = storage.get(edge.target);
+						const targetInteraction = await storage.get(edge.target);
 						if (targetInteraction) {
 							if (
 								targetInteraction.getPageUrl().href !=
@@ -350,5 +365,6 @@ export class FeatureGenerator {
 				}
 			}
 		}
+		return false;
 	}
 }

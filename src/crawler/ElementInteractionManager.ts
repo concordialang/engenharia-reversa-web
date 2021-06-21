@@ -1,12 +1,12 @@
 import { Graph } from '../graph/Graph';
-import { GraphStorage } from '../graph/GraphStorage';
+import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLInputType } from '../html/HTMLInputType';
 import Mutex from '../mutex/Mutex';
 import { sleep } from '../util';
 import { ButtonInteractor } from './ButtonInteractor';
 import { ElementInteraction } from './ElementInteraction';
-import { ElementInteractionStorage } from './ElementInteractionStorage';
+import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
 
@@ -69,13 +69,13 @@ export class ElementInteractionManager {
 		//Verificar se essa interação já foi salva ?
 		if (saveInteractionInGraph) {
 			const id = interaction.getId();
-			this.elementInteractionStorage.save(id, interaction);
+			await this.elementInteractionStorage.set(id, interaction);
 			await this.mutex.lock();
-			this.addElementInteractionKeyToGraph(id);
+			await this.addElementInteractionKeyToGraph(id);
 			if (previousInteraction) {
 				const previousInteractionId = previousInteraction.getId();
 				if (previousInteractionId) {
-					this.addElementInteractionKeyLinkToGraph(previousInteractionId, id);
+					await this.addElementInteractionKeyLinkToGraph(previousInteractionId, id);
 				} else {
 					throw new Error(
 						'Previous element interaction needs an id to be linked to the current element interaction'
@@ -86,7 +86,7 @@ export class ElementInteractionManager {
 		}
 
 		this.lastInteraction = interaction;
-		this.elementInteractionStorage.save(this.lastInteractionKey, interaction);
+		await this.elementInteractionStorage.set(this.lastInteractionKey, interaction);
 
 		return result;
 	}
@@ -102,16 +102,25 @@ export class ElementInteractionManager {
 	}
 
 	//refatorar função
-	private addElementInteractionKeyToGraph(key: string): void {
-		let graph: Graph = this.graphStorage.get(this.elementInteractionGraphKey);
+	private async addElementInteractionKeyToGraph(key: string): Promise<void> {
+		let graph: Graph | null = await this.graphStorage.get(this.elementInteractionGraphKey);
+		if (!graph) {
+			graph = new Graph();
+		}
 		graph.addNode(key);
-		this.graphStorage.save(this.elementInteractionGraphKey, graph);
+		await this.graphStorage.set(this.elementInteractionGraphKey, graph);
 	}
 
 	//refatorar função
-	private addElementInteractionKeyLinkToGraph(keyFrom: string, keyTo: string): void {
-		let graph: Graph = this.graphStorage.get(this.elementInteractionGraphKey);
+	private async addElementInteractionKeyLinkToGraph(
+		keyFrom: string,
+		keyTo: string
+	): Promise<void> {
+		let graph: Graph | null = await this.graphStorage.get(this.elementInteractionGraphKey);
+		if (!graph) {
+			graph = new Graph();
+		}
 		graph.addEdge(keyFrom, keyTo);
-		this.graphStorage.save(this.elementInteractionGraphKey, graph);
+		await this.graphStorage.set(this.elementInteractionGraphKey, graph);
 	}
 }

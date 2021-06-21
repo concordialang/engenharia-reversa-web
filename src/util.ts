@@ -28,6 +28,17 @@ export function getPathTo(element: HTMLElement): string | null {
 	return null;
 }
 
+export function getEnumKeyByEnumValue(myEnum, enumValue) {
+	let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
+	return keys.length > 0 ? myEnum[keys[0]] : null;
+}
+
+// find the most internal parent in common of nodes
+export function commonAncestorElement(elements: Element[]) {
+	const reducer = (prev, current) =>
+		current.parentElement.contains(prev) ? current.parentElement : prev;
+	return elements.reduce(reducer, elements[0]);
+}
 /**
  * Clear elements from the given element.
  *

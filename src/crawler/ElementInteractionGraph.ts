@@ -1,7 +1,7 @@
 import { Graph } from '../graph/Graph';
 import { AnalyzedElementStorage } from './AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
-import { ElementInteractionStorage } from './ElementInteractionStorage';
+import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 
 export class ElementInteractionGraph {
 	private graph: Graph;
@@ -19,23 +19,21 @@ export class ElementInteractionGraph {
 	}
 
 	// TO-DO: Refatorar
-	public pathToInteraction(
+	public async pathToInteraction(
 		currentInteraction: ElementInteraction<HTMLElement>,
 		searchForClosest: boolean,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
 		formCriteria: { interactionForm: HTMLFormElement; isEqual: boolean } | null,
 		isInteractionAnalyzed: boolean | null = null
-	): ElementInteraction<HTMLElement>[] {
+	): Promise<ElementInteraction<HTMLElement>[]> {
 		const currentInteractionId = currentInteraction.getId();
-
-		if (currentInteractionId == '6g9b1c8dga204') {
-			const a = 'dsasd';
-		}
 
 		if (currentInteractionId) {
 			const nextInteractionKey = this.graph.getParentNodeKey(currentInteractionId);
 			if (typeof nextInteractionKey === 'string') {
-				const nextInteraction = this.elementInteractionStorage.get(nextInteractionKey);
+				const nextInteraction = await this.elementInteractionStorage.get(
+					nextInteractionKey
+				);
 
 				if (!nextInteraction) {
 					throw new Error('Error while fetching next interaction');
@@ -87,7 +85,7 @@ export class ElementInteractionGraph {
 					return [currentInteraction, nextInteraction];
 				}
 
-				const nextInteractionResult = this.pathToInteraction(
+				const nextInteractionResult = await this.pathToInteraction(
 					nextInteraction,
 					searchForClosest,
 					urlCriteria,
