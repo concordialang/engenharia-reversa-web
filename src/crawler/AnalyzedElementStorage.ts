@@ -1,3 +1,4 @@
+import { getElementByXpath } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
 
 export class AnalyzedElementStorage {
@@ -57,7 +58,7 @@ export class AnalyzedElementStorage {
 		json: { element: string; pageUrl: string },
 		key: string
 	): AnalyzedElement | null {
-		let element: HTMLElement | null = this.getElementByXpath(json.element, this.document);
+		let element: HTMLElement | null = getElementByXpath(json.element, this.document);
 		if (!element) {
 			//GAMBIARRA, REFATORAR DEPOIS
 			element = document.body;
@@ -94,21 +95,6 @@ export class AnalyzedElementStorage {
 			}
 		}
 
-		return null;
-	}
-
-	//FIXME Ao jogar essa função na Util, deu algum bug no webpack
-	private getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
-		const node = document.evaluate(
-			path,
-			document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
-		if (node) {
-			return <HTMLElement>node;
-		}
 		return null;
 	}
 }

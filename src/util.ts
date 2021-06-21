@@ -39,6 +39,15 @@ export function commonAncestorElement(elements: Element[]) {
 		current.parentElement.contains(prev) ? current.parentElement : prev;
 	return elements.reduce(reducer, elements[0]);
 }
+
+export function getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
+	const node = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+		.singleNodeValue;
+	if (node) {
+		return <HTMLElement>node;
+	}
+	return null;
+}
 /**
  * Clear elements from the given element.
  *

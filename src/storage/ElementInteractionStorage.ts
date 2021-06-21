@@ -1,5 +1,5 @@
 import { HTMLEventType } from '../html/HTMLEventType';
-import { getEnumKeyByEnumValue, getPathTo } from '../util';
+import { getElementByXpath, getEnumKeyByEnumValue, getPathTo } from '../util';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { LocalObjectStorage } from './LocalObjectStorage';
 
@@ -48,8 +48,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 		value: string | boolean | null;
 		elementSelector: string | null;
 	}): ElementInteraction<HTMLElement> {
-		//FIXME Usar a função de getElementByXpath da Util
-		let element: HTMLElement | null = this.getElementByXpath(json.element, this.document);
+		let element: HTMLElement | null = getElementByXpath(json.element, this.document);
 		if (!element) {
 			// FIXME Pensar em solução pros casos onde a interação ocorreu em outra página e não é possível obter o elemento da página da tual
 			element = document.body;
@@ -69,20 +68,5 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 		} else {
 			throw new Error('Unable to get interaction event type');
 		}
-	}
-
-	//FIXME Ao jogar essa função na Util, deu algum bug no webpack
-	private getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
-		const node = document.evaluate(
-			path,
-			document,
-			null,
-			XPathResult.FIRST_ORDERED_NODE_TYPE,
-			null
-		).singleNodeValue;
-		if (node) {
-			return <HTMLElement>node;
-		}
-		return null;
 	}
 }
