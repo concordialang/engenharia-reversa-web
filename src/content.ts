@@ -18,6 +18,7 @@ import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
 import Mutex from './mutex/Mutex';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
+import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -43,6 +44,8 @@ const elementInteractionGraph = new ElementInteractionGraph(
 	graphStorage,
 	interactionsGraphMutex
 );
+
+const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,
@@ -70,15 +73,13 @@ const browserContext = new BrowserContext(document, pageUrl, window);
 
 const crawler: Crawler = new Crawler(
 	browserContext,
-	graphStorage,
-	visitedPagesGraphMutex,
-	graphKey,
 	featureGenerator,
 	elementInteracationStorage,
 	lastElementInteractionKey,
 	pageStorage,
 	lastPageKey,
-	elementInteractionGraph
+	elementInteractionGraph,
+	visitedURLGraph
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

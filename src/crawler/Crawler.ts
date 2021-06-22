@@ -11,38 +11,34 @@ import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { FeatureGenerator } from './FeatureGenerator';
 import { PageStorage } from '../storage/PageStorage';
+import { VisitedURLGraph } from './VisitedURLGraph';
 
 // TODO: Refatorar, principalmente construtor
 export class Crawler {
-	private closeWindow = false;
-
 	constructor(
 		private browserContext: BrowserContext,
-		private graphStorage: GraphStorage,
-		private visitedPagesGraphMutex: Mutex,
-		private urlGraphKey: string,
 		private featureGenerator: FeatureGenerator,
 		private interactionStorage: ElementInteractionStorage,
 		private lastInteractionKey: string,
 		private pageStorage: PageStorage,
 		private lastPageKey: string,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private visitedURLGraph: VisitedURLGraph
 	) {
 		this.browserContext = browserContext;
-		this.graphStorage = graphStorage;
-		this.visitedPagesGraphMutex = visitedPagesGraphMutex;
-		this.urlGraphKey = urlGraphKey;
 		this.featureGenerator = featureGenerator;
 		this.interactionStorage = interactionStorage;
 		this.lastInteractionKey = lastInteractionKey;
 		this.pageStorage = pageStorage;
 		this.lastPageKey = lastPageKey;
 		this.elementInteractionGraph = elementInteractionGraph;
+		this.visitedURLGraph = visitedURLGraph;
 	}
 
 	public async crawl() {
 		const _this = this;
-		this.addUrlToGraph(this.browserContext.getUrl());
+
+		this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
 
 		this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
 			await _this.pageStorage.set(
@@ -114,24 +110,6 @@ export class Crawler {
 		) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
-	}
-
-	//refatorar função
-	private addUrlToGraph(url: URL): void {
-		//mutex deveria ficar dentro de GraphStorage ou em Crawler ?
-		this.visitedPagesGraphMutex
-			.lock()
-			.then(async () => {
-				const graph = await this.graphStorage.get(this.urlGraphKey);
-				if (graph) {
-					graph.addNode(url.toString());
-					await this.graphStorage.set(this.urlGraphKey, graph);
-					return this.visitedPagesGraphMutex.unlock();
-				}
-			})
-			.then(() => {
-				if (this.closeWindow === true) window.close();
-			});
 	}
 
 	private async getLastUnanalyzedInteraction(
