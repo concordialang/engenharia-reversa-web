@@ -5,7 +5,7 @@ import { VariantSentenceActions } from '../types/VariantSentenceActions';
 import { VariantSentenceType } from '../types/VariantSentenceType';
 
 export class VariantSentencesGenerator {
-	// TO-DO: Refatorar
+	// TODO: Refatorar
 	public generateVariantSentenceFromUIElement(uiElment: UIElement): VariantSentence | null {
 		let type: string = '';
 		let target: string | null = null;

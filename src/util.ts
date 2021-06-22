@@ -2,7 +2,7 @@ export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// TO-DO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
+// TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
 export function getPathTo(element: HTMLElement): string | null {
 	if (element.id !== '') {
 		return 'id("' + element.id + '")';
@@ -19,7 +19,7 @@ export function getPathTo(element: HTMLElement): string | null {
 			if (sibling === element) {
 				return getPathTo(<HTMLElement>parentNode) + '/' + element.tagName + '[' + ix + ']';
 			}
-			// TO-DO: Refactor - o que significa 1 ???
+			// TODO: Refactor - o que significa 1 ???
 			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
 				ix++;
 			}

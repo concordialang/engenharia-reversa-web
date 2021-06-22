@@ -10,7 +10,7 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
 
-// TO-DO: Refatorar essa classe, sobretudo o construtor
+// TODO: Refatorar essa classe, sobretudo o construtor
 export class ElementInteractionManager {
 	private inputInteractor: InputInteractor;
 	private buttonInteractor: ButtonInteractor;

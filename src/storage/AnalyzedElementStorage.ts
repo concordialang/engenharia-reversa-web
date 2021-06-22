@@ -2,7 +2,7 @@ import { getElementByXpath } from '../util';
 import { AnalyzedElement } from '../crawler/AnalyzedElement';
 import { LocalObjectStorage } from './LocalObjectStorage';
 
-// TO-DO Trocar o nome da classe
+// TODO Trocar o nome da classe
 export class AnalyzedElementStorage extends LocalObjectStorage<AnalyzedElement> {
 	private document: HTMLDocument;
 
@@ -22,7 +22,7 @@ export class AnalyzedElementStorage extends LocalObjectStorage<AnalyzedElement> 
 	protected mapJsonToObject(json: { element: string; pageUrl: string }): AnalyzedElement {
 		let element: HTMLElement | null = getElementByXpath(json.element, this.document);
 		if (!element) {
-			//TO-DO GAMBIARRA, REFATORAR DEPOIS
+			//TODO GAMBIARRA, REFATORAR DEPOIS
 			element = document.body;
 		}
 		const pageUrl = json.pageUrl;

@@ -18,7 +18,7 @@ export class ElementInteractionGraph {
 		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
-	// TO-DO: Refatorar
+	// TODO: Refatorar
 	public async pathToInteraction(
 		currentInteraction: ElementInteraction<HTMLElement>,
 		searchForClosest: boolean,

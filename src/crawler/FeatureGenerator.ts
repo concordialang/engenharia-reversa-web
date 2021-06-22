@@ -16,8 +16,8 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
 
-// TO-DO: Refatorar construtor
-// TO-DO: Refatorar classe
+// TODO: Refatorar construtor
+// TODO: Refatorar classe
 
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];

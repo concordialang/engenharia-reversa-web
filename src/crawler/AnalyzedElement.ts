@@ -41,7 +41,7 @@ export class AnalyzedElement {
 		return this.pageUrl;
 	}
 
-	/* TO-DO REFATORAR, colocar em util ou helper */
+	/* TODO REFATORAR, colocar em util ou helper */
 
 	private getPathTo(element: HTMLElement): string | null {
 		if (element.id !== '') return 'id("' + element.id + '")';

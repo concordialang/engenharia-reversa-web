@@ -12,7 +12,7 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 import { FeatureGenerator } from './FeatureGenerator';
 import { PageStorage } from '../storage/PageStorage';
 
-// TO-DO: Refatorar, principalmente construtor
+// TODO: Refatorar, principalmente construtor
 export class Crawler {
 	private closeWindow = false;
 
