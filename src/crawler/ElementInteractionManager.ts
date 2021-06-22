@@ -13,26 +13,19 @@ import { ElementInteractionGraph } from './ElementInteractionGraph';
 
 // TODO: Refatorar essa classe, sobretudo o construtor
 export class ElementInteractionManager {
-	private inputInteractor: InputInteractor;
-	private buttonInteractor: ButtonInteractor;
-	private elementInteractionStorage: ElementInteractionStorage;
-	private mutex: Mutex;
 	private lastInteraction: ElementInteraction<HTMLElement> | null;
-	private lastInteractionKey: string;
 
 	constructor(
-		inputInteractor: InputInteractor,
-		buttonInteractor: ButtonInteractor,
+		private inputInteractor: InputInteractor,
+		private buttonInteractor: ButtonInteractor,
 		private elementInteractionGraph: ElementInteractionGraph,
-		elementInteractionStorage: ElementInteractionStorage,
-		mutex: Mutex,
-		lastInteractionKey: string
+		private elementInteractionStorage: ElementInteractionStorage,
+		private lastInteractionKey: string
 	) {
 		this.inputInteractor = inputInteractor;
 		this.buttonInteractor = buttonInteractor;
 		this.elementInteractionGraph = elementInteractionGraph;
 		this.elementInteractionStorage = elementInteractionStorage;
-		this.mutex = mutex;
 		this.lastInteractionKey = lastInteractionKey;
 		this.lastInteraction = null;
 	}

@@ -52,7 +52,6 @@ const elementInteractionManager = new ElementInteractionManager(
 	buttonInteractor,
 	elementInteractionGraph,
 	elementInteracationStorage,
-	interactionsGraphMutex,
 	lastElementInteractionKey
 );
 
