@@ -2,20 +2,46 @@ import { Graph } from '../graph/Graph';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
+import Mutex from '../mutex/Mutex';
+import { GraphStorage } from '../storage/GraphStorage';
 
 export class ElementInteractionGraph {
-	private graph: Graph;
-	private elementInteractionStorage: ElementInteractionStorage;
-	private analyzedElementStorage: AnalyzedElementStorage;
+	private elementInteractionGraphKey: string;
 
 	constructor(
-		graph: Graph,
-		elementInteractionStorage: ElementInteractionStorage,
-		analyzedElementStorage: AnalyzedElementStorage
+		private elementInteractionStorage: ElementInteractionStorage,
+		private analyzedElementStorage: AnalyzedElementStorage,
+		private graphStorage: GraphStorage,
+		private mutex: Mutex
 	) {
-		this.graph = graph;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.analyzedElementStorage = analyzedElementStorage;
+		this.mutex = mutex;
+		this.elementInteractionGraphKey = 'interactions-graph';
+	}
+
+	public async addElementInteractionToGraph(
+		elementInteraction: ElementInteraction<HTMLElement>,
+		sourceInteraction: ElementInteraction<HTMLElement> | null = null
+	): Promise<void> {
+		const interactionId = elementInteraction.getId();
+		await this.elementInteractionStorage.set(interactionId, elementInteraction);
+		await this.mutex.lock();
+		const graph = await this.getLatestVersionOfGraph();
+		graph.addNode(interactionId);
+		if (sourceInteraction) {
+			graph.addEdge(sourceInteraction.getId(), interactionId);
+		}
+		this.graphStorage.set(this.elementInteractionGraphKey, graph);
+		await this.mutex.unlock();
+	}
+
+	private async getLatestVersionOfGraph(): Promise<Graph> {
+		let graph: Graph | null = await this.graphStorage.get(this.elementInteractionGraphKey);
+		if (!graph) {
+			graph = new Graph();
+		}
+		return graph;
 	}
 
 	// TODO: Refatorar
@@ -24,12 +50,17 @@ export class ElementInteractionGraph {
 		searchForClosest: boolean,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
 		formCriteria: { interactionForm: HTMLFormElement; isEqual: boolean } | null,
-		isInteractionAnalyzed: boolean | null = null
+		isInteractionAnalyzed: boolean | null = null,
+		graph?: Graph
 	): Promise<ElementInteraction<HTMLElement>[]> {
 		const currentInteractionId = currentInteraction.getId();
 
+		if (!graph) {
+			graph = await this.getLatestVersionOfGraph();
+		}
+
 		if (currentInteractionId) {
-			const nextInteractionKey = this.graph.getParentNodeKey(currentInteractionId);
+			const nextInteractionKey = graph.getParentNodeKey(currentInteractionId);
 			if (typeof nextInteractionKey === 'string') {
 				const nextInteraction = await this.elementInteractionStorage.get(
 					nextInteractionKey
@@ -90,7 +121,8 @@ export class ElementInteractionGraph {
 					searchForClosest,
 					urlCriteria,
 					formCriteria,
-					isInteractionAnalyzed
+					isInteractionAnalyzed,
+					graph
 				);
 
 				if (!nextInteractionResult.length) {

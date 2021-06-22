@@ -22,24 +22,22 @@ export class Crawler {
 		private visitedPagesGraphMutex: Mutex,
 		private urlGraphKey: string,
 		private featureGenerator: FeatureGenerator,
-		private analyzedElementStorage: AnalyzedElementStorage,
 		private interactionStorage: ElementInteractionStorage,
-		private interactionsGraphKey: string,
 		private lastInteractionKey: string,
 		private pageStorage: PageStorage,
-		private lastPageKey: string
+		private lastPageKey: string,
+		private elementInteractionGraph: ElementInteractionGraph
 	) {
 		this.browserContext = browserContext;
 		this.graphStorage = graphStorage;
 		this.visitedPagesGraphMutex = visitedPagesGraphMutex;
 		this.urlGraphKey = urlGraphKey;
 		this.featureGenerator = featureGenerator;
-		this.analyzedElementStorage = analyzedElementStorage;
 		this.interactionStorage = interactionStorage;
-		this.interactionsGraphKey = interactionsGraphKey;
 		this.lastInteractionKey = lastInteractionKey;
 		this.pageStorage = pageStorage;
 		this.lastPageKey = lastPageKey;
+		this.elementInteractionGraph = elementInteractionGraph;
 	}
 
 	public async crawl() {
@@ -53,21 +51,10 @@ export class Crawler {
 			);
 		});
 
-		const graph = await this.graphStorage.get(this.interactionsGraphKey);
-		let elementInteractionGraph: ElementInteractionGraph | null = null;
-		if (graph) {
-			elementInteractionGraph = new ElementInteractionGraph(
-				graph,
-				this.interactionStorage,
-				this.analyzedElementStorage
-			);
-		}
-
 		//obtem ultima interacao que não está dentro de form já analisado
-		let lastUnanalyzed: ElementInteraction<HTMLElement> | null = null;
-		if (elementInteractionGraph) {
-			lastUnanalyzed = await this.getLastUnanalyzedInteraction(elementInteractionGraph);
-		}
+		const lastUnanalyzed = await this.getLastUnanalyzedInteraction(
+			this.elementInteractionGraph
+		);
 
 		let analysisContext: HTMLElement;
 

@@ -17,6 +17,7 @@ import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
 import Mutex from './mutex/Mutex';
+import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -25,24 +26,28 @@ const lastPageKey = 'lastPage';
 const pageStorage = new PageStorage('engenharia-reversa-web');
 
 const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
-const featureStorage: FeatureStorage = new FeatureStorage(window.localStorage);
 const graphKey = 'graph';
 const elementInteractionGraphKey = 'interactions-graph';
 const lastElementInteractionKey = 'last-interaction';
 const lastElementInteractionBeforeRedirectKey = 'last-interaction-before-redirect';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const featureAnalyzer: FeatureCollection = new FeatureCollection();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor(window);
 const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
 const spec: Spec = new Spec('pt-br');
 const analyzedElementStorage = new AnalyzedElementStorage(window.localStorage, document);
 
+const elementInteractionGraph = new ElementInteractionGraph(
+	elementInteracationStorage,
+	analyzedElementStorage,
+	graphStorage,
+	interactionsGraphMutex
+);
+
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,
 	buttonInteractor,
-	elementInteractionGraphKey,
-	graphStorage,
+	elementInteractionGraph,
 	elementInteracationStorage,
 	interactionsGraphMutex,
 	lastElementInteractionKey
@@ -69,12 +74,11 @@ const crawler: Crawler = new Crawler(
 	visitedPagesGraphMutex,
 	graphKey,
 	featureGenerator,
-	analyzedElementStorage,
 	elementInteracationStorage,
-	elementInteractionGraphKey,
 	lastElementInteractionKey,
 	pageStorage,
-	lastPageKey
+	lastPageKey,
+	elementInteractionGraph
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

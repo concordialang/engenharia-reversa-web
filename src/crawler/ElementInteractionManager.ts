@@ -9,13 +9,12 @@ import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
+import { ElementInteractionGraph } from './ElementInteractionGraph';
 
 // TODO: Refatorar essa classe, sobretudo o construtor
 export class ElementInteractionManager {
 	private inputInteractor: InputInteractor;
 	private buttonInteractor: ButtonInteractor;
-	private elementInteractionGraphKey: string;
-	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
 	private mutex: Mutex;
 	private lastInteraction: ElementInteraction<HTMLElement> | null;
@@ -24,16 +23,14 @@ export class ElementInteractionManager {
 	constructor(
 		inputInteractor: InputInteractor,
 		buttonInteractor: ButtonInteractor,
-		elementInteractionGraphKey: string,
-		graphStorage: GraphStorage,
+		private elementInteractionGraph: ElementInteractionGraph,
 		elementInteractionStorage: ElementInteractionStorage,
 		mutex: Mutex,
 		lastInteractionKey: string
 	) {
 		this.inputInteractor = inputInteractor;
 		this.buttonInteractor = buttonInteractor;
-		this.elementInteractionGraphKey = elementInteractionGraphKey;
-		this.graphStorage = graphStorage;
+		this.elementInteractionGraph = elementInteractionGraph;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.mutex = mutex;
 		this.lastInteractionKey = lastInteractionKey;
@@ -67,21 +64,10 @@ export class ElementInteractionManager {
 		}
 		//Verificar se essa interação já foi salva ?
 		if (saveInteractionInGraph) {
-			const id = interaction.getId();
-			await this.elementInteractionStorage.set(id, interaction);
-			await this.mutex.lock();
-			await this.addElementInteractionKeyToGraph(id);
-			if (previousInteraction) {
-				const previousInteractionId = previousInteraction.getId();
-				if (previousInteractionId) {
-					await this.addElementInteractionKeyLinkToGraph(previousInteractionId, id);
-				} else {
-					throw new Error(
-						'Previous element interaction needs an id to be linked to the current element interaction'
-					);
-				}
-			}
-			this.mutex.unlock();
+			await this.elementInteractionGraph.addElementInteractionToGraph(
+				interaction,
+				previousInteraction
+			);
 		}
 
 		this.lastInteraction = interaction;
@@ -98,28 +84,5 @@ export class ElementInteractionManager {
 		for (const interaction of interactions) {
 			this.execute(interaction, false);
 		}
-	}
-
-	//refatorar função
-	private async addElementInteractionKeyToGraph(key: string): Promise<void> {
-		let graph: Graph | null = await this.graphStorage.get(this.elementInteractionGraphKey);
-		if (!graph) {
-			graph = new Graph();
-		}
-		graph.addNode(key);
-		await this.graphStorage.set(this.elementInteractionGraphKey, graph);
-	}
-
-	//refatorar função
-	private async addElementInteractionKeyLinkToGraph(
-		keyFrom: string,
-		keyTo: string
-	): Promise<void> {
-		let graph: Graph | null = await this.graphStorage.get(this.elementInteractionGraphKey);
-		if (!graph) {
-			graph = new Graph();
-		}
-		graph.addEdge(keyFrom, keyTo);
-		await this.graphStorage.set(this.elementInteractionGraphKey, graph);
 	}
 }
