@@ -3,16 +3,6 @@ const path = require('path');
 const srcDir = '../src/';
 const CreateFileWebpack = require('create-file-webpack');
 
-// vue.config.js
-const ArbitraryCodeAfterReload = function (cb) {
-	this.apply = function (compiler) {
-		if (compiler.hooks && compiler.hooks.done) {
-			console.log('23423342');
-			compiler.hooks.done.tap('webpack-arbitrary-code', cb);
-		}
-	};
-};
-
 const myCallback = function () {
 	console.log('Implementing alien intelligence');
 };

@@ -1,5 +1,5 @@
 import { Graph } from '../graph/Graph';
-import { AnalyzedElementStorage } from './AnalyzedElementStorage';
+import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 
@@ -68,7 +68,7 @@ export class ElementInteractionGraph {
 					const nextInteractionElementSelector = nextInteraction.getElementSelector();
 					if (!nextInteractionElementSelector)
 						throw new Error('Current Interaction element selector is null');
-					const interactionAnalyzed = this.analyzedElementStorage.isElementAnalyzed(
+					const interactionAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
 						nextInteractionElementSelector,
 						nextInteraction.getPageUrl()
 					);

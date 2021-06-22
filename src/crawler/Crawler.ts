@@ -4,7 +4,7 @@ import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLEventType } from '../html/HTMLEventType';
 import Mutex from '../mutex/Mutex';
 import { commonAncestorElement } from '../util';
-import { AnalyzedElementStorage } from './AnalyzedElementStorage';
+import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';

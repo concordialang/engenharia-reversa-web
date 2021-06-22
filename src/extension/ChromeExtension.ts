@@ -47,7 +47,6 @@ export class ChromeExtension implements Extension {
 	}
 
 	public reloadTab(tabId: string): Promise<void> {
-		console.log(tabId);
 		return new Promise(function (resolve) {
 			chrome.tabs.reload(Number(tabId), {}, function () {
 				resolve();

@@ -47,7 +47,6 @@ export class ElementInteractionManager {
 	): Promise<InteractionResult | null> {
 		await sleep(400);
 		const element = interaction.getElement();
-		// console.log(element);
 		const type = element.tagName;
 		let result: InteractionResult | null = null;
 		if (type == HTMLElementType.Input) {

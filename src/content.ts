@@ -5,7 +5,7 @@ import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { Command } from './comm/Command';
 import { CommunicationChannel } from './comm/CommunicationChannel';
 import { Message } from './comm/Message';
-import { AnalyzedElementStorage } from './crawler/AnalyzedElementStorage';
+import { AnalyzedElementStorage } from './storage/AnalyzedElementStorage';
 import { BrowserContext } from './crawler/BrowserContext';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
@@ -36,7 +36,7 @@ const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor(window);
 const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
 const spec: Spec = new Spec('pt-br');
-const analyzedElementStorage = new AnalyzedElementStorage(document);
+const analyzedElementStorage = new AnalyzedElementStorage(window.localStorage, document);
 
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,

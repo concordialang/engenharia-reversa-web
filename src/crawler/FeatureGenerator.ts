@@ -8,7 +8,7 @@ import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
-import { AnalyzedElementStorage } from './AnalyzedElementStorage';
+import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionManager } from './ElementInteractionManager';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
@@ -57,15 +57,22 @@ export class FeatureGenerator {
 	public async analyse(contextElement: HTMLElement) {
 		const xPath = getPathTo(contextElement);
 		if (xPath) {
-			if (!this.analyzedElementStorage.isElementAnalyzed(xPath, this.pageUrl)) {
+			const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
+				xPath,
+				this.pageUrl
+			);
+			if (!analyzed) {
 				const forms = contextElement.querySelectorAll('form');
 				for (let form of forms) {
 					let xPathElement = getPathTo(form);
-					if (
-						xPathElement &&
-						!this.analyzedElementStorage.isElementAnalyzed(xPathElement, this.pageUrl)
-					) {
-						await this.generate(form);
+					if (xPathElement) {
+						const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
+							xPathElement,
+							this.pageUrl
+						);
+						if (!analyzed) {
+							await this.generate(form);
+						}
 					}
 				}
 
@@ -205,16 +212,17 @@ export class FeatureGenerator {
 
 			observer.disconnect();
 
-			// console.log('spec', this.spec);
-
 			this.radioGroupsAlreadyFilled = [];
 
-			this.analyzedElementStorage.save(new AnalyzedElement(contextElement, this.pageUrl));
+			let analyzedElement: AnalyzedElement = new AnalyzedElement(
+				contextElement,
+				this.pageUrl
+			);
+			await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 			for (let element of interactableElements) {
 				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
-				this.analyzedElementStorage.save(
-					new AnalyzedElement(<HTMLElement>element, this.pageUrl)
-				);
+				analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);
+				await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 			}
 		}
 	}
