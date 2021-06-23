@@ -2,6 +2,6 @@ export enum HTMLEventType {
 	Change = 'change',
 	Click = 'click',
 	Unload = 'unload',
-	BeforeUnload = 'unload',
+	BeforeUnload = 'beforeunload',
 	Submit = 'submit',
 }
