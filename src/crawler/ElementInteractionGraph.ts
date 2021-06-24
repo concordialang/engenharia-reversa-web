@@ -7,6 +7,7 @@ import { GraphStorage } from '../storage/GraphStorage';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
+	private lastInteractionKey: string;
 
 	constructor(
 		private elementInteractionStorage: ElementInteractionStorage,
@@ -18,6 +19,7 @@ export class ElementInteractionGraph {
 		this.analyzedElementStorage = analyzedElementStorage;
 		this.mutex = mutex;
 		this.elementInteractionGraphKey = 'interactions-graph';
+		this.lastInteractionKey = 'last-interaction';
 	}
 
 	public async addElementInteractionToGraph(
@@ -33,6 +35,7 @@ export class ElementInteractionGraph {
 			graph.addEdge(sourceInteraction.getId(), interactionId);
 		}
 		this.graphStorage.set(this.elementInteractionGraphKey, graph);
+		await this.elementInteractionStorage.set(this.lastInteractionKey, elementInteraction);
 		await this.mutex.unlock();
 	}
 
@@ -140,5 +143,9 @@ export class ElementInteractionGraph {
 		} else {
 			throw new Error("Current interaction doesn't have an id");
 		}
+	}
+
+	public async getLastInteraction(): Promise<ElementInteraction<HTMLElement> | null> {
+		return await this.elementInteractionStorage.get(this.lastInteractionKey);
 	}
 }

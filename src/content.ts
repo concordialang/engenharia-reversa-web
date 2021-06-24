@@ -1,4 +1,3 @@
-import { FeatureCollection } from './analysis/FeatureCollection';
 import { Spec } from './analysis/Spec';
 import { AppEvent } from './comm/AppEvent';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
@@ -12,7 +11,6 @@ import { Crawler } from './crawler/Crawler';
 import { ElementInteractionManager } from './crawler/ElementInteractionManager';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
 import { FeatureGenerator } from './crawler/FeatureGenerator';
-import { FeatureStorage } from './storage/FeatureStorage';
 import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
@@ -49,9 +47,7 @@ const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex
 const elementInteractionManager = new ElementInteractionManager(
 	inputInteractor,
 	buttonInteractor,
-	elementInteractionGraph,
-	elementInteracationStorage,
-	lastElementInteractionKey
+	elementInteractionGraph
 );
 
 const pageUrl: URL = new URL(window.location.href);
@@ -72,8 +68,6 @@ const browserContext = new BrowserContext(document, pageUrl, window);
 const crawler: Crawler = new Crawler(
 	browserContext,
 	featureGenerator,
-	elementInteracationStorage,
-	lastElementInteractionKey,
 	pageStorage,
 	elementInteractionGraph,
 	visitedURLGraph

@@ -16,16 +16,12 @@ export class Crawler {
 	constructor(
 		private browserContext: BrowserContext,
 		private featureGenerator: FeatureGenerator,
-		private interactionStorage: ElementInteractionStorage,
-		private lastInteractionKey: string,
 		private pageStorage: PageStorage,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph
 	) {
 		this.browserContext = browserContext;
 		this.featureGenerator = featureGenerator;
-		this.interactionStorage = interactionStorage;
-		this.lastInteractionKey = lastInteractionKey;
 		this.pageStorage = pageStorage;
 		this.lastPageKey = 'last-page';
 		this.elementInteractionGraph = elementInteractionGraph;
@@ -45,7 +41,7 @@ export class Crawler {
 		});
 
 		//obtem ultima interacao que não está dentro de form já analisado
-		const lastUnanalyzed = await this.getLastUnanalyzedInteraction(
+		const lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 			this.elementInteractionGraph
 		);
 
@@ -113,10 +109,10 @@ export class Crawler {
 		this.pageStorage.remove(this.lastPageKey);
 	}
 
-	private async getLastUnanalyzedInteraction(
+	private async getMostRecentInteractionFromUnfinishedAnalysis(
 		elementInteractionGraph: ElementInteractionGraph
 	): Promise<ElementInteraction<HTMLElement> | null> {
-		const currentInteraction = await this.interactionStorage.get(this.lastInteractionKey);
+		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
 		if (currentInteraction) {
 			const path = await elementInteractionGraph.pathToInteraction(
 				currentInteraction,
