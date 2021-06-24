@@ -21,65 +21,55 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
-	private elementInteractionManager: ElementInteractionManager;
-	private pageUrl: URL;
-	// private spec: Spec;
-	private graphStorage: GraphStorage;
-	private elementInteractionStorage: ElementInteractionStorage;
-	private elementInteractionGraphKey: string;
-	private lastInteractionBeforeRedirectKey: string;
-	private lastInteractionKey: string;
-	private analyzedElementStorage: AnalyzedElementStorage;
 
 	constructor(
-		elementInteractionManager: ElementInteractionManager,
-		pageUrl: URL,
+		private elementInteractionManager: ElementInteractionManager,
+		private pageUrl: URL,
 		private spec: Spec,
-		graphStorage: GraphStorage,
-		elementInteractionStorage: ElementInteractionStorage,
-		elementInteractionGraphKey: string,
-		lastInteractionBeforeRedirectKey: string,
-		lastInteractionKey: string,
-		analyzedElementStorage: AnalyzedElementStorage
+		private graphStorage: GraphStorage,
+		private elementInteractionStorage: ElementInteractionStorage,
+		private elementInteractionGraphKey: string,
+		private lastInteractionBeforeRedirectKey: string,
+		private lastInteractionKey: string,
+		private analyzedElementStorage: AnalyzedElementStorage
 	) {
 		this.radioGroupsAlreadyFilled = [];
-		this.elementInteractionManager = elementInteractionManager;
-		this.pageUrl = pageUrl;
-		// this.spec = spec;
-		this.graphStorage = graphStorage;
-		this.elementInteractionStorage = elementInteractionStorage;
-		this.elementInteractionGraphKey = elementInteractionGraphKey;
-		this.lastInteractionBeforeRedirectKey = lastInteractionBeforeRedirectKey;
-		this.lastInteractionKey = lastInteractionKey;
-		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
 	public async analyse(contextElement: HTMLElement) {
 		const xPath = getPathTo(contextElement);
 		if (xPath) {
-			const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
 				this.pageUrl
 			);
-			if (!analyzed) {
-				const forms = contextElement.querySelectorAll('form');
-				for (let form of forms) {
-					let xPathElement = getPathTo(form);
-					if (xPathElement) {
-						const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
-							xPathElement,
-							this.pageUrl
-						);
-						if (!analyzed) {
-							await this.generate(form);
-						}
-					}
-				}
 
+			if (!analyzedContext) {
+				const forms = contextElement.querySelectorAll('form');
+				this.analyseForms(forms);
+
+				// generate feature for elements outside of forms
 				await this.generate(contextElement, true);
 			}
 		} else {
 			throw new Error('Unable to get element XPath');
+		}
+	}
+
+	private async analyseForms(forms) {
+		for (let form of forms) {
+			let xPathElement = getPathTo(form);
+
+			if (!xPathElement) continue;
+
+			const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+				xPathElement,
+				this.pageUrl
+			);
+
+			if (!analyzedElement) {
+				await this.generate(form);
+			}
 		}
 	}
 
@@ -108,14 +98,14 @@ export class FeatureGenerator {
 			const variant = featureCollection.createVariant();
 
 			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-			const lastInteraction = await this.elementInteractionStorage.get(
+			let lastInteraction: ElementInteraction<HTMLElement> | null = null;
+
+			lastInteraction = await this.elementInteractionStorage.get(
 				this.lastInteractionBeforeRedirectKey
 			);
 
 			if (!lastInteraction) {
-				const lastInteraction = await this.elementInteractionStorage.get(
-					this.lastInteractionKey
-				);
+				lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
 			}
 
 			for (const element of interactableElements) {
@@ -180,7 +170,7 @@ export class FeatureGenerator {
 				// analyzes the interaction
 				const uiElment = featureCollection.createUiElment(interaction.getElement());
 
-				if (uiElment !== null && uiElment !== undefined) {
+				if (uiElment) {
 					feature.setUiElement(uiElment);
 
 					const variantSentence = featureCollection.createVariantSentence(uiElment);

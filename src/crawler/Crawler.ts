@@ -59,7 +59,7 @@ export class Crawler {
 		if (previousDocHTML) {
 			const template = this.browserContext.getDocument().createElement('template');
 			template.innerHTML = previousDocHTML.trim();
-			const previousDoc = <HTMLElement>template.content.firstChild;
+			const previousDoc = template.content.firstChild as HTMLElement;
 			const diffDomManager = new DiffDomManager(
 				previousDoc,
 				this.browserContext.getDocument().body

@@ -81,15 +81,19 @@ export class DiffDomManager {
 
 	// returns the parent xpath of the outermost element that has changed
 	public getParentXPathOfTheOutermostElementDiff(): string | null {
-		if (this.diffDom[0] == undefined) {
+		if (!this.diffDom[0]) {
 			return null;
 		}
 
 		let outermostElementDiff: any = this.getOutermostElementDiff();
 		if (outermostElementDiff != null) {
 			let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-			for (let i = 0; i < outermostElementDiff.route.length; i++) {
-				htmlElement = htmlElement.childNodes[outermostElementDiff.route[i]];
+			// for (let i = 0; i < outermostElementDiff.route.length; i++) {
+			// 	htmlElement = htmlElement.childNodes[outermostElementDiff.route[i]];
+			// }
+
+			for (let route of outermostElementDiff.route) {
+				htmlElement = htmlElement.childNodes[route];
 			}
 
 			return getXPath(htmlElement.parentElement);
