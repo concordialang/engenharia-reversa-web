@@ -8,7 +8,7 @@ import { AnalyzedElementStorage } from './storage/AnalyzedElementStorage';
 import { BrowserContext } from './crawler/BrowserContext';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
-import { ElementInteractionManager } from './crawler/ElementInteractionManager';
+import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
 import { FeatureGenerator } from './crawler/FeatureGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
@@ -44,7 +44,7 @@ const elementInteractionGraph = new ElementInteractionGraph(
 
 const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
-const elementInteractionManager = new ElementInteractionManager(
+const elementInteractionExecutor = new ElementInteractionExecutor(
 	inputInteractor,
 	buttonInteractor,
 	elementInteractionGraph
@@ -52,7 +52,7 @@ const elementInteractionManager = new ElementInteractionManager(
 
 const pageUrl: URL = new URL(window.location.href);
 const featureGenerator: FeatureGenerator = new FeatureGenerator(
-	elementInteractionManager,
+	elementInteractionExecutor,
 	pageUrl,
 	spec,
 	graphStorage,

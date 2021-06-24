@@ -8,7 +8,7 @@ import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 
 // TODO: Refatorar essa classe
-export class ElementInteractionManager {
+export class ElementInteractionExecutor {
 	constructor(
 		private inputInteractor: InputInteractor,
 		private buttonInteractor: ButtonInteractor,

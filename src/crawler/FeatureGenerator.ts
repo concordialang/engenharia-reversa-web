@@ -10,7 +10,7 @@ import { getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
-import { ElementInteractionManager } from './ElementInteractionManager';
+import { ElementInteractionExecutor } from './ElementInteractionExecutor';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
@@ -21,7 +21,7 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
-	private elementInteractionManager: ElementInteractionManager;
+	private elementInteractionExecutor: ElementInteractionExecutor;
 	private pageUrl: URL;
 	// private spec: Spec;
 	private graphStorage: GraphStorage;
@@ -32,7 +32,7 @@ export class FeatureGenerator {
 	private analyzedElementStorage: AnalyzedElementStorage;
 
 	constructor(
-		elementInteractionManager: ElementInteractionManager,
+		elementInteractionExecutor: ElementInteractionExecutor,
 		pageUrl: URL,
 		private spec: Spec,
 		graphStorage: GraphStorage,
@@ -43,7 +43,7 @@ export class FeatureGenerator {
 		analyzedElementStorage: AnalyzedElementStorage
 	) {
 		this.radioGroupsAlreadyFilled = [];
-		this.elementInteractionManager = elementInteractionManager;
+		this.elementInteractionExecutor = elementInteractionExecutor;
 		this.pageUrl = pageUrl;
 		// this.spec = spec;
 		this.graphStorage = graphStorage;
@@ -155,7 +155,7 @@ export class FeatureGenerator {
 									this.lastInteractionBeforeRedirectKey
 								);
 							}
-							const result = await this.elementInteractionManager.execute(
+							const result = await this.elementInteractionExecutor.execute(
 								interaction,
 								true,
 								previousInteraction
