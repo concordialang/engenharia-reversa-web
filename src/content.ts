@@ -55,9 +55,7 @@ const featureGenerator: FeatureGenerator = new FeatureGenerator(
 	elementInteractionExecutor,
 	pageUrl,
 	spec,
-	graphStorage,
 	elementInteracationStorage,
-	elementInteractionGraphKey,
 	lastElementInteractionBeforeRedirectKey,
 	lastElementInteractionKey,
 	analyzedElementStorage

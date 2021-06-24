@@ -24,9 +24,7 @@ export class FeatureGenerator {
 	private elementInteractionExecutor: ElementInteractionExecutor;
 	private pageUrl: URL;
 	// private spec: Spec;
-	private graphStorage: GraphStorage;
 	private elementInteractionStorage: ElementInteractionStorage;
-	private elementInteractionGraphKey: string;
 	private lastInteractionBeforeRedirectKey: string;
 	private lastInteractionKey: string;
 	private analyzedElementStorage: AnalyzedElementStorage;
@@ -35,9 +33,7 @@ export class FeatureGenerator {
 		elementInteractionExecutor: ElementInteractionExecutor,
 		pageUrl: URL,
 		private spec: Spec,
-		graphStorage: GraphStorage,
 		elementInteractionStorage: ElementInteractionStorage,
-		elementInteractionGraphKey: string,
 		lastInteractionBeforeRedirectKey: string,
 		lastInteractionKey: string,
 		analyzedElementStorage: AnalyzedElementStorage
@@ -46,9 +42,7 @@ export class FeatureGenerator {
 		this.elementInteractionExecutor = elementInteractionExecutor;
 		this.pageUrl = pageUrl;
 		// this.spec = spec;
-		this.graphStorage = graphStorage;
 		this.elementInteractionStorage = elementInteractionStorage;
-		this.elementInteractionGraphKey = elementInteractionGraphKey;
 		this.lastInteractionBeforeRedirectKey = lastInteractionBeforeRedirectKey;
 		this.lastInteractionKey = lastInteractionKey;
 		this.analyzedElementStorage = analyzedElementStorage;
