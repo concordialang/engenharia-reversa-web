@@ -1,10 +1,6 @@
 import { DiffDomManager } from '../analysis/DiffDomManager';
-import { Graph } from '../graph/Graph';
-import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLEventType } from '../html/HTMLEventType';
-import Mutex from '../mutex/Mutex';
 import { commonAncestorElement } from '../util';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -15,22 +11,19 @@ import { VisitedURLGraph } from './VisitedURLGraph';
 
 // TODO: Refatorar, principalmente construtor
 export class Crawler {
+	private lastPageKey: string;
+
 	constructor(
 		private browserContext: BrowserContext,
 		private featureGenerator: FeatureGenerator,
-		private interactionStorage: ElementInteractionStorage,
-		private lastInteractionKey: string,
 		private pageStorage: PageStorage,
-		private lastPageKey: string,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph
 	) {
 		this.browserContext = browserContext;
 		this.featureGenerator = featureGenerator;
-		this.interactionStorage = interactionStorage;
-		this.lastInteractionKey = lastInteractionKey;
 		this.pageStorage = pageStorage;
-		this.lastPageKey = lastPageKey;
+		this.lastPageKey = 'last-page';
 		this.elementInteractionGraph = elementInteractionGraph;
 		this.visitedURLGraph = visitedURLGraph;
 	}
@@ -48,7 +41,7 @@ export class Crawler {
 		});
 
 		//obtem ultima interacao que não está dentro de form já analisado
-		const lastUnanalyzed = await this.getLastUnanalyzedInteraction(
+		const lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 			this.elementInteractionGraph
 		);
 
@@ -112,10 +105,14 @@ export class Crawler {
 		}
 	}
 
-	private async getLastUnanalyzedInteraction(
+	public resetLastPage() {
+		this.pageStorage.remove(this.lastPageKey);
+	}
+
+	private async getMostRecentInteractionFromUnfinishedAnalysis(
 		elementInteractionGraph: ElementInteractionGraph
 	): Promise<ElementInteraction<HTMLElement> | null> {
-		const currentInteraction = await this.interactionStorage.get(this.lastInteractionKey);
+		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
 		if (currentInteraction) {
 			const path = await elementInteractionGraph.pathToInteraction(
 				currentInteraction,

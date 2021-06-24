@@ -1,4 +1,3 @@
-import { FeatureCollection } from './analysis/FeatureCollection';
 import { Spec } from './analysis/Spec';
 import { AppEvent } from './comm/AppEvent';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
@@ -9,10 +8,9 @@ import { AnalyzedElementStorage } from './storage/AnalyzedElementStorage';
 import { BrowserContext } from './crawler/BrowserContext';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
-import { ElementInteractionManager } from './crawler/ElementInteractionManager';
+import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
 import { FeatureGenerator } from './crawler/FeatureGenerator';
-import { FeatureStorage } from './storage/FeatureStorage';
 import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
@@ -23,7 +21,6 @@ import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
 
-const lastPageKey = 'lastPage';
 const pageStorage = new PageStorage('engenharia-reversa-web');
 
 const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
@@ -47,22 +44,18 @@ const elementInteractionGraph = new ElementInteractionGraph(
 
 const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
-const elementInteractionManager = new ElementInteractionManager(
+const elementInteractionExecutor = new ElementInteractionExecutor(
 	inputInteractor,
 	buttonInteractor,
-	elementInteractionGraph,
-	elementInteracationStorage,
-	lastElementInteractionKey
+	elementInteractionGraph
 );
 
 const pageUrl: URL = new URL(window.location.href);
 const featureGenerator: FeatureGenerator = new FeatureGenerator(
-	elementInteractionManager,
+	elementInteractionExecutor,
 	pageUrl,
 	spec,
-	graphStorage,
 	elementInteracationStorage,
-	elementInteractionGraphKey,
 	lastElementInteractionBeforeRedirectKey,
 	lastElementInteractionKey,
 	analyzedElementStorage
@@ -73,10 +66,7 @@ const browserContext = new BrowserContext(document, pageUrl, window);
 const crawler: Crawler = new Crawler(
 	browserContext,
 	featureGenerator,
-	elementInteracationStorage,
-	lastElementInteractionKey,
 	pageStorage,
-	lastPageKey,
 	elementInteractionGraph,
 	visitedURLGraph
 );
@@ -109,7 +99,7 @@ function clean(): void {
 			}
 		})
 		.then(() => {
-			pageStorage.remove(lastPageKey);
+			crawler.resetLastPage();
 		});
 }
 
