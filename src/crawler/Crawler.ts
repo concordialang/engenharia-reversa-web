@@ -1,10 +1,6 @@
 import { DiffDomManager } from '../analysis/DiffDomManager';
-import { Graph } from '../graph/Graph';
-import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLEventType } from '../html/HTMLEventType';
-import Mutex from '../mutex/Mutex';
 import { commonAncestorElement } from '../util';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -15,13 +11,14 @@ import { VisitedURLGraph } from './VisitedURLGraph';
 
 // TODO: Refatorar, principalmente construtor
 export class Crawler {
+	private lastPageKey: string;
+
 	constructor(
 		private browserContext: BrowserContext,
 		private featureGenerator: FeatureGenerator,
 		private interactionStorage: ElementInteractionStorage,
 		private lastInteractionKey: string,
 		private pageStorage: PageStorage,
-		private lastPageKey: string,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph
 	) {
@@ -30,7 +27,7 @@ export class Crawler {
 		this.interactionStorage = interactionStorage;
 		this.lastInteractionKey = lastInteractionKey;
 		this.pageStorage = pageStorage;
-		this.lastPageKey = lastPageKey;
+		this.lastPageKey = 'last-page';
 		this.elementInteractionGraph = elementInteractionGraph;
 		this.visitedURLGraph = visitedURLGraph;
 	}
@@ -110,6 +107,10 @@ export class Crawler {
 		) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
+	}
+
+	public resetLastPage() {
+		this.pageStorage.remove(this.lastPageKey);
 	}
 
 	private async getLastUnanalyzedInteraction(

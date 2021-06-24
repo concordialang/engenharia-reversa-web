@@ -23,7 +23,6 @@ import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
 
-const lastPageKey = 'lastPage';
 const pageStorage = new PageStorage('engenharia-reversa-web');
 
 const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
@@ -76,7 +75,6 @@ const crawler: Crawler = new Crawler(
 	elementInteracationStorage,
 	lastElementInteractionKey,
 	pageStorage,
-	lastPageKey,
 	elementInteractionGraph,
 	visitedURLGraph
 );
@@ -109,7 +107,7 @@ function clean(): void {
 			}
 		})
 		.then(() => {
-			pageStorage.remove(lastPageKey);
+			crawler.resetLastPage();
 		});
 }
 
