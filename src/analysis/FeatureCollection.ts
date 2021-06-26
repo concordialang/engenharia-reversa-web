@@ -56,6 +56,7 @@ export class FeatureCollection {
 		return variant;
 	}
 
+	// TODO
 	createVariantSentence(uiElment: UIElement) {
 		const sentence = this.variantSentencesGenerator.generateVariantSentenceFromUIElement(
 			uiElment

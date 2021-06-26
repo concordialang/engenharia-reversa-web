@@ -26,9 +26,7 @@ export class FeatureGenerator {
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private pageUrl: URL,
 		private spec: Spec,
-		private graphStorage: GraphStorage,
 		private elementInteractionStorage: ElementInteractionStorage,
-		private elementInteractionGraphKey: string,
 		private lastInteractionBeforeRedirectKey: string,
 		private lastInteractionKey: string,
 		private analyzedElementStorage: AnalyzedElementStorage
@@ -45,20 +43,29 @@ export class FeatureGenerator {
 			);
 
 			if (!analyzedContext) {
-				const forms = contextElement.querySelectorAll('form');
-				this.analyseForms(forms);
+				if (
+					contextElement.nodeName === HTMLNodeTypes.FORM ||
+					contextElement.nodeName === HTMLNodeTypes.TABLE
+				) {
+					this.generate(contextElement);
+				} else {
+					const featureTags = contextElement.querySelectorAll('form, table');
+					if (featureTags.length > 0) {
+						this.analyseFeatureTags(featureTags);
+					}
 
-				// generate feature for elements outside of forms
-				await this.generate(contextElement, true);
+					// generate feature for elements outside of forms
+					await this.generate(contextElement, true);
+				}
 			}
 		} else {
 			throw new Error('Unable to get element XPath');
 		}
 	}
 
-	private async analyseForms(forms) {
-		for (let form of forms) {
-			let xPathElement = getPathTo(form);
+	private async analyseFeatureTags(featureTags) {
+		for (let featureTag of featureTags) {
+			let xPathElement = getPathTo(featureTag);
 
 			if (!xPathElement) continue;
 
@@ -68,7 +75,7 @@ export class FeatureGenerator {
 			);
 
 			if (!analyzedElement) {
-				await this.generate(form);
+				await this.generate(featureTag);
 			}
 		}
 	}
