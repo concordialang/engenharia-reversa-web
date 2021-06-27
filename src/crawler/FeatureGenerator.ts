@@ -6,7 +6,7 @@ import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
-import { getPathTo } from '../util';
+import { getFeatureElements, getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
@@ -21,59 +21,68 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
-	private elementInteractionExecutor: ElementInteractionExecutor;
-	private pageUrl: URL;
-	// private spec: Spec;
-	private elementInteractionStorage: ElementInteractionStorage;
-	private lastInteractionBeforeRedirectKey: string;
-	private lastInteractionKey: string;
-	private analyzedElementStorage: AnalyzedElementStorage;
 
 	constructor(
-		elementInteractionExecutor: ElementInteractionExecutor,
-		pageUrl: URL,
+		private elementInteractionExecutor: ElementInteractionExecutor,
+		private pageUrl: URL,
 		private spec: Spec,
-		elementInteractionStorage: ElementInteractionStorage,
-		lastInteractionBeforeRedirectKey: string,
-		lastInteractionKey: string,
-		analyzedElementStorage: AnalyzedElementStorage
+		private elementInteractionStorage: ElementInteractionStorage,
+		private lastInteractionBeforeRedirectKey: string,
+		private lastInteractionKey: string,
+		private analyzedElementStorage: AnalyzedElementStorage
 	) {
 		this.radioGroupsAlreadyFilled = [];
-		this.elementInteractionExecutor = elementInteractionExecutor;
-		this.pageUrl = pageUrl;
-		// this.spec = spec;
-		this.elementInteractionStorage = elementInteractionStorage;
-		this.lastInteractionBeforeRedirectKey = lastInteractionBeforeRedirectKey;
-		this.lastInteractionKey = lastInteractionKey;
-		this.analyzedElementStorage = analyzedElementStorage;
 	}
 
 	public async analyse(contextElement: HTMLElement) {
-		const xPath = getPathTo(contextElement);
+		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
 				this.pageUrl
 			);
-			if (!analyzed) {
-				const forms = contextElement.querySelectorAll('form');
-				for (let form of forms) {
-					let xPathElement = getPathTo(form);
-					if (xPathElement) {
-						const analyzed = await this.analyzedElementStorage.isElementAnalyzed(
-							xPathElement,
-							this.pageUrl
-						);
-						if (!analyzed) {
-							await this.generate(form);
-						}
-					}
-				}
 
-				await this.generate(contextElement, true);
+			if (!analyzedContext) {
+				await this.analyseFeatureElements(contextElement);
+
+				if (
+					contextElement.nodeName !== HTMLNodeTypes.FORM &&
+					contextElement.nodeName !== HTMLNodeTypes.TABLE
+				) {
+					// generate feature for elements outside feature elements
+					await this.generate(contextElement, true);
+				}
 			}
 		} else {
+			// TODO - tratar excecao para nao travar o programa
 			throw new Error('Unable to get element XPath');
+		}
+	}
+
+	private async analyseFeatureElements(contextElement: HTMLElement) {
+		if (
+			contextElement.nodeName === HTMLNodeTypes.FORM ||
+			contextElement.nodeName === HTMLNodeTypes.TABLE
+		) {
+			this.generate(contextElement);
+			return;
+		}
+
+		const featureTags: any = getFeatureElements(contextElement);
+		if (featureTags.length > 0) {
+			for (let featureTag of featureTags) {
+				let xPathElement = getPathTo(featureTag);
+				if (!xPathElement) continue;
+
+				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+					xPathElement,
+					this.pageUrl
+				);
+
+				if (!analyzedElement) {
+					await this.generate(featureTag);
+				}
+			}
 		}
 	}
 
@@ -102,14 +111,14 @@ export class FeatureGenerator {
 			const variant = featureCollection.createVariant();
 
 			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-			const lastInteraction = await this.elementInteractionStorage.get(
+			let lastInteraction: ElementInteraction<HTMLElement> | null = null;
+
+			lastInteraction = await this.elementInteractionStorage.get(
 				this.lastInteractionBeforeRedirectKey
 			);
 
 			if (!lastInteraction) {
-				const lastInteraction = await this.elementInteractionStorage.get(
-					this.lastInteractionKey
-				);
+				lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
 			}
 
 			for (const element of interactableElements) {
@@ -174,7 +183,7 @@ export class FeatureGenerator {
 				// analyzes the interaction
 				const uiElment = featureCollection.createUiElment(interaction.getElement());
 
-				if (uiElment !== null && uiElment !== undefined) {
+				if (uiElment) {
 					feature.setUiElement(uiElment);
 
 					const variantSentence = featureCollection.createVariantSentence(uiElment);
@@ -207,12 +216,13 @@ export class FeatureGenerator {
 			observer.disconnect();
 
 			this.radioGroupsAlreadyFilled = [];
+		}
 
-			let analyzedElement: AnalyzedElement = new AnalyzedElement(
-				contextElement,
-				this.pageUrl
-			);
-			await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+		let analyzedElement: AnalyzedElement = new AnalyzedElement(contextElement, this.pageUrl);
+
+		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+
+		if (interactableElements.length > 0) {
 			for (let element of interactableElements) {
 				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
 				analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);

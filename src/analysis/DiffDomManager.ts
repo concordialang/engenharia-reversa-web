@@ -8,19 +8,17 @@ export class DiffDomManager {
 	private currentHtml: HTMLElement;
 
 	constructor(previousHtml: HTMLElement, currentHtml: HTMLElement) {
-		let dd = new DiffDOM({
-			valueDiffing: false,
-		});
+		let dd = new DiffDOM({ valueDiffing: false });
 
 		this.previousHtml = this.formatedHtml(previousHtml);
 		this.currentHtml = this.formatedHtml(currentHtml);
 
-		let diffDom = dd.diff(this.previousHtml, this.currentHtml);
+		let diffDom = dd.diff(this.previousHtml.outerHTML, this.currentHtml.outerHTML);
 		this.diffDom = this.formatArrayDiffDom(diffDom);
 	}
 
 	private formatedHtml(html: HTMLElement): HTMLElement {
-		let htmlString = html.outerHTML;
+		let htmlString = html instanceof HTMLElement ? html.outerHTML : html;
 
 		// remove comments
 		htmlString = htmlString.replace(/<!--[\s\S]*?-->/g, '');
@@ -37,8 +35,11 @@ export class DiffDomManager {
 		// remove whitespace after tags
 		htmlString = htmlString.replace(/\>[\t ]+$/g, '>');
 
-		var parser = new DOMParser();
-		var doc = parser.parseFromString(htmlString, 'text/html');
+		let parser = new DOMParser();
+		let doc = parser.parseFromString(htmlString, 'text/html');
+		doc.body.querySelectorAll('script, style').forEach((tag) => {
+			tag.remove();
+		});
 
 		return doc.body;
 	}
@@ -55,11 +56,16 @@ export class DiffDomManager {
 	}
 
 	private getOutermostElementDiff() {
-		let outermostElementDiff = this.diffDom[0];
+		let outermostElementDiff = this.diffDom.find(
+			(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
+		);
+
+		if (!outermostElementDiff) return null;
 
 		for (let diff of this.diffDom) {
 			outermostElementDiff =
-				diff.route.length <= outermostElementDiff.route.length
+				diff.route.length <= outermostElementDiff.route.length &&
+				(diff.action == 'replaceElement' || diff.action == 'addElement')
 					? diff
 					: outermostElementDiff;
 		}
@@ -71,28 +77,30 @@ export class DiffDomManager {
 		return this.diffDom;
 	}
 
-	public getPreviousHtml(): HTMLElement {
+	public getPreviousHtml() {
 		return this.previousHtml;
 	}
 
-	public getCurrentHtml(): HTMLElement {
+	public getCurrentHtml() {
 		return this.currentHtml;
 	}
 
 	// returns the parent xpath of the outermost element that has changed
 	public getParentXPathOfTheOutermostElementDiff(): string | null {
-		if (this.diffDom[0] == undefined) {
-			return null;
-		}
+		if (this.diffDom.length > 0 && this.currentHtml instanceof HTMLElement) {
+			let outermostElementDiff: any = this.getOutermostElementDiff();
 
-		let outermostElementDiff: any = this.getOutermostElementDiff();
-		if (outermostElementDiff != null) {
-			let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-			for (let i = 0; i < outermostElementDiff.route.length; i++) {
-				htmlElement = htmlElement.childNodes[outermostElementDiff.route[i]];
+			if (outermostElementDiff) {
+				let htmlElement: HTMLElement | ChildNode = this.currentHtml;
+
+				for (let route of outermostElementDiff.route) {
+					htmlElement = htmlElement.childNodes[route];
+				}
+
+				if (htmlElement.parentElement) {
+					return getXPath(htmlElement.parentElement);
+				}
 			}
-
-			return getXPath(htmlElement.parentElement);
 		}
 
 		return null;

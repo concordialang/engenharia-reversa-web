@@ -15,6 +15,7 @@ export enum HTMLNodeTypes {
 	LEGEND = 'LEGEND',
 	SCRIPT = 'SCRIPT',
 	SELECT = 'SELECT',
+	STYLE = 'STYLE',
 	OPTION = 'OPTION',
 	TABLE = 'TABLE',
 	TBODY = 'TBODY',

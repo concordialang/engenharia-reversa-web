@@ -41,6 +41,11 @@ export function commonAncestorElement(elements: Element[]) {
 	return elements.reduce(reducer, elements[0]);
 }
 
+// get elements that confirm a feature
+export function getFeatureElements(element: HTMLElement): NodeListOf<Element> {
+	return element.querySelectorAll('form, table');
+}
+
 export function getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
 	const node = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
 		.singleNodeValue;

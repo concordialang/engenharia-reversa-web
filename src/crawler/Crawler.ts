@@ -1,15 +1,14 @@
 import { DiffDomManager } from '../analysis/DiffDomManager';
 import { HTMLEventType } from '../html/HTMLEventType';
-import { commonAncestorElement } from '../util';
+import { commonAncestorElement, getFeatureElements } from '../util';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
-import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { FeatureGenerator } from './FeatureGenerator';
 import { PageStorage } from '../storage/PageStorage';
 import { VisitedURLGraph } from './VisitedURLGraph';
+import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 
-// TODO: Refatorar, principalmente construtor
 export class Crawler {
 	private lastPageKey: string;
 
@@ -20,12 +19,7 @@ export class Crawler {
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph
 	) {
-		this.browserContext = browserContext;
-		this.featureGenerator = featureGenerator;
-		this.pageStorage = pageStorage;
 		this.lastPageKey = 'last-page';
-		this.elementInteractionGraph = elementInteractionGraph;
-		this.visitedURLGraph = visitedURLGraph;
 	}
 
 	public async crawl() {
@@ -40,63 +34,17 @@ export class Crawler {
 			);
 		});
 
-		//obtem ultima interacao que não está dentro de form já analisado
+		//obtem ultima interacao que não está dentro do contexto já analisado
 		const lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 			this.elementInteractionGraph
 		);
 
-		let analysisContext: HTMLElement;
-
-		const previousDocHTML = await this.pageStorage.get(this.lastPageKey);
-		let analysisElement: HTMLElement | null = null;
-		if (previousDocHTML) {
-			const template = this.browserContext.getDocument().createElement('template');
-			template.innerHTML = previousDocHTML.trim();
-			const previousDoc = <HTMLElement>template.content.firstChild;
-			const diffDomManager = new DiffDomManager(
-				previousDoc,
-				this.browserContext.getDocument().body
-			);
-			const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
-
-			const xpathResult =
-				xPathParentElementDiff !== null
-					? this.browserContext
-							.getDocument()
-							.evaluate(
-								xPathParentElementDiff,
-								this.browserContext.getDocument(),
-								null,
-								XPathResult.FIRST_ORDERED_NODE_TYPE,
-								null
-							)
-					: null;
-
-			analysisContext =
-				xpathResult !== null && xpathResult.singleNodeValue !== null
-					? (xpathResult.singleNodeValue as HTMLElement)
-					: this.browserContext.getDocument().body;
-
-			const featureTags = analysisContext.querySelectorAll('form, table');
-
-			// find element to analyze based on body tags form and table
-			if (featureTags.length >= 1) {
-				analysisElement = commonAncestorElement(Array.from(featureTags));
-			} else if (featureTags.length == 0) {
-				const inputFieldTags = analysisContext.querySelectorAll(
-					'input, select, textarea, button'
-				);
-				analysisElement = commonAncestorElement(Array.from(inputFieldTags));
-			}
-		} else {
-			analysisElement = this.browserContext.getDocument().body;
-		}
-
-		if (analysisElement !== null) {
+		const analysisElement = await this.getAnalysisElement();
+		if (analysisElement) {
 			await this.featureGenerator.analyse(analysisElement);
 		}
 
-		//se ultima interacao que não está dentro de form já analisado está em outra página, ir para essa página
+		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
 			lastUnanalyzed &&
 			lastUnanalyzed.getPageUrl().href != this.browserContext.getUrl().href
@@ -128,5 +76,73 @@ export class Crawler {
 		}
 
 		return null;
+	}
+
+	private async getAnalysisElement(): Promise<HTMLElement> {
+		let analysisElement: HTMLElement | null = null;
+
+		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);
+		if (previousHTML) {
+			const analysisContext: HTMLElement = await this.getAnalysisContextFromDiffPages(
+				previousHTML
+			);
+
+			analysisElement =
+				analysisContext.nodeName === HTMLNodeTypes.FORM ||
+				analysisContext.nodeName === HTMLNodeTypes.TABLE
+					? analysisContext
+					: await this.getAnalysisElementFromCommonAcestor(analysisContext);
+		} else {
+			analysisElement = this.browserContext.getDocument().body;
+		}
+
+		return analysisElement;
+	}
+
+	private async getAnalysisContextFromDiffPages(previousHTML: string): Promise<HTMLElement> {
+		const previousDoc: Document = document.implementation.createHTMLDocument();
+		previousDoc.body.innerHTML = previousHTML;
+
+		const diffDomManager: DiffDomManager = new DiffDomManager(
+			previousDoc.body,
+			this.browserContext.getDocument().body
+		);
+
+		const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+		const xpathResult: XPathResult | null =
+			xPathParentElementDiff !== null
+				? this.browserContext
+						.getDocument()
+						.evaluate(
+							xPathParentElementDiff,
+							this.browserContext.getDocument(),
+							null,
+							XPathResult.FIRST_ORDERED_NODE_TYPE,
+							null
+						)
+				: null;
+
+		return xpathResult !== null && xpathResult.singleNodeValue !== null
+			? (xpathResult.singleNodeValue as HTMLElement)
+			: this.browserContext.getDocument().body;
+	}
+
+	private async getAnalysisElementFromCommonAcestor(
+		analysisContext: HTMLElement
+	): Promise<HTMLElement> {
+		let ancestorElement: HTMLElement | null = null;
+
+		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
+
+		if (featureTags.length >= 1) {
+			ancestorElement = commonAncestorElement(Array.from(featureTags));
+		} else if (featureTags.length == 0) {
+			const inputFieldTags = analysisContext.querySelectorAll(
+				'input, select, textarea, button'
+			);
+			ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
+		}
+
+		return ancestorElement ? ancestorElement : this.browserContext.getDocument().body;
 	}
 }
