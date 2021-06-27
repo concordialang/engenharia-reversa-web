@@ -60,6 +60,8 @@ export class DiffDomManager {
 			(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
 		);
 
+		if (!outermostElementDiff) return null;
+
 		for (let diff of this.diffDom) {
 			outermostElementDiff =
 				diff.route.length <= outermostElementDiff.route.length &&
@@ -85,20 +87,19 @@ export class DiffDomManager {
 
 	// returns the parent xpath of the outermost element that has changed
 	public getParentXPathOfTheOutermostElementDiff(): string | null {
-		if (!this.diffDom[0] || !(this.currentHtml instanceof HTMLElement)) {
-			return null;
-		}
+		if (this.diffDom.length > 0 && this.currentHtml instanceof HTMLElement) {
+			let outermostElementDiff: any = this.getOutermostElementDiff();
 
-		let outermostElementDiff: any = this.getOutermostElementDiff();
-		if (outermostElementDiff) {
-			let htmlElement: HTMLElement | ChildNode = this.currentHtml;
+			if (outermostElementDiff) {
+				let htmlElement: HTMLElement | ChildNode = this.currentHtml;
 
-			for (let route of outermostElementDiff.route) {
-				htmlElement = htmlElement.childNodes[route];
-			}
+				for (let route of outermostElementDiff.route) {
+					htmlElement = htmlElement.childNodes[route];
+				}
 
-			if (htmlElement.parentElement) {
-				return getXPath(htmlElement.parentElement);
+				if (htmlElement.parentElement) {
+					return getXPath(htmlElement.parentElement);
+				}
 			}
 		}
 

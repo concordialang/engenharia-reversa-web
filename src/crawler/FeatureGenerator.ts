@@ -6,7 +6,7 @@ import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
-import { getPathTo } from '../util';
+import { getFeatureElements, getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
@@ -35,7 +35,7 @@ export class FeatureGenerator {
 	}
 
 	public async analyse(contextElement: HTMLElement) {
-		const xPath = getPathTo(contextElement);
+		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
@@ -43,39 +43,45 @@ export class FeatureGenerator {
 			);
 
 			if (!analyzedContext) {
-				if (
-					contextElement.nodeName === HTMLNodeTypes.FORM ||
-					contextElement.nodeName === HTMLNodeTypes.TABLE
-				) {
-					this.generate(contextElement);
-				} else {
-					const featureTags = contextElement.querySelectorAll('form, table');
-					if (featureTags.length > 0) {
-						this.analyseFeatureTags(featureTags);
-					}
+				await this.analyseFeatureElements(contextElement);
 
-					// generate feature for elements outside of forms
+				if (
+					contextElement.nodeName !== HTMLNodeTypes.FORM &&
+					contextElement.nodeName !== HTMLNodeTypes.TABLE
+				) {
+					// generate feature for elements outside feature elements
 					await this.generate(contextElement, true);
 				}
 			}
 		} else {
+			// TODO - tratar excecao para nao travar o programa
 			throw new Error('Unable to get element XPath');
 		}
 	}
 
-	private async analyseFeatureTags(featureTags) {
-		for (let featureTag of featureTags) {
-			let xPathElement = getPathTo(featureTag);
+	private async analyseFeatureElements(contextElement: HTMLElement) {
+		if (
+			contextElement.nodeName === HTMLNodeTypes.FORM ||
+			contextElement.nodeName === HTMLNodeTypes.TABLE
+		) {
+			this.generate(contextElement);
+			return;
+		}
 
-			if (!xPathElement) continue;
+		const featureTags: any = getFeatureElements(contextElement);
+		if (featureTags.length > 0) {
+			for (let featureTag of featureTags) {
+				let xPathElement = getPathTo(featureTag);
+				if (!xPathElement) continue;
 
-			const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
-				xPathElement,
-				this.pageUrl
-			);
+				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+					xPathElement,
+					this.pageUrl
+				);
 
-			if (!analyzedElement) {
-				await this.generate(featureTag);
+				if (!analyzedElement) {
+					await this.generate(featureTag);
+				}
 			}
 		}
 	}
@@ -210,12 +216,13 @@ export class FeatureGenerator {
 			observer.disconnect();
 
 			this.radioGroupsAlreadyFilled = [];
+		}
 
-			let analyzedElement: AnalyzedElement = new AnalyzedElement(
-				contextElement,
-				this.pageUrl
-			);
-			await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+		let analyzedElement: AnalyzedElement = new AnalyzedElement(contextElement, this.pageUrl);
+
+		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+
+		if (interactableElements.length > 0) {
 			for (let element of interactableElements) {
 				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
 				analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);

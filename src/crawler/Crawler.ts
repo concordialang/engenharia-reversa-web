@@ -1,6 +1,6 @@
 import { DiffDomManager } from '../analysis/DiffDomManager';
 import { HTMLEventType } from '../html/HTMLEventType';
-import { commonAncestorElement } from '../util';
+import { commonAncestorElement, getFeatureElements } from '../util';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -9,7 +9,6 @@ import { PageStorage } from '../storage/PageStorage';
 import { VisitedURLGraph } from './VisitedURLGraph';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 
-// TODO: Refatorar, principalmente construtor
 export class Crawler {
 	private lastPageKey: string;
 
@@ -20,12 +19,7 @@ export class Crawler {
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph
 	) {
-		this.browserContext = browserContext;
-		this.featureGenerator = featureGenerator;
-		this.pageStorage = pageStorage;
 		this.lastPageKey = 'last-page';
-		this.elementInteractionGraph = elementInteractionGraph;
-		this.visitedURLGraph = visitedURLGraph;
 	}
 
 	public async crawl() {
@@ -114,9 +108,7 @@ export class Crawler {
 			this.browserContext.getDocument().body
 		);
 
-		const xPathParentElementDiff:
-			| string
-			| null = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+		const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
 		const xpathResult: XPathResult | null =
 			xPathParentElementDiff !== null
 				? this.browserContext
@@ -139,9 +131,9 @@ export class Crawler {
 		analysisContext: HTMLElement
 	): Promise<HTMLElement> {
 		let ancestorElement: HTMLElement | null = null;
-		const featureTags: NodeListOf<Element> = analysisContext.querySelectorAll('form, table');
 
-		// find element to analyze based on body tags form and table
+		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
+
 		if (featureTags.length >= 1) {
 			ancestorElement = commonAncestorElement(Array.from(featureTags));
 		} else if (featureTags.length == 0) {
