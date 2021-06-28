@@ -30,15 +30,10 @@ describe('ElementInteractionGraph', () => {
 	let analyzedElementStorage: AnalyzedElementStorage;
 
 	it('returns correct path searching for closest on same URL', async () => {
-		const path = await elementInteractionGraph.pathToInteraction(
-			interactionI,
-			true,
-			{
-				interactionUrl: interactionI.getPageUrl(),
-				isEqual: true,
-			},
-			null
-		);
+		const path = await elementInteractionGraph.pathToInteraction(interactionI, true, {
+			interactionUrl: interactionI.getPageUrl(),
+			isEqual: true,
+		});
 		expect(path.length).toBe(2);
 		expect(path[0].getId()).toBe(interactionI.getId());
 		expect(path[1].getId()).toBe(interactionH.getId());
@@ -48,7 +43,6 @@ describe('ElementInteractionGraph', () => {
 		const path = await elementInteractionGraph.pathToInteraction(
 			interactionE,
 			true,
-			null,
 			null,
 			false
 		);
