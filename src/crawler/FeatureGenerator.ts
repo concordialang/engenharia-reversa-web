@@ -21,6 +21,7 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 
 export class FeatureGenerator {
 	private radioGroupsAlreadyFilled: string[];
+	private featureCollection: FeatureCollection;
 
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
@@ -32,6 +33,7 @@ export class FeatureGenerator {
 		private analyzedElementStorage: AnalyzedElementStorage
 	) {
 		this.radioGroupsAlreadyFilled = [];
+		this.featureCollection = new FeatureCollection();
 	}
 
 	public async analyse(contextElement: HTMLElement) {
@@ -86,18 +88,157 @@ export class FeatureGenerator {
 		}
 	}
 
+	// public async generate(
+	// 	contextElement: HTMLElement,
+	// 	ignoreFormElements: boolean = false
+	// ): Promise<void> {
+	// 	const _this = this;
+
+	// 	let interactableElements: ChildNode[] =
+	// 		ignoreFormElements
+	// 			? this.getInteractableElementsIgnoringForm(contextElement)
+	// 			: this.getInteractableElements(contextElement);
+
+	// 	if (interactableElements.length > 0) {
+	// 		const featureCollection = new FeatureCollection();
+
+	// 		// add observer on form
+	// 		let observer = new MutationObserverManager(contextElement);
+
+	// 		// start feature analysis
+	// 		const feature = featureCollection.createFeatureFromElement(contextElement, this.spec);
+	// 		const scenario = featureCollection.createScenario(feature);
+	// 		const variant = featureCollection.createVariant();
+
+	// 		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+	// 		let lastInteraction: ElementInteraction<HTMLElement> | null = null;
+
+	// 		lastInteraction = await this.elementInteractionStorage.get(
+	// 			this.lastInteractionBeforeRedirectKey
+	// 		);
+
+	// 		if (!lastInteraction) {
+	// 			lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
+	// 		}
+
+	// 		for (const element of interactableElements) {
+	// 			// interacts with the element
+	// 			let interaction: ElementInteraction<HTMLElement> | null | undefined;
+	// 			if (element instanceof HTMLInputElement) {
+	// 				interaction = this.generateInputInteraction(element);
+	// 			} else if (element instanceof HTMLButtonElement) {
+	// 				interaction = new ElementInteraction(
+	// 					element,
+	// 					HTMLEventType.Click,
+	// 					this.pageUrl
+	// 				);
+	// 			}
+
+	// 			if (element instanceof HTMLElement) {
+	// 				const interactionGraph = await new GraphStorage(window.localStorage).get(
+	// 					'interactions-graph'
+	// 				);
+	// 				let edges: [];
+	// 				if (interactionGraph) {
+	// 					edges = interactionGraph.serialize()['links'];
+	// 				} else {
+	// 					edges = [];
+	// 				}
+	// 				const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
+	// 					element,
+	// 					this.pageUrl,
+	// 					edges
+	// 				);
+	// 				if (!redirectsToAnotherUrl) {
+	// 					if (interaction) {
+	// 						if (!previousInteraction) {
+	// 							previousInteraction = lastInteraction;
+	// 							//pode ter problema de concorrencia
+	// 							await this.elementInteractionStorage.remove(
+	// 								this.lastInteractionBeforeRedirectKey
+	// 							);
+	// 						}
+	// 						const result = await this.elementInteractionExecutor.execute(
+	// 							interaction,
+	// 							true,
+	// 							previousInteraction
+	// 						);
+	// 						if (result) {
+	// 							if (result.getTriggeredRedirection()) {
+	// 								//pode ter problema de concorrencia
+	// 								await this.elementInteractionStorage.set(
+	// 									this.lastInteractionBeforeRedirectKey,
+	// 									interaction
+	// 								);
+	// 								break;
+	// 							}
+	// 						}
+	// 						previousInteraction = interaction;
+	// 					}
+	// 				}
+	// 			}
+
+	// 			if (!interaction) continue;
+
+	// 			// analyzes the interaction
+	// 			const uiElment = featureCollection.createUiElment(interaction.getElement());
+
+	// 			if (uiElment) {
+	// 				feature.setUiElement(uiElment);
+
+	// 				const variantSentence = featureCollection.createVariantSentence(uiElment);
+
+	// 				if (variantSentence !== null) {
+	// 					variant.setVariantSentence(variantSentence);
+	// 				}
+
+	// 				const mutations = observer.getMutations();
+
+	// 				if (mutations.length > 0) {
+	// 					const mutationSentences = featureCollection.createMutationVariantSentences(
+	// 						uiElment,
+	// 						mutations
+	// 					);
+
+	// 					for (let sentence of mutationSentences) {
+	// 						variant.setVariantSentence(sentence);
+	// 					}
+
+	// 					observer.resetMutations();
+	// 				}
+	// 			}
+	// 		}
+
+	// 		scenario.addVariant(variant);
+	// 		feature.addScenario(scenario);
+	// 		this.spec.addFeature(feature);
+
+	// 		observer.disconnect();
+
+	// 		this.radioGroupsAlreadyFilled = [];
+	// 	}
+
+	// 	let analyzedElement: AnalyzedElement = new AnalyzedElement(contextElement, this.pageUrl);
+
+	// 	await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+	// 	if (interactableElements.length > 0) {
+	// 		for (let element of interactableElements) {
+	// 			//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
+	// 			analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);
+	// 			await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+	// 		}
+	// 	}
+	// }
+
 	public async generate(
 		contextElement: HTMLElement,
 		ignoreFormElements: boolean = false
 	): Promise<void> {
 		const _this = this;
 
-		let interactableElements: ChildNode[] = [];
-		if (ignoreFormElements) {
-			interactableElements = this.getInteractableElementsIgnoringForm(contextElement);
-		} else {
-			interactableElements = this.getInteractableElements(contextElement);
-		}
+		let interactableElements: ChildNode[] = ignoreFormElements
+			? this.getInteractableElementsIgnoringForm(contextElement)
+			: this.getInteractableElements(contextElement);
 
 		if (interactableElements.length > 0) {
 			const featureCollection = new FeatureCollection();
@@ -108,106 +249,7 @@ export class FeatureGenerator {
 			// start feature analysis
 			const feature = featureCollection.createFeatureFromElement(contextElement, this.spec);
 			const scenario = featureCollection.createScenario(feature);
-			const variant = featureCollection.createVariant();
-
-			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
-			let lastInteraction: ElementInteraction<HTMLElement> | null = null;
-
-			lastInteraction = await this.elementInteractionStorage.get(
-				this.lastInteractionBeforeRedirectKey
-			);
-
-			if (!lastInteraction) {
-				lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
-			}
-
-			for (const element of interactableElements) {
-				// interacts with the element
-				let interaction: ElementInteraction<HTMLElement> | null | undefined;
-				if (element instanceof HTMLInputElement) {
-					interaction = this.generateInputInteraction(element);
-				} else if (element instanceof HTMLButtonElement) {
-					interaction = new ElementInteraction(
-						element,
-						HTMLEventType.Click,
-						this.pageUrl
-					);
-				}
-
-				if (element instanceof HTMLElement) {
-					const interactionGraph = await new GraphStorage(window.localStorage).get(
-						'interactions-graph'
-					);
-					let edges: [];
-					if (interactionGraph) {
-						edges = interactionGraph.serialize()['links'];
-					} else {
-						edges = [];
-					}
-					const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
-						element,
-						this.pageUrl,
-						edges
-					);
-					if (!redirectsToAnotherUrl) {
-						if (interaction) {
-							if (!previousInteraction) {
-								previousInteraction = lastInteraction;
-								//pode ter problema de concorrencia
-								await this.elementInteractionStorage.remove(
-									this.lastInteractionBeforeRedirectKey
-								);
-							}
-							const result = await this.elementInteractionExecutor.execute(
-								interaction,
-								true,
-								previousInteraction
-							);
-							if (result) {
-								if (result.getTriggeredRedirection()) {
-									//pode ter problema de concorrencia
-									await this.elementInteractionStorage.set(
-										this.lastInteractionBeforeRedirectKey,
-										interaction
-									);
-									break;
-								}
-							}
-							previousInteraction = interaction;
-						}
-					}
-				}
-
-				if (!interaction) continue;
-
-				// analyzes the interaction
-				const uiElment = featureCollection.createUiElment(interaction.getElement());
-
-				if (uiElment) {
-					feature.setUiElement(uiElment);
-
-					const variantSentence = featureCollection.createVariantSentence(uiElment);
-
-					if (variantSentence !== null) {
-						variant.setVariantSentence(variantSentence);
-					}
-
-					const mutations = observer.getMutations();
-
-					if (mutations.length > 0) {
-						const mutationSentences = featureCollection.createMutationVariantSentences(
-							uiElment,
-							mutations
-						);
-
-						for (let sentence of mutationSentences) {
-							variant.setVariantSentence(sentence);
-						}
-
-						observer.resetMutations();
-					}
-				}
-			}
+			const variant = await this.builVariant(feature, interactableElements, observer);
 
 			scenario.addVariant(variant);
 			feature.addScenario(scenario);
@@ -219,7 +261,6 @@ export class FeatureGenerator {
 		}
 
 		let analyzedElement: AnalyzedElement = new AnalyzedElement(contextElement, this.pageUrl);
-
 		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
 		if (interactableElements.length > 0) {
@@ -229,6 +270,112 @@ export class FeatureGenerator {
 				await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 			}
 		}
+	}
+
+	private async builVariant(feature, interactableElements, observer) {
+		const variant = this.featureCollection.createVariant();
+
+		for (const element of interactableElements) {
+			const interaction = await this.interact(element);
+
+			if (!interaction) continue;
+
+			// analyzes the interaction
+			const uiElment = this.featureCollection.createUiElment(interaction.getElement());
+
+			if (uiElment) {
+				feature.setUiElement(uiElment);
+
+				const variantSentence = this.featureCollection.createVariantSentence(uiElment);
+
+				if (variantSentence !== null) {
+					variant.setVariantSentence(variantSentence);
+				}
+
+				const mutations = observer.getMutations();
+
+				if (mutations.length > 0) {
+					const mutationSentences = this.featureCollection.createMutationVariantSentences(
+						uiElment,
+						mutations
+					);
+
+					for (let sentence of mutationSentences) {
+						variant.setVariantSentence(sentence);
+					}
+
+					observer.resetMutations();
+				}
+			}
+		}
+
+		return variant;
+	}
+
+	private async interact(element) {
+		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+		let lastInteraction: ElementInteraction<HTMLElement> | null = null;
+
+		lastInteraction = await this.elementInteractionStorage.get(
+			this.lastInteractionBeforeRedirectKey
+		);
+
+		if (!lastInteraction) {
+			lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
+		}
+
+		// interacts with the element
+		let interaction: ElementInteraction<HTMLElement> | null | undefined;
+		if (element instanceof HTMLInputElement) {
+			interaction = this.generateInputInteraction(element);
+		} else if (element instanceof HTMLButtonElement) {
+			interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
+		}
+
+		if (element instanceof HTMLElement) {
+			const interactionGraph = await new GraphStorage(window.localStorage).get(
+				'interactions-graph'
+			);
+			let edges: [];
+			if (interactionGraph) {
+				edges = interactionGraph.serialize()['links'];
+			} else {
+				edges = [];
+			}
+			const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
+				element,
+				this.pageUrl,
+				edges
+			);
+			if (!redirectsToAnotherUrl) {
+				if (interaction) {
+					if (!previousInteraction) {
+						previousInteraction = lastInteraction;
+						//pode ter problema de concorrencia
+						await this.elementInteractionStorage.remove(
+							this.lastInteractionBeforeRedirectKey
+						);
+					}
+					const result = await this.elementInteractionExecutor.execute(
+						interaction,
+						true,
+						previousInteraction
+					);
+					if (result) {
+						if (result.getTriggeredRedirection()) {
+							//pode ter problema de concorrencia
+							await this.elementInteractionStorage.set(
+								this.lastInteractionBeforeRedirectKey,
+								interaction
+							);
+						}
+					}
+					previousInteraction = interaction;
+				}
+			}
+		}
+
+		return interaction;
 	}
 
 	private getInteractableElements(element: HTMLElement): ChildNode[] {
