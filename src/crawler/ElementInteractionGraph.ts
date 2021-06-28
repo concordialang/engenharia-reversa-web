@@ -47,12 +47,10 @@ export class ElementInteractionGraph {
 		return graph;
 	}
 
-	// TODO: Refatorar
 	public async pathToInteraction(
 		currentInteraction: ElementInteraction<HTMLElement>,
 		searchForClosest: boolean,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
-		formCriteria: { interactionForm: HTMLFormElement; isEqual: boolean } | null,
 		isInteractionAnalyzed: boolean | null = null,
 		graph?: Graph
 	): Promise<ElementInteraction<HTMLElement>[]> {
@@ -62,87 +60,93 @@ export class ElementInteractionGraph {
 			graph = await this.getLatestVersionOfGraph();
 		}
 
-		if (currentInteractionId) {
-			const nextInteractionKey = graph.getParentNodeKey(currentInteractionId);
-			if (typeof nextInteractionKey === 'string') {
-				const nextInteraction = await this.elementInteractionStorage.get(
-					nextInteractionKey
-				);
+		if (!currentInteractionId) {
+			throw new Error("Current interaction doesn't have an id");
+		}
 
-				if (!nextInteraction) {
-					throw new Error('Error while fetching next interaction');
-				}
+		const nextInteractionKey = graph.getParentNodeKey(currentInteractionId);
 
-				let satisfiesCriteria = true;
-
-				if (urlCriteria) {
-					const interactionUrl = nextInteraction.getPageUrl();
-					const url = urlCriteria.interactionUrl;
-					const urlIsEqual = urlCriteria.isEqual;
-					if (urlIsEqual && url.href != interactionUrl.href) {
-						satisfiesCriteria = false;
-					} else if (!urlIsEqual && url.href == interactionUrl.href) {
-						satisfiesCriteria = false;
-					}
-				}
-
-				// if(formCriteria){
-				// 	const interactionForm = currentInteraction.getElement().closest("form");
-				// 	if(!interactionForm){
-				// 		throw new Error("");
-				// 	}
-				// 	const form = formCriteria.interactionForm;
-				// 	const formIsEqual = formCriteria.isEqual;
-				// 	if(Util.getPathTo(interactionForm) != Util.getPathTo(form)){
-
-				// 	}
-				// }
-
-				if (typeof isInteractionAnalyzed === 'boolean') {
-					const nextInteractionElementSelector = nextInteraction.getElementSelector();
-					if (!nextInteractionElementSelector)
-						throw new Error('Current Interaction element selector is null');
-					const interactionAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
-						nextInteractionElementSelector,
-						nextInteraction.getPageUrl()
-					);
-					if (isInteractionAnalyzed && !interactionAnalyzed) {
-						satisfiesCriteria = false;
-					} else if (!isInteractionAnalyzed && interactionAnalyzed) {
-						satisfiesCriteria = false;
-					}
-				}
-
-				if (searchForClosest && satisfiesCriteria) {
-					return [currentInteraction, nextInteraction];
-				} else if (!searchForClosest && !satisfiesCriteria) {
-					return [currentInteraction, nextInteraction];
-				}
-
-				const nextInteractionResult = await this.pathToInteraction(
-					nextInteraction,
-					searchForClosest,
-					urlCriteria,
-					formCriteria,
-					isInteractionAnalyzed,
-					graph
-				);
-
-				if (!nextInteractionResult.length) {
-					return [];
-				}
-
-				return [currentInteraction].concat(nextInteractionResult);
-			} else if (!searchForClosest) {
+		if (nextInteractionKey === null) {
+			if (!searchForClosest) {
 				return [currentInteraction];
-			} else if (nextInteractionKey === false) {
-				throw new Error('Error while fetching parent interaction key');
 			} else {
 				return [];
 			}
-		} else {
-			throw new Error("Current interaction doesn't have an id");
 		}
+
+		const nextInteraction = await this.elementInteractionStorage.get(nextInteractionKey);
+
+		if (!nextInteraction) {
+			throw new Error('Error while fetching next interaction');
+		}
+
+		let satisfiesCriteria = true;
+
+		if (urlCriteria) {
+			satisfiesCriteria = this.interactionSatisfiesUrlCriteria(nextInteraction, urlCriteria);
+		}
+
+		if (satisfiesCriteria && typeof isInteractionAnalyzed === 'boolean') {
+			satisfiesCriteria = await this.interactionSatisfiesAnalysisCriteria(
+				nextInteraction,
+				isInteractionAnalyzed
+			);
+		}
+
+		if ((searchForClosest && satisfiesCriteria) || (!searchForClosest && !satisfiesCriteria)) {
+			return [currentInteraction, nextInteraction];
+		}
+
+		const nextInteractionResult = await this.pathToInteraction(
+			nextInteraction,
+			searchForClosest,
+			urlCriteria,
+			isInteractionAnalyzed,
+			graph
+		);
+
+		if (!nextInteractionResult.length) {
+			return [];
+		}
+
+		return [currentInteraction].concat(nextInteractionResult);
+	}
+
+	private interactionSatisfiesUrlCriteria(
+		interaction: ElementInteraction<HTMLElement>,
+		urlCriteria: { interactionUrl: URL; isEqual: boolean }
+	): boolean {
+		const interactionUrl = interaction.getPageUrl();
+		const url = urlCriteria.interactionUrl;
+		const urlIsEqual = urlCriteria.isEqual;
+		if (
+			(urlIsEqual && url.href != interactionUrl.href) ||
+			(!urlIsEqual && url.href == interactionUrl.href)
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	private async interactionSatisfiesAnalysisCriteria(
+		interaction: ElementInteraction<HTMLElement>,
+		isInteractionAnalyzed: boolean
+	): Promise<boolean> {
+		const nextInteractionElementSelector = interaction.getElementSelector();
+		if (!nextInteractionElementSelector)
+			throw new Error('Current Interaction element selector is null');
+		const interactionAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			nextInteractionElementSelector,
+			interaction.getPageUrl()
+		);
+		if (
+			(isInteractionAnalyzed && !interactionAnalyzed) ||
+			(!isInteractionAnalyzed && interactionAnalyzed)
+		) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public async getLastInteraction(): Promise<ElementInteraction<HTMLElement> | null> {

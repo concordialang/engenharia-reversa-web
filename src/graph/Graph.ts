@@ -63,16 +63,15 @@ export class Graph {
 		return false;
 	}
 
-	public getParentNodeKey(key: string): string | boolean | null {
+	public getParentNodeKey(key: string): string | null {
 		const edge = this.graph.elements(`edge[target = "${key}"]`);
 		if (edge) {
 			const source = edge.data('source');
 			if (source) {
 				return source;
 			}
-			return null;
 		}
-		return false;
+		return null;
 	}
 
 	public serialize(): object {

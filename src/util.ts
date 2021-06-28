@@ -3,6 +3,7 @@ export function sleep(ms: number): Promise<void> {
 }
 
 // TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
+// FIXME passar a variável document como argumento
 export function getPathTo(element: HTMLElement): string | null {
 	if (element.id !== '') {
 		return 'id("' + element.id + '")';

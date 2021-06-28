@@ -66,7 +66,6 @@ export class Crawler {
 				currentInteraction,
 				true,
 				null,
-				null,
 				false
 			);
 			const lastUnanalyzed = path.pop();
