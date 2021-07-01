@@ -66,7 +66,7 @@ export class FeatureGenerator {
 			contextElement.nodeName === HTMLNodeTypes.FORM ||
 			contextElement.nodeName === HTMLNodeTypes.TABLE
 		) {
-			this.generate(contextElement);
+			await this.generate(contextElement);
 			return;
 		}
 
@@ -265,7 +265,8 @@ export class FeatureGenerator {
 
 		if (interactableElements.length > 0) {
 			for (let element of interactableElements) {
-				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário? aquele elemento não ficará marcado como analisado
+				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário?
+				// aquele elemento não ficará marcado como analisado
 				analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);
 				await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 			}
@@ -276,7 +277,11 @@ export class FeatureGenerator {
 		const variant = this.featureCollection.createVariant();
 
 		for (const element of interactableElements) {
-			const interaction = await this.interact(element);
+			let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+			const objInterec = await this.interact(element, previousInteraction);
+
+			previousInteraction = objInterec.previousInteraction;
+			const interaction = objInterec.interaction;
 
 			if (!interaction) continue;
 
@@ -312,8 +317,7 @@ export class FeatureGenerator {
 		return variant;
 	}
 
-	private async interact(element) {
-		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+	private async interact(element, previousInteraction) {
 		let lastInteraction: ElementInteraction<HTMLElement> | null = null;
 
 		lastInteraction = await this.elementInteractionStorage.get(
@@ -336,31 +340,33 @@ export class FeatureGenerator {
 			const interactionGraph = await new GraphStorage(window.localStorage).get(
 				'interactions-graph'
 			);
+
 			let edges: [];
-			if (interactionGraph) {
-				edges = interactionGraph.serialize()['links'];
-			} else {
-				edges = [];
-			}
+			edges = interactionGraph ? interactionGraph.serialize()['links'] : [];
+
 			const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
 				element,
 				this.pageUrl,
 				edges
 			);
+
 			if (!redirectsToAnotherUrl) {
 				if (interaction) {
 					if (!previousInteraction) {
 						previousInteraction = lastInteraction;
+
 						//pode ter problema de concorrencia
 						await this.elementInteractionStorage.remove(
 							this.lastInteractionBeforeRedirectKey
 						);
 					}
+
 					const result = await this.elementInteractionExecutor.execute(
 						interaction,
 						true,
 						previousInteraction
 					);
+
 					if (result) {
 						if (result.getTriggeredRedirection()) {
 							//pode ter problema de concorrencia
@@ -370,12 +376,13 @@ export class FeatureGenerator {
 							);
 						}
 					}
+
 					previousInteraction = interaction;
 				}
 			}
 		}
 
-		return interaction;
+		return { interaction: interaction, previousInteraction: previousInteraction };
 	}
 
 	private getInteractableElements(element: HTMLElement): ChildNode[] {
