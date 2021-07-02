@@ -1,5 +1,6 @@
 export enum HTMLNodeTypes {
 	BODY = 'BODY',
+	BR = 'BR',
 	DIV = 'DIV',
 	FORM = 'FORM',
 	H1 = 'H1',

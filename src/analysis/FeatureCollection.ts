@@ -57,12 +57,8 @@ export class FeatureCollection {
 	}
 
 	// TODO
-	createVariantSentence(uiElment: UIElement) {
-		const sentence = this.variantSentencesGenerator.generateVariantSentenceFromUIElement(
-			uiElment
-		);
-
-		return sentence;
+	createVariantSentence(uiElment: UIElement): VariantSentence | null {
+		return this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
 	}
 
 	createMutationVariantSentences(

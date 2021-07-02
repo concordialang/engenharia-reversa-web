@@ -26,99 +26,6 @@ export class UIElementGenerator {
 		return true;
 	}
 
-	// public createUIElementsFromForm(node: HTMLElement): Array<UIElement> {
-	// 	let uiElements: Array<UIElement> = [];
-	// 	let formElements: Array<HTMLFormElement> = Array.from(
-	// 		node.querySelectorAll(
-	// 			NodeTypes.INPUT +
-	// 				', ' +
-	// 				NodeTypes.SELECT +
-	// 				', ' +
-	// 				NodeTypes.TEXTAREA
-	// 		)
-	// 	);
-
-	// 	for (let elm of formElements) {
-	// 		if (!this.checkValidNode(elm)) {
-	// 			// skips element if he's not valid
-	// 			continue;
-	// 		}
-
-	// 		let uiElm = new UIElement();
-
-	// 		// name
-	// 		uiElm.setName(this.generateName(elm));
-
-	// 		// id
-	// 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
-
-	// 		// type
-	// 		if (isNotEmpty(elm.type)) {
-	// 			let type = elm.type;
-
-	// 			if (elm.nodeName === NodeTypes.SELECT) {
-	// 				type = 'select';
-	// 			}
-
-	// 			uiElm.setProperty(new UIProperty('type', type));
-	// 		}
-
-	// 		// editabled
-	// 		if (isNotEmpty(elm.disabled)) {
-	// 			let editabled = !elm.disabled ? true : false;
-	// 			uiElm.setProperty(new UIProperty('editabled', editabled));
-	// 		}
-
-	// 		// dataType
-	// 		if (isNotEmpty(elm.type)) {
-	// 			uiElm.setProperty(new UIProperty('dataType', elm.type));
-	// 		}
-
-	// 		// value
-	// 		if (isNotEmpty(elm.value)) {
-	// 			uiElm.setProperty(new UIProperty('value', elm.value));
-	// 		}
-
-	// 		// min_length
-	// 		if (isNotEmpty(elm.minLength)) {
-	// 			if (elm.minLength !== 0) {
-	// 				uiElm.setProperty(
-	// 					new UIProperty('min_length', elm.minLength)
-	// 				);
-	// 			}
-	// 		}
-
-	// 		// max_length
-	// 		if (isNotEmpty(elm.maxLength)) {
-	// 			if (elm.maxLength !== 0 && elm.maxLength !== 524288) {
-	// 				// max length input defaut
-	// 				uiElm.setProperty(
-	// 					new UIProperty('max_length', elm.maxLength)
-	// 				);
-	// 			}
-	// 		}
-
-	// 		// min_value
-	// 		if (isNotEmpty(elm.min)) {
-	// 			uiElm.setProperty(new UIProperty('min_value', elm.min));
-	// 		}
-
-	// 		// max_value
-	// 		if (isNotEmpty(elm.max)) {
-	// 			uiElm.setProperty(new UIProperty('max_value', elm.max));
-	// 		}
-
-	// 		// required
-	// 		if (isNotEmpty(elm.required)) {
-	// 			uiElm.setProperty(new UIProperty('required', elm.required));
-	// 		}
-
-	// 		uiElements.push(uiElm);
-	// 	}
-
-	// 	return uiElements;
-	// }
-
 	public createUIElementFromButton(elm: HTMLButtonElement): UIElement {
 		let uiElm = new UIElement();
 
@@ -126,11 +33,6 @@ export class UIElementGenerator {
 	}
 
 	public createUIElementFromInput(elm: HTMLInputElement): UIElement {
-		// if (!this.checkValidNode(elm)) {
-		// 	// skips element if he's not valid
-		// 	return false;
-		// }
-
 		let uiElm = new UIElement();
 
 		// name
@@ -194,16 +96,21 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private generateName(elm: HTMLInputElement): string {
+	private generateName(elm: HTMLElement): string {
 		let name = '';
 
 		if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
-			name = this.generateNameFromLabel(elm as HTMLInputElement);
+			name = this.generateNameFromPreviousLabel(elm);
+		} else if (
+			elm.previousElementSibling?.nodeName === HTMLNodeTypes.BR &&
+			elm.previousElementSibling?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
+		) {
+			name = this.generateNameFromPreviousLabel(elm.previousElementSibling as HTMLElement);
 		} else if (
 			elm.parentElement?.nodeName === HTMLNodeTypes.DIV &&
 			elm.parentElement?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
 		) {
-			name = this.generateNameFromLabel(elm.parentElement as HTMLInputElement);
+			name = this.generateNameFromPreviousLabel(elm.parentElement);
 		} else {
 			name = this.generateNameFromNode(elm);
 		}
@@ -211,14 +118,14 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	private generateNameFromLabel(elm: HTMLInputElement): string {
+	private generateNameFromPreviousLabel(elm: HTMLElement): string {
 		let label: HTMLLabelElement = elm.previousElementSibling as HTMLLabelElement;
 		let name: string = '';
 
 		if (!label.innerHTML) {
 			name = formatName(label.innerHTML);
 		} else if (label.htmlFor !== undefined) {
-			if (!elm.id && elm.id === label.htmlFor) {
+			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLNodeTypes.BR) {
 				name = formatName(label.htmlFor);
 			}
 		}
@@ -226,11 +133,11 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	private generateNameFromNode(elm: HTMLInputElement): string {
+	private generateNameFromNode(elm: HTMLElement): string {
 		let name: string = '';
 
-		if (!elm.name) {
-			name = formatName(elm.name);
+		if (!elm.nodeName) {
+			name = formatName(elm.nodeName);
 		} else if (!elm.id) {
 			name = formatName(elm.id.toString());
 		}
@@ -238,7 +145,7 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	public generateId(elm: HTMLInputElement): string {
+	public generateId(elm: HTMLElement): string {
 		let id = '';
 
 		if (!elm.id) {
