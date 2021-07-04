@@ -11,7 +11,7 @@ export class UIProperty {
 		this.setValue(value);
 	}
 
-	//name
+	// name
 	public setName(name: string) {
 		this.name = name;
 	}
@@ -20,34 +20,44 @@ export class UIProperty {
 		return this.name;
 	}
 
-	//value
+	// value
 	public setValue(value: any) {
 		if (this.name == PropertyTypes.TYPE) {
-			if (value == 'text' || value == 'textbox' || value == 'number') {
-				value = EditableTypes.TEXTBOX;
-			}
-
-			if (Object.values(EditableTypes).includes(value)) {
-				this.value = value;
-			}
+			value = this.getValueForType(value);
 		} else if (this.name == PropertyTypes.DATATYPE) {
-			if (value == 'text') {
-				value = DataTypes.STRING;
-			} else if (value == 'datetime-local') {
-				value = DataTypes.DATETIME;
-			} else if (value == 'checkbox') {
-				value = DataTypes.CHECKBOX;
-			}
+			value = this.getValueForDataType(value);
+		}
 
-			if (Object.values(DataTypes).includes(value)) {
-				this.value = value;
-			}
-		} else {
+		if (value) {
 			this.value = value;
 		}
 	}
 
 	public getValue() {
 		return this.value;
+	}
+
+	private getValueForType(value: string | null): string | null {
+		if (value == 'text' || value == 'textbox' || value == 'number') {
+			value = EditableTypes.TEXTBOX;
+		}
+
+		value = (Object as any).values(EditableTypes).includes(value) ? value : null;
+
+		return value;
+	}
+
+	private getValueForDataType(value: string | null): string | null {
+		if (value == 'text') {
+			value = DataTypes.STRING;
+		} else if (value == 'datetime-local') {
+			value = DataTypes.DATETIME;
+		} else if (value == 'checkbox') {
+			value = DataTypes.CHECKBOX;
+		}
+
+		value = (Object as any).values(DataTypes).includes(value) ? value : null;
+
+		return value;
 	}
 }

@@ -8,6 +8,8 @@ import { VariantSentence } from '../feature/VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
+type validTypesUiElements = HTMLInputElement | HTMLSelectElement | HTMLButtonElement;
+
 export class FeatureCollection {
 	private uiElementGenerator: UIElementGenerator;
 	private variantSentencesGenerator: VariantSentencesGenerator;
@@ -37,13 +39,17 @@ export class FeatureCollection {
 		return scenario;
 	}
 
-	createUiElment(element: Element): UIElement | null {
+	createUiElment(elm: validTypesUiElements): UIElement | null {
 		let uiElement: UIElement | null = null;
 
-		if (element instanceof HTMLInputElement) {
-			uiElement = this.uiElementGenerator.createUIElementFromInput(element);
-		} else if (element instanceof HTMLButtonElement) {
-			uiElement = this.uiElementGenerator.createUIElementFromButton(element);
+		if (
+			elm instanceof HTMLButtonElement ||
+			(elm instanceof HTMLInputElement &&
+				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
+		) {
+			uiElement = this.uiElementGenerator.createUIElementForButton(elm);
+		} else {
+			uiElement = this.uiElementGenerator.createUIElement(elm);
 		}
 
 		return uiElement;
@@ -56,7 +62,6 @@ export class FeatureCollection {
 		return variant;
 	}
 
-	// TODO
 	createVariantSentence(uiElment: UIElement): VariantSentence | null {
 		return this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
 	}
@@ -65,12 +70,10 @@ export class FeatureCollection {
 		uiElment: UIElement,
 		mutations: MutationRecord[]
 	): VariantSentence[] {
-		const mutationSentences = this.variantSentencesGenerator.generateVariantSentencesFromMutations(
+		return this.variantSentencesGenerator.generateVariantSentencesFromMutations(
 			uiElment,
 			mutations
 		);
-
-		return mutationSentences;
 	}
 
 	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {

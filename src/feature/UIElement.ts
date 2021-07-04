@@ -9,7 +9,6 @@ export class UIElement {
 		this.properties = new Array();
 	}
 
-	//name
 	public setName(name: string) {
 		this.name = name;
 	}
@@ -18,7 +17,6 @@ export class UIElement {
 		return this.name;
 	}
 
-	//properties
 	public setProperty(property: UIProperty) {
 		this.properties.push(property);
 	}
@@ -29,5 +27,13 @@ export class UIElement {
 
 	public getProperties() {
 		return this.properties;
+	}
+
+	public getId() {
+		return this.properties.find((property) => property.getName() === 'id')?.getValue();
+	}
+
+	public getType() {
+		return this.properties.find((property) => property.getName() === 'type')?.getValue();
 	}
 }

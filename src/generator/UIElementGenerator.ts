@@ -13,93 +13,96 @@ function formatName(name: string): string {
 const DEFAULT_MAX_LENGTH = 524288;
 
 export class UIElementGenerator {
-	private checkValidNode(node: HTMLElement): boolean {
-		// return false if node is not treatable for UIElement
-		if (
-			node.nodeName !== HTMLNodeTypes.INPUT &&
-			node.nodeName !== HTMLNodeTypes.SELECT &&
-			node.nodeName !== HTMLNodeTypes.TEXTAREA
-		) {
-			return false;
-		}
-
-		return true;
-	}
-
-	public createUIElementFromButton(elm: HTMLButtonElement): UIElement {
+	public createUIElement(elm: HTMLInputElement | HTMLSelectElement): UIElement {
 		let uiElm = new UIElement();
-
-		return uiElm;
-	}
-
-	public createUIElementFromInput(elm: HTMLInputElement): UIElement {
-		let uiElm = new UIElement();
-
-		// name
-		uiElm.setName(this.generateName(elm));
 
 		// id
 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
 
-		// type
-		if (!elm.type) {
-			let type = elm.type;
+		// name
+		uiElm.setName(this.generateName(elm, uiElm.getId()));
 
-			if (elm.nodeName === HTMLNodeTypes.SELECT) {
-				type = 'select';
-			}
+		// type and dataType
+		let type: string;
 
-			uiElm.setProperty(new UIProperty('type', type));
+		if (elm instanceof HTMLSelectElement) {
+			type = 'select';
+		} else {
+			type = elm.type ? elm.type : 'text';
 		}
+
+		uiElm.setProperty(new UIProperty('type', type));
+		uiElm.setProperty(new UIProperty('dataType', type));
 
 		// editabled
-		if (!elm.disabled) {
-			let editabled = !elm.disabled ? true : false;
-			uiElm.setProperty(new UIProperty('editabled', editabled));
-		}
-
-		// dataType
-		if (!elm.type) {
-			uiElm.setProperty(new UIProperty('dataType', elm.type));
-		}
+		let editabled =
+			elm.disabled || (elm instanceof HTMLInputElement && elm.readOnly) ? false : true;
+		uiElm.setProperty(new UIProperty('editabled', editabled));
 
 		// value
-		if (!elm.value) {
+		if (elm.value) {
 			uiElm.setProperty(new UIProperty('value', elm.value));
 		}
 
-		// min_length
-		if (!elm.minLength) {
-			uiElm.setProperty(new UIProperty('min_length', elm.minLength));
-		}
-
-		// max_length
-		if (!elm.maxLength && elm.maxLength !== DEFAULT_MAX_LENGTH) {
-			uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
-		}
-
-		// min_value
-		if (!elm.min) {
-			uiElm.setProperty(new UIProperty('min_value', elm.min));
-		}
-
-		// max_value
-		if (!elm.max) {
-			uiElm.setProperty(new UIProperty('max_value', elm.max));
-		}
-
 		// required
-		if (!elm.required) {
+		if (elm.required) {
 			uiElm.setProperty(new UIProperty('required', elm.required));
+		}
+
+		if (elm instanceof HTMLInputElement) {
+			uiElm = this.checkPropertiesInputExclusive(elm, uiElm);
 		}
 
 		return uiElm;
 	}
 
-	private generateName(elm: HTMLElement): string {
-		let name = '';
+	public createUIElementForButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
+		let uiElm = new UIElement();
 
-		if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
+		// id
+		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
+
+		// name
+		uiElm.setName(this.generateNameForButton(elm, uiElm.getId()));
+
+		// type and dataType
+		let type = elm.type ? elm.type : 'button';
+
+		uiElm.setProperty(new UIProperty('type', type));
+
+		return uiElm;
+	}
+
+	private checkPropertiesInputExclusive(elm: HTMLInputElement, uiElm: UIElement): UIElement {
+		// min_length
+		if (elm.minLength && elm.minLength !== -1) {
+			uiElm.setProperty(new UIProperty('min_length', elm.minLength));
+		}
+
+		// max_length
+		if (elm.maxLength && elm.maxLength !== DEFAULT_MAX_LENGTH && elm.maxLength !== -1) {
+			uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
+		}
+
+		// min_value
+		if (elm.min) {
+			uiElm.setProperty(new UIProperty('min_value', elm.min));
+		}
+
+		// max_value
+		if (elm.max) {
+			uiElm.setProperty(new UIProperty('max_value', elm.max));
+		}
+
+		return uiElm;
+	}
+
+	private generateName(elm: HTMLInputElement | HTMLSelectElement, idUiElm: string): string {
+		let name: string = '';
+
+		if (elm.name) {
+			name = formatName(elm.name);
+		} else if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
 			name = this.generateNameFromPreviousLabel(elm);
 		} else if (
 			elm.previousElementSibling?.nodeName === HTMLNodeTypes.BR &&
@@ -111,9 +114,26 @@ export class UIElementGenerator {
 			elm.parentElement?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
 		) {
 			name = this.generateNameFromPreviousLabel(elm.parentElement);
-		} else {
-			name = this.generateNameFromNode(elm);
 		}
+
+		name = name ? name : elm.nodeName + idUiElm;
+
+		return name;
+	}
+
+	private generateNameForButton(
+		elm: HTMLButtonElement | HTMLInputElement,
+		idUiElm: string
+	): string {
+		let name: string = '';
+
+		if (elm.name) {
+			name = formatName(elm.name);
+		} else if (elm instanceof HTMLButtonElement && elm.innerHTML) {
+			name = formatName(elm.innerHTML);
+		}
+
+		name = name ? name : 'Button' + idUiElm;
 
 		return name;
 	}
@@ -133,22 +153,10 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	private generateNameFromNode(elm: HTMLElement): string {
-		let name: string = '';
-
-		if (!elm.nodeName) {
-			name = formatName(elm.nodeName);
-		} else if (!elm.id) {
-			name = formatName(elm.id.toString());
-		}
-
-		return name;
-	}
-
 	public generateId(elm: HTMLElement): string {
 		let id = '';
 
-		if (!elm.id) {
+		if (elm.id) {
 			id = elm.id;
 		} else {
 			id = getXPath(elm);

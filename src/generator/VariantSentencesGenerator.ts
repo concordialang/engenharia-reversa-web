@@ -5,31 +5,11 @@ import { VariantSentenceActions } from '../types/VariantSentenceActions';
 import { VariantSentenceType } from '../types/VariantSentenceType';
 
 export class VariantSentencesGenerator {
-	// TODO: Refatorar
 	public generateVariantSentenceFromUIElement(uiElment: UIElement): VariantSentence | null {
-		let type: string = '';
-		let target: string | null = null;
-		let editable: boolean | null = null;
-		let required: boolean = false;
+		let target: string = uiElment.getName();
+		let type: string = uiElment.getType();
 
-		for (let property of uiElment.getProperties()) {
-			switch (property.getName()) {
-				case 'type':
-					type = property.getValue();
-					break;
-				case 'editabled':
-					editable = property.getValue();
-					break;
-				case 'id':
-					target = property.getValue();
-					break;
-				case 'required':
-					required = property.getValue();
-					break;
-			}
-		}
-
-		if (!target || !editable || !type) {
+		if (!target || !type) {
 			return null;
 		}
 
@@ -52,9 +32,7 @@ export class VariantSentencesGenerator {
 				break;
 		}
 
-		let sentence = new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']);
-
-		return sentence;
+		return new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']);
 	}
 
 	public generateVariantSentencesFromMutations(uiElment: UIElement, mutations) {
