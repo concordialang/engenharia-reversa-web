@@ -1,15 +1,14 @@
-import { UIElementGenerator } from '../generator/UIElementGenerator';
-import { VariantSentencesGenerator } from '../generator/VariantSentencesGenerator';
-import { Feature } from '../feature/Feature';
-import { Scenario } from '../feature/Scenario';
-import { UIElement } from '../feature/UIElement';
-import { Variant } from '../feature/Variant';
-import { VariantSentence } from '../feature/VariantSentence';
+import { UIElementGenerator } from './UIElementGenerator';
+import { VariantSentencesGenerator } from './VariantSentencesGenerator';
+import { Feature } from './Feature';
+import { Scenario } from './Scenario';
+import { UIElement } from './UIElement';
+import { Variant } from './Variant';
+import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
-//FIXME FeatureCollection na verdade é uma FeatureUtil
-export class FeatureCollection {
+export class FeatureUtil {
 	constructor(
 		private uiElementGenerator: UIElementGenerator,
 		private variantSentencesGenerator: VariantSentencesGenerator

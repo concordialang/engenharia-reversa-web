@@ -1,5 +1,5 @@
-import { UIElement } from '../feature/UIElement';
-import { VariantSentence } from '../feature/VariantSentence';
+import { UIElement } from './UIElement';
+import { VariantSentence } from './VariantSentence';
 import { EditableTypes } from '../types/EditableTypes';
 import { VariantSentenceActions } from '../types/VariantSentenceActions';
 import { VariantSentenceType } from '../types/VariantSentenceType';

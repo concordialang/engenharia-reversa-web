@@ -1,4 +1,4 @@
-import { Spec } from './analysis/Spec';
+import { Spec } from './spec-analyser/Spec';
 import { AppEvent } from './comm/AppEvent';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { Command } from './comm/Command';
@@ -18,9 +18,9 @@ import Mutex from './mutex/Mutex';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
 import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerator';
-import { FeatureCollection } from './analysis/FeatureCollection';
-import { UIElementGenerator } from './generator/UIElementGenerator';
-import { VariantSentencesGenerator } from './generator/VariantSentencesGenerator';
+import { FeatureUtil } from './spec-analyser/FeatureUtil';
+import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -59,7 +59,7 @@ const elementInteractionGenerator = new ElementInteractionGenerator(browserConte
 
 const uiElementGenerator = new UIElementGenerator();
 const variantSentenceGenerator = new VariantSentencesGenerator();
-const featureCollection = new FeatureCollection(uiElementGenerator, variantSentenceGenerator);
+const featureUtil = new FeatureUtil(uiElementGenerator, variantSentenceGenerator);
 
 const featureGenerator: FeatureGenerator = new FeatureGenerator(
 	elementInteractionExecutor,
@@ -68,7 +68,7 @@ const featureGenerator: FeatureGenerator = new FeatureGenerator(
 	elementInteractionGraph,
 	analyzedElementStorage,
 	elementInteractionGenerator,
-	featureCollection
+	featureUtil
 );
 
 const crawler: Crawler = new Crawler(

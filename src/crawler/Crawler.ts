@@ -1,4 +1,4 @@
-import { DiffDomManager } from '../analysis/DiffDomManager';
+import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { commonAncestorElement, getFeatureElements } from '../util';
 import { BrowserContext } from './BrowserContext';

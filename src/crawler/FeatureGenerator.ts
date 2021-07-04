@@ -1,5 +1,5 @@
-import { FeatureCollection } from '../analysis/FeatureCollection';
-import { Spec } from '../analysis/Spec';
+import { FeatureUtil } from '../spec-analyser/FeatureUtil';
+import { Spec } from '../spec-analyser/Spec';
 import { GraphStorage } from '../storage/GraphStorage';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
@@ -10,17 +10,11 @@ import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionExecutor } from './ElementInteractionExecutor';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
-import { UIElement } from '../feature/UIElement';
-import { Variant } from '../feature/Variant';
-import { Feature } from '../feature/Feature';
+import { UIElement } from '../spec-analyser/UIElement';
+import { Variant } from '../spec-analyser/Variant';
+import { Feature } from '../spec-analyser/Feature';
 import { ElementInteractionGenerator } from './ElementInteractionGenerator';
 import { BrowserContext } from './BrowserContext';
-
-//!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
-//!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
-
-// TODO: Refatorar construtor
-// TODO: Refatorar classe
 
 export class FeatureGenerator {
 	constructor(
@@ -30,7 +24,7 @@ export class FeatureGenerator {
 		private elementInteractionGraph: ElementInteractionGraph,
 		private analyzedElementStorage: AnalyzedElementStorage,
 		private elementInteractionGenerator: ElementInteractionGenerator,
-		private featureCollection: FeatureCollection
+		private featureUtil: FeatureUtil
 	) {}
 
 	public async analyse(contextElement: HTMLElement) {
@@ -89,7 +83,6 @@ export class FeatureGenerator {
 		}
 	}
 
-	//FIXME FeatureGenerator não retorna uma Feature
 	private async generate(
 		contextElement: HTMLElement,
 		ignoreFormElements: boolean = false
@@ -106,8 +99,8 @@ export class FeatureGenerator {
 		let observer = new MutationObserverManager(contextElement);
 
 		// start feature analysis
-		const feature = this.featureCollection.createFeatureFromElement(contextElement, this.spec);
-		const scenario = this.featureCollection.createScenario(feature);
+		const feature = this.featureUtil.createFeatureFromElement(contextElement, this.spec);
+		const scenario = this.featureUtil.createScenario(feature);
 		const variant = await this.buildVariant(
 			feature,
 			<HTMLElement[]>interactableElements,
@@ -144,7 +137,7 @@ export class FeatureGenerator {
 		interactableElements: HTMLElement[],
 		observer: MutationObserverManager
 	): Promise<Variant> {
-		const variant = this.featureCollection.createVariant();
+		const variant = this.featureUtil.createVariant();
 
 		let previousInteraction: ElementInteraction<
 			HTMLElement
@@ -167,7 +160,7 @@ export class FeatureGenerator {
 				interactionElement instanceof HTMLSelectElement ||
 				interactionElement instanceof HTMLButtonElement
 			) {
-				uiElement = this.featureCollection.createUiElment(interactionElement);
+				uiElement = this.featureUtil.createUiElment(interactionElement);
 			}
 
 			if (!uiElement) {
@@ -176,7 +169,7 @@ export class FeatureGenerator {
 
 			feature.addUiElement(uiElement);
 
-			const variantSentence = this.featureCollection.createVariantSentence(uiElement);
+			const variantSentence = this.featureUtil.createVariantSentence(uiElement);
 
 			if (variantSentence !== null) {
 				variant.setVariantSentence(variantSentence);
@@ -185,7 +178,7 @@ export class FeatureGenerator {
 			const mutations = observer.getMutations();
 
 			if (mutations.length > 0) {
-				const mutationSentences = this.featureCollection.createMutationVariantSentences(
+				const mutationSentences = this.featureUtil.createMutationVariantSentences(
 					uiElement,
 					mutations
 				);

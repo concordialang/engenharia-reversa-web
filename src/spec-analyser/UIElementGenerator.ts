@@ -1,7 +1,7 @@
 import getXPath from 'get-xpath';
 
-import { UIElement } from '../feature/UIElement';
-import { UIProperty } from '../feature/UIProperty';
+import { UIElement } from './UIElement';
+import { UIProperty } from './UIProperty';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 
 function formatName(name: string): string {
