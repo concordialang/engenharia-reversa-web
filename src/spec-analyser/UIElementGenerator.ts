@@ -13,7 +13,9 @@ function formatName(name: string): string {
 const DEFAULT_MAX_LENGTH = 524288;
 
 export class UIElementGenerator {
-	public createUIElement(elm: HTMLInputElement | HTMLSelectElement): UIElement {
+	public createUIElement(
+		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+	): UIElement {
 		let uiElm = new UIElement();
 
 		// id
@@ -49,8 +51,28 @@ export class UIElementGenerator {
 			uiElm.setProperty(new UIProperty('required', elm.required));
 		}
 
-		if (elm instanceof HTMLInputElement) {
-			uiElm = this.checkPropertiesInputExclusive(elm, uiElm);
+		if (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement) {
+			// min_length
+			if (elm.minLength && elm.minLength !== -1) {
+				uiElm.setProperty(new UIProperty('min_length', elm.minLength));
+			}
+
+			// max_length
+			if (elm.maxLength && elm.maxLength !== DEFAULT_MAX_LENGTH && elm.maxLength !== -1) {
+				uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
+			}
+
+			if (elm instanceof HTMLInputElement) {
+				// min_value
+				if (elm.min) {
+					uiElm.setProperty(new UIProperty('min_value', elm.min));
+				}
+
+				// max_value
+				if (elm.max) {
+					uiElm.setProperty(new UIProperty('max_value', elm.max));
+				}
+			}
 		}
 
 		return uiElm;
@@ -73,31 +95,10 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private checkPropertiesInputExclusive(elm: HTMLInputElement, uiElm: UIElement): UIElement {
-		// min_length
-		if (elm.minLength && elm.minLength !== -1) {
-			uiElm.setProperty(new UIProperty('min_length', elm.minLength));
-		}
-
-		// max_length
-		if (elm.maxLength && elm.maxLength !== DEFAULT_MAX_LENGTH && elm.maxLength !== -1) {
-			uiElm.setProperty(new UIProperty('max_length', elm.maxLength));
-		}
-
-		// min_value
-		if (elm.min) {
-			uiElm.setProperty(new UIProperty('min_value', elm.min));
-		}
-
-		// max_value
-		if (elm.max) {
-			uiElm.setProperty(new UIProperty('max_value', elm.max));
-		}
-
-		return uiElm;
-	}
-
-	private generateName(elm: HTMLInputElement | HTMLSelectElement, idUiElm: string): string {
+	private generateName(
+		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+		idUiElm: string
+	): string {
 		let name: string = '';
 
 		if (elm.name) {

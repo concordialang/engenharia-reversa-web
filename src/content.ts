@@ -57,9 +57,7 @@ const pageUrl: URL = new URL(window.location.href);
 const browserContext = new BrowserContext(document, pageUrl, window);
 const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
-const uiElementGenerator = new UIElementGenerator();
-const variantSentenceGenerator = new VariantSentencesGenerator();
-const featureUtil = new FeatureUtil(uiElementGenerator, variantSentenceGenerator);
+const featureUtil = new FeatureUtil();
 
 const featureGenerator: FeatureGenerator = new FeatureGenerator(
 	elementInteractionExecutor,

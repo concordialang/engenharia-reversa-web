@@ -9,10 +9,8 @@ import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
 export class FeatureUtil {
-	constructor(
-		private uiElementGenerator: UIElementGenerator,
-		private variantSentencesGenerator: VariantSentencesGenerator
-	) {}
+	private uiElementGenerator: UIElementGenerator = new UIElementGenerator();
+	private variantSentencesGenerator: VariantSentencesGenerator = new VariantSentencesGenerator();
 
 	createFeatureFromElement(f: HTMLElement, spec: Spec): Feature {
 		const title: HTMLElement | null = this.titleBeforeElemente(f);
@@ -35,7 +33,7 @@ export class FeatureUtil {
 	}
 
 	createUiElment(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement
+		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement | HTMLTextAreaElement
 	): UIElement | null {
 		let uiElement: UIElement | null = null;
 
