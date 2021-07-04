@@ -19,7 +19,7 @@ export class FeatureStorage extends LocalObjectStorage<Feature> {
 			feature.addScenario(this.createScenario(scenario));
 		}
 		for (const uiElement of json['uiElements']) {
-			feature.setUiElement(this.createUiElement(uiElement));
+			feature.addUiElement(this.createUiElement(uiElement));
 		}
 		return feature;
 	}

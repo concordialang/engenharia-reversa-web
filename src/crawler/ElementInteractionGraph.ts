@@ -47,6 +47,7 @@ export class ElementInteractionGraph {
 		return graph;
 	}
 
+	//FIXME Colocar opções em um JSON
 	public async pathToInteraction(
 		currentInteraction: ElementInteraction<HTMLElement>,
 		searchForClosest: boolean,

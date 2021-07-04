@@ -17,6 +17,10 @@ import { GraphStorage } from './storage/GraphStorage';
 import Mutex from './mutex/Mutex';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
 import { VisitedURLGraph } from './crawler/VisitedURLGraph';
+import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerator';
+import { FeatureCollection } from './analysis/FeatureCollection';
+import { UIElementGenerator } from './generator/UIElementGenerator';
+import { VariantSentencesGenerator } from './generator/VariantSentencesGenerator';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -26,8 +30,6 @@ const pageStorage = new PageStorage('engenharia-reversa-web');
 const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 const graphKey = 'graph';
 const elementInteractionGraphKey = 'interactions-graph';
-const lastElementInteractionKey = 'last-interaction';
-const lastElementInteractionBeforeRedirectKey = 'last-interaction-before-redirect';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 const inputInteractor = new InputInteractor();
 const buttonInteractor = new ButtonInteractor(window);
@@ -51,17 +53,23 @@ const elementInteractionExecutor = new ElementInteractionExecutor(
 );
 
 const pageUrl: URL = new URL(window.location.href);
-const featureGenerator: FeatureGenerator = new FeatureGenerator(
-	elementInteractionExecutor,
-	pageUrl,
-	spec,
-	elementInteracationStorage,
-	lastElementInteractionBeforeRedirectKey,
-	lastElementInteractionKey,
-	analyzedElementStorage
-);
 
 const browserContext = new BrowserContext(document, pageUrl, window);
+const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
+
+const uiElementGenerator = new UIElementGenerator();
+const variantSentenceGenerator = new VariantSentencesGenerator();
+const featureCollection = new FeatureCollection(uiElementGenerator, variantSentenceGenerator);
+
+const featureGenerator: FeatureGenerator = new FeatureGenerator(
+	elementInteractionExecutor,
+	browserContext,
+	spec,
+	elementInteractionGraph,
+	analyzedElementStorage,
+	elementInteractionGenerator,
+	featureCollection
+);
 
 const crawler: Crawler = new Crawler(
 	browserContext,

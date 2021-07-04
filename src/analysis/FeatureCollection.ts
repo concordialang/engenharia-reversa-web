@@ -8,16 +8,12 @@ import { VariantSentence } from '../feature/VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
-type validTypesUiElements = HTMLInputElement | HTMLSelectElement | HTMLButtonElement;
-
+//FIXME FeatureCollection na verdade é uma FeatureUtil
 export class FeatureCollection {
-	private uiElementGenerator: UIElementGenerator;
-	private variantSentencesGenerator: VariantSentencesGenerator;
-
-	constructor() {
-		this.uiElementGenerator = new UIElementGenerator();
-		this.variantSentencesGenerator = new VariantSentencesGenerator();
-	}
+	constructor(
+		private uiElementGenerator: UIElementGenerator,
+		private variantSentencesGenerator: VariantSentencesGenerator
+	) {}
 
 	createFeatureFromElement(f: HTMLElement, spec: Spec): Feature {
 		const title: HTMLElement | null = this.titleBeforeElemente(f);
@@ -39,7 +35,9 @@ export class FeatureCollection {
 		return scenario;
 	}
 
-	createUiElment(elm: validTypesUiElements): UIElement | null {
+	createUiElment(
+		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement
+	): UIElement | null {
 		let uiElement: UIElement | null = null;
 
 		if (

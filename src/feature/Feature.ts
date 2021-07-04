@@ -23,7 +23,7 @@ export class Feature {
 		return this.name;
 	}
 
-	public setUiElement(uiElement: UIElement): void {
+	public addUiElement(uiElement: UIElement): void {
 		this.uiElements.push(uiElement);
 	}
 

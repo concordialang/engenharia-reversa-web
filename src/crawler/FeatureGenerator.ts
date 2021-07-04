@@ -1,9 +1,6 @@
 import { FeatureCollection } from '../analysis/FeatureCollection';
 import { Spec } from '../analysis/Spec';
 import { GraphStorage } from '../storage/GraphStorage';
-import { HTMLElementType } from '../html/HTMLElementType';
-import { HTMLEventType } from '../html/HTMLEventType';
-import { HTMLInputType } from '../html/HTMLInputType';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { getFeatureElements, getPathTo } from '../util';
@@ -12,6 +9,12 @@ import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionExecutor } from './ElementInteractionExecutor';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
+import { ElementInteractionGraph } from './ElementInteractionGraph';
+import { UIElement } from '../feature/UIElement';
+import { Variant } from '../feature/Variant';
+import { Feature } from '../feature/Feature';
+import { ElementInteractionGenerator } from './ElementInteractionGenerator';
+import { BrowserContext } from './BrowserContext';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -20,28 +23,22 @@ import { ElementInteractionStorage } from '../storage/ElementInteractionStorage'
 // TODO: Refatorar classe
 
 export class FeatureGenerator {
-	private radioGroupsAlreadyFilled: string[];
-	private featureCollection: FeatureCollection;
-
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private pageUrl: URL,
+		private browserContext: BrowserContext,
 		private spec: Spec,
-		private elementInteractionStorage: ElementInteractionStorage,
-		private lastInteractionBeforeRedirectKey: string,
-		private lastInteractionKey: string,
-		private analyzedElementStorage: AnalyzedElementStorage
-	) {
-		this.radioGroupsAlreadyFilled = [];
-		this.featureCollection = new FeatureCollection();
-	}
+		private elementInteractionGraph: ElementInteractionGraph,
+		private analyzedElementStorage: AnalyzedElementStorage,
+		private elementInteractionGenerator: ElementInteractionGenerator,
+		private featureCollection: FeatureCollection
+	) {}
 
 	public async analyse(contextElement: HTMLElement) {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
-				this.pageUrl
+				this.browserContext.getUrl()
 			);
 
 			if (!analyzedContext) {
@@ -52,7 +49,11 @@ export class FeatureGenerator {
 					contextElement.nodeName !== HTMLNodeTypes.TABLE
 				) {
 					// generate feature for elements outside feature elements
-					await this.generate(contextElement, true);
+					const feature = await this.generate(contextElement, true);
+					if (feature) {
+						this.spec.addFeature(feature);
+					}
+					this.elementInteractionGenerator.resetFilledRadioGroups();
 				}
 			}
 		} else {
@@ -78,7 +79,7 @@ export class FeatureGenerator {
 
 				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
 					xPathElement,
-					this.pageUrl
+					this.browserContext.getUrl()
 				);
 
 				if (!analyzedElement) {
@@ -88,160 +89,147 @@ export class FeatureGenerator {
 		}
 	}
 
-	public async generate(
+	//FIXME FeatureGenerator não retorna uma Feature
+	private async generate(
 		contextElement: HTMLElement,
 		ignoreFormElements: boolean = false
-	): Promise<void> {
-		const _this = this;
-
+	): Promise<Feature | null> {
 		let interactableElements: ChildNode[] = ignoreFormElements
 			? this.getInteractableElementsIgnoringForm(contextElement)
 			: this.getInteractableElements(contextElement);
 
-		if (interactableElements.length > 0) {
-			const featureCollection = new FeatureCollection();
-
-			// add observer on form
-			let observer = new MutationObserverManager(contextElement);
-
-			// start feature analysis
-			const feature = featureCollection.createFeatureFromElement(contextElement, this.spec);
-			const scenario = featureCollection.createScenario(feature);
-			const variant = await this.builVariant(feature, interactableElements, observer);
-
-			scenario.addVariant(variant);
-			feature.addScenario(scenario);
-			this.spec.addFeature(feature);
-
-			observer.disconnect();
-
-			this.radioGroupsAlreadyFilled = [];
+		if (interactableElements.length <= 0) {
+			return null;
 		}
 
-		let analyzedElement: AnalyzedElement = new AnalyzedElement(contextElement, this.pageUrl);
+		// add observer on form
+		let observer = new MutationObserverManager(contextElement);
+
+		// start feature analysis
+		const feature = this.featureCollection.createFeatureFromElement(contextElement, this.spec);
+		const scenario = this.featureCollection.createScenario(feature);
+		const variant = await this.buildVariant(
+			feature,
+			<HTMLElement[]>interactableElements,
+			observer
+		);
+
+		scenario.addVariant(variant);
+		feature.addScenario(scenario);
+		observer.disconnect();
+
+		let analyzedElement: AnalyzedElement = new AnalyzedElement(
+			contextElement,
+			this.browserContext.getUrl()
+		);
 		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
 		if (interactableElements.length > 0) {
 			for (let element of interactableElements) {
 				//o que acontece nos casos onde ocorre um clique fora do formulário durante a análise do formuĺário?
 				// aquele elemento não ficará marcado como analisado
-				analyzedElement = new AnalyzedElement(<HTMLElement>element, this.pageUrl);
+				analyzedElement = new AnalyzedElement(
+					<HTMLElement>element,
+					this.browserContext.getUrl()
+				);
 				await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 			}
 		}
+
+		return feature;
 	}
 
-	private async builVariant(feature, interactableElements, observer) {
+	private async buildVariant(
+		feature: Feature,
+		interactableElements: HTMLElement[],
+		observer: MutationObserverManager
+	): Promise<Variant> {
 		const variant = this.featureCollection.createVariant();
 
-		let previousInteraction: ElementInteraction<HTMLElement> | null = null;
+		let previousInteraction: ElementInteraction<
+			HTMLElement
+		> | null = await this.elementInteractionGraph.getLastInteraction();
 
 		for (const element of interactableElements) {
-			const objInteract = await this.interact(element, previousInteraction);
-
-			previousInteraction = objInteract.previousInteraction;
-			const interaction = objInteract.interaction;
+			const interaction = await this.interactWithElement(element, previousInteraction);
 
 			if (!interaction) continue;
 
+			previousInteraction = interaction;
+
+			const interactionElement = interaction.getElement();
+
+			let uiElement: UIElement | null = null;
+
 			// analyzes the interaction
-			const uiElment = this.featureCollection.createUiElment(interaction.getElement());
+			if (
+				interactionElement instanceof HTMLInputElement ||
+				interactionElement instanceof HTMLSelectElement ||
+				interactionElement instanceof HTMLButtonElement
+			) {
+				uiElement = this.featureCollection.createUiElment(interactionElement);
+			}
 
-			if (uiElment) {
-				feature.setUiElement(uiElment);
+			if (!uiElement) {
+				continue;
+			}
 
-				const variantSentence = this.featureCollection.createVariantSentence(uiElment);
+			feature.addUiElement(uiElement);
 
-				if (variantSentence !== null) {
-					variant.setVariantSentence(variantSentence);
+			const variantSentence = this.featureCollection.createVariantSentence(uiElement);
+
+			if (variantSentence !== null) {
+				variant.setVariantSentence(variantSentence);
+			}
+
+			const mutations = observer.getMutations();
+
+			if (mutations.length > 0) {
+				const mutationSentences = this.featureCollection.createMutationVariantSentences(
+					uiElement,
+					mutations
+				);
+
+				for (let sentence of mutationSentences) {
+					variant.setVariantSentence(sentence);
 				}
 
-				const mutations = observer.getMutations();
-
-				if (mutations.length > 0) {
-					const mutationSentences = this.featureCollection.createMutationVariantSentences(
-						uiElment,
-						mutations
-					);
-
-					for (let sentence of mutationSentences) {
-						variant.setVariantSentence(sentence);
-					}
-
-					observer.resetMutations();
-				}
+				observer.resetMutations();
 			}
 		}
 
 		return variant;
 	}
 
-	private async interact(element, previousInteraction) {
-		let lastInteraction: ElementInteraction<HTMLElement> | null = null;
+	private async interactWithElement(
+		element: HTMLElement,
+		previousInteraction: ElementInteraction<HTMLElement> | null
+	): Promise<ElementInteraction<HTMLElement> | null> {
+		// interacts with the element
+		const interaction = this.elementInteractionGenerator.generate(element);
 
-		lastInteraction = await this.elementInteractionStorage.get(
-			this.lastInteractionBeforeRedirectKey
+		if (!interaction) {
+			return null;
+		}
+
+		const interactionGraph = await new GraphStorage(window.localStorage).get(
+			'interactions-graph'
 		);
 
-		if (!lastInteraction) {
-			lastInteraction = await this.elementInteractionStorage.get(this.lastInteractionKey);
+		let edges: [];
+		edges = interactionGraph ? interactionGraph.serialize()['links'] : [];
+
+		const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
+			element,
+			this.browserContext.getUrl(),
+			edges
+		);
+
+		if (!redirectsToAnotherUrl) {
+			await this.elementInteractionExecutor.execute(interaction, true, previousInteraction);
 		}
 
-		// interacts with the element
-		let interaction: ElementInteraction<HTMLElement> | null | undefined;
-		if (element instanceof HTMLInputElement) {
-			interaction = this.generateInputInteraction(element);
-		} else if (element instanceof HTMLButtonElement) {
-			interaction = new ElementInteraction(element, HTMLEventType.Click, this.pageUrl);
-		}
-
-		if (element instanceof HTMLElement) {
-			const interactionGraph = await new GraphStorage(window.localStorage).get(
-				'interactions-graph'
-			);
-
-			let edges: [];
-			edges = interactionGraph ? interactionGraph.serialize()['links'] : [];
-
-			const redirectsToAnotherUrl = await this.redirectsToAnotherUrl(
-				element,
-				this.pageUrl,
-				edges
-			);
-
-			if (!redirectsToAnotherUrl) {
-				if (interaction) {
-					if (!previousInteraction) {
-						previousInteraction = lastInteraction;
-
-						//pode ter problema de concorrencia
-						await this.elementInteractionStorage.remove(
-							this.lastInteractionBeforeRedirectKey
-						);
-					}
-
-					const result = await this.elementInteractionExecutor.execute(
-						interaction,
-						true,
-						previousInteraction
-					);
-
-					if (result) {
-						if (result.getTriggeredRedirection()) {
-							//pode ter problema de concorrencia
-							await this.elementInteractionStorage.set(
-								this.lastInteractionBeforeRedirectKey,
-								interaction
-							);
-						}
-					}
-
-					previousInteraction = interaction;
-				}
-			}
-		}
-
-		return { interaction: interaction, previousInteraction: previousInteraction };
+		return interaction;
 	}
 
 	private getInteractableElements(element: HTMLElement): ChildNode[] {
@@ -269,102 +257,6 @@ export class FeatureGenerator {
 		}
 
 		return interactableElements;
-	}
-
-	private generateInputInteraction(
-		input: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> | null {
-		const type = input.getAttribute('type');
-		if (type == HTMLInputType.Text) {
-			return this.generateTextInputInteraction(input);
-		} else if (type == HTMLInputType.Email) {
-			return this.generateRadioInputInteraction(input);
-		} else if (type == HTMLInputType.Radio) {
-			return this.generateRadioInputInteraction(input);
-		} else if (type == HTMLInputType.Checkbox) {
-			return this.generateCheckboxInputInteraction(input);
-		} else if (type == HTMLInputType.Submit) {
-			return new ElementInteraction(input, HTMLEventType.Click, this.pageUrl);
-		}
-		return null;
-	}
-
-	//RADIO
-
-	private generateRadioInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> | null {
-		const name = element.getAttribute('name');
-		const form = element.form;
-		if (name && form) {
-			if (!this.radioGroupsAlreadyFilled.includes(name)) {
-				const radioGroup = this.getFormInputElementsByNameAttribute(form, name);
-				if (radioGroup && radioGroup.length) {
-					const chosenRadio = this.chooseRadioButton(radioGroup);
-					if (chosenRadio) {
-						const interaction = new ElementInteraction<HTMLInputElement>(
-							chosenRadio,
-							HTMLEventType.Change,
-							this.pageUrl,
-							chosenRadio.value
-						);
-						this.radioGroupsAlreadyFilled.push(name);
-						return interaction;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	private chooseRadioButton(radioGroup: HTMLInputElement[]): HTMLInputElement | null {
-		if (radioGroup.length) {
-			return radioGroup[0];
-		}
-		return null;
-	}
-
-	//TEXT
-
-	private generateTextInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.pageUrl,
-			'teste'
-		);
-		return interaction;
-	}
-
-	//CHECKBOX
-
-	private generateCheckboxInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.pageUrl,
-			true
-		);
-		return interaction;
-	}
-
-	private getFormInputElementsByNameAttribute(
-		form: HTMLFormElement,
-		name: string
-	): HTMLInputElement[] {
-		const matchedInputs: HTMLInputElement[] = [];
-		const inputs = form.getElementsByTagName(HTMLElementType.Input);
-		for (const input of inputs) {
-			const inputNameAttr = input.getAttribute('name');
-			if (inputNameAttr && inputNameAttr == name) {
-				matchedInputs.push(input as HTMLInputElement);
-			}
-		}
-		return matchedInputs;
 	}
 
 	// FIXME Fazer com que essa função chame a função pathToInteraction de ElementInteractionGraph
