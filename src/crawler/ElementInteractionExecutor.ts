@@ -21,8 +21,8 @@ export class ElementInteractionExecutor {
 
 	public async execute(
 		interaction: ElementInteraction<HTMLElement>,
-		saveInteractionInGraph: boolean = true,
-		previousInteraction: ElementInteraction<HTMLElement> | null = null
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
+		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
 		await sleep(400);
 		const element = interaction.getElement();
@@ -32,32 +32,26 @@ export class ElementInteractionExecutor {
 			const inputType = element.getAttribute('type');
 			if (inputType == HTMLInputType.Submit) {
 				result = await this.buttonInteractor.execute(
-					<ElementInteraction<HTMLButtonElement>>interaction
+					<ElementInteraction<HTMLButtonElement>>interaction,
+					redirectionCallback
 				);
 			} else {
 				result = await this.inputInteractor.execute(
-					<ElementInteraction<HTMLInputElement>>interaction
+					<ElementInteraction<HTMLInputElement>>interaction,
+					redirectionCallback
 				);
 			}
 		} else if (type == HTMLElementType.Button) {
 			result = await this.buttonInteractor.execute(
-				<ElementInteraction<HTMLButtonElement>>interaction
+				<ElementInteraction<HTMLButtonElement>>interaction,
+				redirectionCallback
 			);
 		}
 
 		if (saveInteractionInGraph) {
-			await this.elementInteractionGraph.addElementInteractionToGraph(
-				interaction,
-				previousInteraction
-			);
+			await this.elementInteractionGraph.addElementInteractionToGraph(interaction);
 		}
 
 		return result;
-	}
-
-	public executeInteractions(interactions: ElementInteraction<HTMLElement>[]) {
-		for (const interaction of interactions) {
-			this.execute(interaction, false);
-		}
 	}
 }

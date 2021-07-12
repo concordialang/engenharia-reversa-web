@@ -12,12 +12,14 @@ export class ButtonInteractor implements ElementInteractor<HTMLButtonElement | H
 	}
 
 	public async execute(
-		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>
+		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>,
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {
 		const element = interaction.getElement();
 		let triggeredUnload = false;
-		this.window.addEventListener('beforeunload', (event) => {
+		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
 			triggeredUnload = true;
+			if (redirectionCallback) await redirectionCallback(interaction);
 		});
 		element.click();
 

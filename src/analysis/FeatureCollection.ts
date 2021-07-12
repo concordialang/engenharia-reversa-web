@@ -15,15 +15,14 @@ export class FeatureCollection {
 		private variantSentencesGenerator: VariantSentencesGenerator
 	) {}
 
-	createFeatureFromElement(f: HTMLElement, spec: Spec): Feature {
+	createFeatureFromElement(f: HTMLElement): Feature {
 		const title: HTMLElement | null = this.titleBeforeElemente(f);
 
 		const feature = new Feature();
-		feature.setName(
-			title
-				? title.innerHTML
-				: this.generateFeatureName(spec.getFeatures().length, spec.language)
-		);
+
+		if (title) {
+			feature.setName(title.innerHTML);
+		}
 
 		return feature;
 	}

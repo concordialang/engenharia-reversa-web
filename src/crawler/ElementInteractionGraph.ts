@@ -23,14 +23,14 @@ export class ElementInteractionGraph {
 	}
 
 	public async addElementInteractionToGraph(
-		elementInteraction: ElementInteraction<HTMLElement>,
-		sourceInteraction: ElementInteraction<HTMLElement> | null = null
+		elementInteraction: ElementInteraction<HTMLElement>
 	): Promise<void> {
 		const interactionId = elementInteraction.getId();
 		await this.elementInteractionStorage.set(interactionId, elementInteraction);
 		await this.mutex.lock();
 		const graph = await this.getLatestVersionOfGraph();
 		graph.addNode(interactionId);
+		const sourceInteraction = await this.getLastInteraction();
 		if (sourceInteraction) {
 			graph.addEdge(sourceInteraction.getId(), interactionId);
 		}

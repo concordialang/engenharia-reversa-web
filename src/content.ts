@@ -10,7 +10,7 @@ import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
-import { FeatureGenerator } from './crawler/FeatureGenerator';
+import { VariantGenerator } from './crawler/VariantGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
@@ -21,6 +21,7 @@ import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerat
 import { FeatureCollection } from './analysis/FeatureCollection';
 import { UIElementGenerator } from './generator/UIElementGenerator';
 import { VariantSentencesGenerator } from './generator/VariantSentencesGenerator';
+import { PageAnalyzer } from './crawler/PageAnalyzer';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -61,22 +62,22 @@ const uiElementGenerator = new UIElementGenerator();
 const variantSentenceGenerator = new VariantSentencesGenerator();
 const featureCollection = new FeatureCollection(uiElementGenerator, variantSentenceGenerator);
 
-const featureGenerator: FeatureGenerator = new FeatureGenerator(
+const variantGenerator: VariantGenerator = new VariantGenerator(
 	elementInteractionExecutor,
-	browserContext,
-	spec,
-	elementInteractionGraph,
-	analyzedElementStorage,
 	elementInteractionGenerator,
 	featureCollection
 );
 
+const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage);
+
 const crawler: Crawler = new Crawler(
 	browserContext,
-	featureGenerator,
+	variantGenerator,
 	pageStorage,
 	elementInteractionGraph,
-	visitedURLGraph
+	visitedURLGraph,
+	analyzedElementStorage,
+	pageAnalyzer
 );
 
 communicationChannel.setMessageListener(function (message: Message) {

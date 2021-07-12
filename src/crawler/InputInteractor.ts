@@ -7,7 +7,8 @@ import { InteractionResult } from './InteractionResult';
 
 export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 	public async execute(
-		interaction: ElementInteraction<HTMLInputElement>
+		interaction: ElementInteraction<HTMLInputElement>,
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {
 		const input = interaction.getElement();
 		const type = input.getAttribute('type');
