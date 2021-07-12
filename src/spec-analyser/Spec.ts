@@ -1,4 +1,4 @@
-import { Feature } from '../feature/Feature';
+import { Feature } from './Feature';
 
 export class Spec {
 	private features: Array<Feature> = [];

@@ -1,11 +1,11 @@
-import { FeatureCollection } from '../analysis/FeatureCollection';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementInteractionExecutor } from './ElementInteractionExecutor';
-import { UIElement } from '../feature/UIElement';
-import { Variant } from '../feature/Variant';
 import { ElementInteractionGenerator } from './ElementInteractionGenerator';
 import { ElementInteraction } from './ElementInteraction';
+import { Variant } from '../spec-analyser/Variant';
+import { FeatureUtil } from '../spec-analyser/FeatureUtil';
+import { UIElement } from '../spec-analyser/UIElement';
 
 //!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
 //!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
@@ -17,7 +17,7 @@ export class VariantGenerator {
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGenerator: ElementInteractionGenerator,
-		private featureCollection: FeatureCollection
+		private featureUtil: FeatureUtil
 	) {}
 
 	public async generate(
@@ -37,7 +37,7 @@ export class VariantGenerator {
 		let observer = new MutationObserverManager(contextElement);
 
 		// start feature analysis
-		const variant = this.featureCollection.createVariant();
+		const variant = this.featureUtil.createVariant();
 
 		for (const element of interactableElements) {
 			// interacts with the element
@@ -69,14 +69,14 @@ export class VariantGenerator {
 				interactionElement instanceof HTMLSelectElement ||
 				interactionElement instanceof HTMLButtonElement
 			) {
-				uiElement = this.featureCollection.createUiElment(interactionElement);
+				uiElement = this.featureUtil.createUiElment(interactionElement);
 			}
 
 			if (!uiElement) {
 				continue;
 			}
 
-			const variantSentence = this.featureCollection.createVariantSentence(uiElement);
+			const variantSentence = this.featureUtil.createVariantSentence(uiElement);
 
 			if (variantSentence !== null) {
 				variant.setVariantSentence(variantSentence);
@@ -85,7 +85,7 @@ export class VariantGenerator {
 			const mutations = observer.getMutations();
 
 			if (mutations.length > 0) {
-				const mutationSentences = this.featureCollection.createMutationVariantSentences(
+				const mutationSentences = this.featureUtil.createMutationVariantSentences(
 					uiElement,
 					mutations
 				);

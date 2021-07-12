@@ -1,10 +1,10 @@
-import { Feature } from '../feature/Feature';
-import { Scenario } from '../feature/Scenario';
-import { Variant } from '../feature/Variant';
-import { VariantSentence } from '../feature/VariantSentence';
+import { Feature } from '../spec-analyser/Feature';
+import { Scenario } from '../spec-analyser/Scenario';
+import { Variant } from '../spec-analyser/Variant';
+import { VariantSentence } from '../spec-analyser/VariantSentence';
 import { VariantSentenceType } from '../types/VariantSentenceType';
-import { UIElement } from '../feature/UIElement';
-import { UIProperty } from '../feature/UIProperty';
+import { UIElement } from '../spec-analyser/UIElement';
+import { UIProperty } from '../spec-analyser/UIProperty';
 import { getEnumKeyByEnumValue } from '../util';
 import { LocalObjectStorage } from './LocalObjectStorage';
 export class FeatureStorage extends LocalObjectStorage<Feature> {

@@ -10,6 +10,7 @@ import { HTMLElementType } from '../src/html/HTMLElementType';
 import { getPathTo } from '../src/util';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import * as fakeIndexedDB from 'fake-indexeddb/auto';
+
 describe('ElementInteractionGraph', () => {
 	const url1: URL = new URL('https://www.google.com');
 	const url2: URL = new URL('https://www.facebook.com');

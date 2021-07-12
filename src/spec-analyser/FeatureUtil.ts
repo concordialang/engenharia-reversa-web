@@ -1,19 +1,16 @@
-import { UIElementGenerator } from '../generator/UIElementGenerator';
-import { VariantSentencesGenerator } from '../generator/VariantSentencesGenerator';
-import { Feature } from '../feature/Feature';
-import { Scenario } from '../feature/Scenario';
-import { UIElement } from '../feature/UIElement';
-import { Variant } from '../feature/Variant';
-import { VariantSentence } from '../feature/VariantSentence';
+import { UIElementGenerator } from './UIElementGenerator';
+import { VariantSentencesGenerator } from './VariantSentencesGenerator';
+import { Feature } from './Feature';
+import { Scenario } from './Scenario';
+import { UIElement } from './UIElement';
+import { Variant } from './Variant';
+import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
-//FIXME FeatureCollection na verdade é uma FeatureUtil
-export class FeatureCollection {
-	constructor(
-		private uiElementGenerator: UIElementGenerator,
-		private variantSentencesGenerator: VariantSentencesGenerator
-	) {}
+export class FeatureUtil {
+	private uiElementGenerator: UIElementGenerator = new UIElementGenerator();
+	private variantSentencesGenerator: VariantSentencesGenerator = new VariantSentencesGenerator();
 
 	createFeatureFromElement(f: HTMLElement): Feature {
 		const title: HTMLElement | null = this.titleBeforeElemente(f);
@@ -35,7 +32,7 @@ export class FeatureCollection {
 	}
 
 	createUiElment(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement
+		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement | HTMLTextAreaElement
 	): UIElement | null {
 		let uiElement: UIElement | null = null;
 

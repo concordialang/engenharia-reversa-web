@@ -48,9 +48,11 @@ export class UIProperty {
 	}
 
 	private getValueForDataType(value: string | null): string | null {
-		if (value == 'text') {
+		if (value == 'text' || value == 'select') {
 			value = DataTypes.STRING;
-		} else if (value == 'datetime-local') {
+		} else if (value == 'date') {
+			value = DataTypes.DATE;
+		} else if (value == 'datetime-local' || value == 'datetime') {
 			value = DataTypes.DATETIME;
 		} else if (value == 'checkbox') {
 			value = DataTypes.CHECKBOX;

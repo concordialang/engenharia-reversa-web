@@ -1,6 +1,6 @@
-import { DiffDomManager } from '../analysis/DiffDomManager';
-import { Variant } from '../feature/Variant';
+import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { Variant } from '../spec-analyser/Variant';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { commonAncestorElement, getFeatureElements, getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';

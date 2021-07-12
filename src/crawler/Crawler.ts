@@ -1,4 +1,4 @@
-import { DiffDomManager } from '../analysis/DiffDomManager';
+import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { commonAncestorElement, getFeatureElements, getPathTo } from '../util';
 import { BrowserContext } from './BrowserContext';
@@ -8,12 +8,10 @@ import { VariantGenerator } from './VariantGenerator';
 import { PageStorage } from '../storage/PageStorage';
 import { VisitedURLGraph } from './VisitedURLGraph';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-import { Spec } from '../analysis/Spec';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { AnalyzedElement } from './AnalyzedElement';
-import { Feature } from '../feature/Feature';
-import { Variant } from '../feature/Variant';
 import { PageAnalyzer } from './PageAnalyzer';
+import { Variant } from '../spec-analyser/Variant';
 
 export class Crawler {
 	private lastPageKey: string;
