@@ -70,11 +70,9 @@ const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage);
 
 const crawler: Crawler = new Crawler(
 	browserContext,
-	variantGenerator,
 	pageStorage,
 	elementInteractionGraph,
 	visitedURLGraph,
-	analyzedElementStorage,
 	pageAnalyzer
 );
 
