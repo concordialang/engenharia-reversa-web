@@ -64,7 +64,7 @@ export class FeatureUtil {
 		uiElment: UIElement,
 		mutations: MutationRecord[]
 	): VariantSentence[] {
-		return this.variantSentencesGenerator.generateVariantSentencesFromMutations(
+		return this.variantSentencesGenerator.generateVariantSentenceFromMutations(
 			uiElment,
 			mutations
 		);
