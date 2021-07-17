@@ -24,12 +24,13 @@ export class PageAnalyzer {
 		}
 	}
 
-	public async analyseElement(url: URL, contextElement: HTMLElement): Promise<Variant | null> {
+	private async analyseElement(url: URL, contextElement: HTMLElement): Promise<Variant | null> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(xPath, url);
 
 			if (!analyzedContext) {
+				// TODO - VERIFICAR E REMOVER
 				const variantsOutsideForm = await this.analyseVariantElements(url, contextElement);
 
 				const _this = this;

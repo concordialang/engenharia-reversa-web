@@ -32,7 +32,7 @@ export class FeatureUtil {
 	}
 
 	createUiElment(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLButtonElement | HTMLTextAreaElement
+		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement
 	): UIElement | null {
 		let uiElement: UIElement | null = null;
 
@@ -60,14 +60,8 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
 	}
 
-	createMutationVariantSentences(
-		uiElment: UIElement,
-		mutations: MutationRecord[]
-	): VariantSentence[] {
-		return this.variantSentencesGenerator.generateVariantSentencesFromMutations(
-			uiElment,
-			mutations
-		);
+	createMutationVariantSentence(mutation: MutationRecord): VariantSentence | null {
+		return this.variantSentencesGenerator.generateVariantSentenceFromMutations(mutation);
 	}
 
 	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {
@@ -83,6 +77,7 @@ export class FeatureUtil {
 		return null;
 	}
 
+	//TODO
 	private generateFeatureName(featureCount: number, language: string): string {
 		const id = 1 + featureCount;
 		switch (language) {

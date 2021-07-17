@@ -35,71 +35,108 @@ export class VariantSentencesGenerator {
 		return new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']);
 	}
 
-	public generateVariantSentencesFromMutations(uiElment: UIElement, mutations) {
-		let sentences: VariantSentence[] = [];
+	public generateVariantSentenceFromMutations(mutation): VariantSentence | null {
+		let sentence: VariantSentence | null = null;
 
-		for (let mutation of mutations) {
-			if (mutation.type === 'attributes') {
-				if (mutation.attributeName === 'style') {
-					this.buildStyleSentence(sentences, mutation);
-				}
+		if (mutation.type === 'attributes') {
+			if (mutation.attributeName === 'style') {
+				sentence = this.buildAttibutesStyleSentence(mutation);
+			} else if (mutation.attributeName === 'value') {
+				sentence = this.buildAttibutesValueSentence(mutation);
 			}
+		} else if (mutation.type === 'childList') {
+			sentence = this.buildChildListSentence(mutation);
 		}
 
-		return sentences;
+		return sentence;
 	}
 
-	private buildStyleSentence(sentences, mutation) {
-		let oldValueArray;
-		let attribute;
-		let oldValue;
+	private buildAttibutesStyleSentence(mutation): VariantSentence | null {
+		let sentence: VariantSentence | null = null;
 
-		if (mutation.oldValue !== null) {
-			oldValueArray = mutation.oldValue.split(':');
-			attribute = oldValueArray[0];
-			oldValue = oldValueArray[1].replace(';', '').replace(' ', '');
-		} else {
-			let attributesElm = Object.assign({}, mutation.target.attributes);
+		let property = mutation.target.style[0];
 
-			if (!attributesElm) {
-				return;
-			}
+		if (property === 'display') {
+			let value = mutation.target.style.display;
 
-			let styleValue: string = '';
-			for (const attr of Object.values(attributesElm)) {
-				if (attr instanceof Attr && attr.nodeName === 'style') {
-					styleValue = attr.value;
-				}
-			}
-
-			if (styleValue == '') {
-				return;
-			}
-
-			oldValueArray = styleValue.split(':');
-			attribute = oldValueArray[0];
-			oldValue = oldValueArray[1].replace(';', '').replace(' ', '');
-		}
-
-		if (attribute === 'display') {
-			if (oldValue === 'none' && mutation.target.style.display === 'block') {
-				console.log('E eu vejo o elemento {#' + mutation.target.id + '}');
-				//gerar nome para mutacao
-				sentences.push(
-					new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.SEE, [
-						'{' + mutation.target.id + '}',
-					])
+			if (value === 'none') {
+				sentence = new VariantSentence(
+					VariantSentenceType.AND,
+					VariantSentenceActions.NOTSEE,
+					['{' + mutation.target.id + '}'],
+					[{ property: property, value: value }]
 				);
-			}
-
-			if (oldValue === 'block' && mutation.target.style.display === 'none') {
-				console.log('E eu não vejo o elemento {#' + mutation.target.id + '}');
-				sentences.push(
-					new VariantSentence(VariantSentenceType.WHEN, VariantSentenceActions.NOTSEE, [
-						'{' + mutation.target.id + '}',
-					])
+			} else if (value === 'block' || value === 'inline-block' || value === 'inline') {
+				sentence = new VariantSentence(
+					VariantSentenceType.AND,
+					VariantSentenceActions.SEE,
+					['{' + mutation.target.id + '}'],
+					[{ property: property, value: value }]
 				);
 			}
 		}
+
+		return sentence;
+	}
+
+	private buildChildListSentence(mutation): VariantSentence | null {
+		let sentence: VariantSentence | null = null;
+
+		let addedNodes = Object.values(mutation.addedNodes);
+		let removedNodes = Object.values(mutation.removedNodes);
+
+		if (addedNodes.length > 0) {
+			const node: any = addedNodes[0];
+
+			if (node) {
+				sentence = new VariantSentence(
+					VariantSentenceType.AND,
+					VariantSentenceActions.APPEND,
+					['{' + node.id + '}']
+				);
+			}
+		} else if (removedNodes.length > 0) {
+			const node: any = removedNodes[0];
+
+			if (node) {
+				sentence = new VariantSentence(
+					VariantSentenceType.AND,
+					VariantSentenceActions.REMOVE,
+					['{' + node.id + '}']
+				);
+			}
+		}
+
+		return sentence;
+	}
+
+	private buildAttibutesValueSentence(mutation): VariantSentence | null {
+		let sentence: VariantSentence | null = null;
+
+		let node = mutation.target;
+
+		if (!node || !node.value) {
+			return sentence;
+		}
+
+		if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+			sentence = new VariantSentence(
+				VariantSentenceType.AND,
+				VariantSentenceActions.FILL,
+				['{' + node.id + '}'],
+				[{ property: 'value', value: node.value }]
+			);
+		}
+
+		if (node instanceof HTMLSelectElement) {
+			sentence = new VariantSentence(
+				VariantSentenceType.AND,
+				VariantSentenceActions.SELECT,
+				['{' + node.id + '}'],
+				[{ property: 'value', value: node.value }]
+			);
+		}
+
+		return sentence;
 	}
 }

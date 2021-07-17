@@ -7,6 +7,7 @@ import { UIElement } from '../spec-analyser/UIElement';
 import { UIProperty } from '../spec-analyser/UIProperty';
 import { getEnumKeyByEnumValue } from '../util';
 import { LocalObjectStorage } from './LocalObjectStorage';
+
 export class FeatureStorage extends LocalObjectStorage<Feature> {
 	protected stringifyObject(obj: Feature): string {
 		return JSON.stringify(obj);
