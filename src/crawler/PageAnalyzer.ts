@@ -30,6 +30,7 @@ export class PageAnalyzer {
 			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(xPath, url);
 
 			if (!analyzedContext) {
+				// TODO - VERIFICAR E REMOVER
 				const variantsOutsideForm = await this.analyseVariantElements(url, contextElement);
 
 				const _this = this;

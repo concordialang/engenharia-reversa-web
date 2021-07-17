@@ -14,6 +14,7 @@ export class MutationObserverManager {
 			subtree: true,
 			attributeOldValue: true,
 			characterDataOldValue: true,
+			// attributeFilter: ['style', 'value']
 		};
 
 		this.observer.observe(element, config);

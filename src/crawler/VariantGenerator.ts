@@ -6,12 +6,7 @@ import { ElementInteraction } from './ElementInteraction';
 import { Variant } from '../spec-analyser/Variant';
 import { FeatureUtil } from '../spec-analyser/FeatureUtil';
 import { UIElement } from '../spec-analyser/UIElement';
-
-//!!! Refatorar para utilizar algum tipo de padrão de projeto comportamental
-//!!! Detalhar mais o disparamento de eventos, atualmente só está lançando "change"
-
-// TODO: Refatorar construtor
-// TODO: Refatorar classe
+import { VariantSentenceActions } from '../types/VariantSentenceActions';
 
 export class VariantGenerator {
 	constructor(
@@ -25,7 +20,7 @@ export class VariantGenerator {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		ignoreFormElements: boolean = false
 	): Promise<Variant | null> {
-		let interactableElements: ChildNode[] = ignoreFormElements
+		let interactableElements: any[] = ignoreFormElements
 			? this.getInteractableElementsIgnoringForm(contextElement)
 			: this.getInteractableElements(contextElement);
 
@@ -33,15 +28,12 @@ export class VariantGenerator {
 			return null;
 		}
 
-		// add observer on form
 		let observer = new MutationObserverManager(contextElement);
 
-		// start feature analysis
 		const variant = this.featureUtil.createVariant();
 
 		for (const element of interactableElements) {
-			// interacts with the element
-			const interaction = this.elementInteractionGenerator.generate(<HTMLElement>element);
+			const interaction = this.elementInteractionGenerator.generate(element as HTMLElement);
 
 			if (!interaction) {
 				continue;
@@ -57,19 +49,15 @@ export class VariantGenerator {
 				return variant;
 			}
 
-			if (!interaction) continue;
-
-			const interactionElement = interaction.getElement();
-
 			let uiElement: UIElement | null = null;
 
-			// analyzes the interaction
 			if (
-				interactionElement instanceof HTMLInputElement ||
-				interactionElement instanceof HTMLSelectElement ||
-				interactionElement instanceof HTMLButtonElement
+				element instanceof HTMLInputElement ||
+				element instanceof HTMLSelectElement ||
+				element instanceof HTMLTextAreaElement ||
+				element instanceof HTMLButtonElement
 			) {
-				uiElement = this.featureUtil.createUiElment(interactionElement);
+				uiElement = this.featureUtil.createUiElment(element);
 			}
 
 			if (!uiElement) {
@@ -78,20 +66,42 @@ export class VariantGenerator {
 
 			const variantSentence = this.featureUtil.createVariantSentence(uiElement);
 
-			if (variantSentence !== null) {
-				variant.setVariantSentence(variantSentence);
+			if (!variantSentence) {
+				continue;
 			}
 
-			const mutations = observer.getMutations();
+			variant.setVariantSentence(variantSentence);
+
+			let mutations = observer.getMutations();
+
+			if (mutations.length == 0) {
+				mutations = observer.getRecords();
+			}
 
 			if (mutations.length > 0) {
-				const mutationSentences = this.featureUtil.createMutationVariantSentences(
-					uiElement,
-					mutations
-				);
+				for (let mutation of mutations) {
+					const mutationSentence = this.featureUtil.createMutationVariantSentence(
+						mutation
+					);
 
-				for (let sentence of mutationSentences) {
-					variant.setVariantSentence(sentence);
+					if (!mutationSentence) {
+						continue;
+					}
+
+					variant.setVariantSentence(mutationSentence);
+
+					if (
+						mutationSentence.action === VariantSentenceActions.APPEND ||
+						mutationSentence.action === VariantSentenceActions.SEE
+					) {
+						const isValidInteractableElement = this.checkValidInteractableElement(
+							mutation.target as HTMLElement
+						);
+
+						if (isValidInteractableElement) {
+							interactableElements.push(mutation.target);
+						}
+					}
 				}
 
 				observer.resetMutations();
@@ -105,26 +115,60 @@ export class VariantGenerator {
 		return variant;
 	}
 
+	private checkValidInteractableElement(elm: HTMLElement) {
+		if (
+			!(elm instanceof HTMLInputElement) &&
+			!(elm instanceof HTMLSelectElement) &&
+			!(elm instanceof HTMLTextAreaElement) &&
+			!(elm instanceof HTMLButtonElement)
+		) {
+			return false;
+		}
+
+		if (
+			elm.disabled ||
+			elm.hidden ||
+			elm.style.display === 'none' ||
+			elm.style.visibility === 'hidden'
+		) {
+			return false;
+		}
+
+		if (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement) {
+			if (elm.readOnly) {
+				return false;
+			}
+
+			if (elm instanceof HTMLInputElement && elm.type === 'hidden') {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private getInteractableElements(element: HTMLElement): ChildNode[] {
-		return Array.from(element.querySelectorAll('input, select, textarea, button'));
+		// valid types for interactive elements
+		let elements = Array.from(element.querySelectorAll('input, select, textarea, button'));
+
+		let interactableElements = elements.filter((elm) =>
+			this.checkValidInteractableElement(elm as HTMLElement)
+		);
+
+		return interactableElements;
 	}
 
 	private getInteractableElementsIgnoringForm(element): ChildNode[] {
 		let interactableElements: ChildNode[] = [];
 
-		for (let el of element.childNodes) {
-			if (el.nodeName !== HTMLNodeTypes.FORM) {
-				if (
-					el.nodeName === HTMLNodeTypes.INPUT ||
-					el.nodeName === HTMLNodeTypes.SELECT ||
-					el.nodeName === HTMLNodeTypes.TEXTAREA ||
-					el.nodeName === HTMLNodeTypes.BUTTON
-				) {
-					interactableElements.push(el);
+		for (let elm of element.childNodes) {
+			if (elm.nodeName !== HTMLNodeTypes.FORM) {
+				if (this.checkValidInteractableElement(elm)) {
+					interactableElements.push(elm);
 				}
 
-				if (el.childNodes.length !== 0) {
-					this.getInteractableElementsIgnoringForm(el);
+				if (elm.childNodes.length !== 0) {
+					this.getInteractableElementsIgnoringForm(elm);
 				}
 			}
 		}

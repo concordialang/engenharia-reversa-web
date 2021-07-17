@@ -101,52 +101,53 @@ export class Crawler {
 		return null;
 	}
 
-	private async getAnalysisContextFromDiffPages(previousHTML: string): Promise<HTMLElement> {
-		const previousDoc: Document = document.implementation.createHTMLDocument();
-		previousDoc.body.innerHTML = previousHTML;
+	// TODO - VERIFICAR E REMOVER
+	// private async getAnalysisContextFromDiffPages(previousHTML: string): Promise<HTMLElement> {
+	// 	const previousDoc: Document = document.implementation.createHTMLDocument();
+	// 	previousDoc.body.innerHTML = previousHTML;
 
-		const diffDomManager: DiffDomManager = new DiffDomManager(
-			previousDoc.body,
-			this.browserContext.getDocument().body
-		);
+	// 	const diffDomManager: DiffDomManager = new DiffDomManager(
+	// 		previousDoc.body,
+	// 		this.browserContext.getDocument().body
+	// 	);
 
-		const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
-		const xpathResult: XPathResult | null =
-			xPathParentElementDiff !== null
-				? this.browserContext
-						.getDocument()
-						.evaluate(
-							xPathParentElementDiff,
-							this.browserContext.getDocument(),
-							null,
-							XPathResult.FIRST_ORDERED_NODE_TYPE,
-							null
-						)
-				: null;
+	// 	const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+	// 	const xpathResult: XPathResult | null =
+	// 		xPathParentElementDiff !== null
+	// 			? this.browserContext
+	// 					.getDocument()
+	// 					.evaluate(
+	// 						xPathParentElementDiff,
+	// 						this.browserContext.getDocument(),
+	// 						null,
+	// 						XPathResult.FIRST_ORDERED_NODE_TYPE,
+	// 						null
+	// 					)
+	// 			: null;
 
-		return xpathResult !== null && xpathResult.singleNodeValue !== null
-			? (xpathResult.singleNodeValue as HTMLElement)
-			: this.browserContext.getDocument().body;
-	}
+	// 	return xpathResult !== null && xpathResult.singleNodeValue !== null
+	// 		? (xpathResult.singleNodeValue as HTMLElement)
+	// 		: this.browserContext.getDocument().body;
+	// }
 
-	private async getAnalysisElementFromCommonAcestor(
-		analysisContext: HTMLElement
-	): Promise<HTMLElement> {
-		let ancestorElement: HTMLElement | null = null;
+	// private async getAnalysisElementFromCommonAcestor(
+	// 	analysisContext: HTMLElement
+	// ): Promise<HTMLElement> {
+	// 	let ancestorElement: HTMLElement | null = null;
 
-		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
+	// 	const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
 
-		if (featureTags.length >= 1) {
-			ancestorElement = commonAncestorElement(Array.from(featureTags));
-		} else if (featureTags.length == 0) {
-			const inputFieldTags = analysisContext.querySelectorAll(
-				'input, select, textarea, button'
-			);
-			ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
-		}
+	// 	if (featureTags.length >= 1) {
+	// 		ancestorElement = commonAncestorElement(Array.from(featureTags));
+	// 	} else if (featureTags.length == 0) {
+	// 		const inputFieldTags = analysisContext.querySelectorAll(
+	// 			'input, select, textarea, button'
+	// 		);
+	// 		ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
+	// 	}
 
-		return ancestorElement ? ancestorElement : this.browserContext.getDocument().body;
-	}
+	// 	return ancestorElement ? ancestorElement : this.browserContext.getDocument().body;
+	// }
 
 	public async analyse(contextElement: HTMLElement): Promise<Variant | null> {
 		let xPath = getPathTo(contextElement);
@@ -157,6 +158,7 @@ export class Crawler {
 			);
 
 			if (!analyzedContext) {
+				// TODO - VERIFICAR E REMOVER
 				const variantsOutsideForm = await this.analyseFeatureElements(contextElement);
 
 				const _this = this;
@@ -192,6 +194,7 @@ export class Crawler {
 		return null;
 	}
 
+	// TODO - VERIFICAR
 	private async analyseFeatureElements(contextElement: HTMLElement): Promise<Variant[]> {
 		const variants: Variant[] = [];
 

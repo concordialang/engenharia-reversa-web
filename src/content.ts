@@ -20,8 +20,6 @@ import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerator';
 import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
-import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
-import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');

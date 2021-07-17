@@ -12,10 +12,10 @@ function formatName(name: string): string {
 
 const DEFAULT_MAX_LENGTH = 524288;
 
+type DataEntryFields = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
 export class UIElementGenerator {
-	public createUIElement(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-	): UIElement {
+	public createUIElement(elm: DataEntryFields): UIElement {
 		let uiElm = new UIElement();
 
 		// id
@@ -39,6 +39,7 @@ export class UIElementGenerator {
 		// editabled
 		let editabled =
 			elm.disabled || (elm instanceof HTMLInputElement && elm.readOnly) ? false : true;
+
 		uiElm.setProperty(new UIProperty('editabled', editabled));
 
 		// value
@@ -87,18 +88,14 @@ export class UIElementGenerator {
 		// name
 		uiElm.setName(this.generateNameForButton(elm, uiElm.getId()));
 
-		// type and dataType
+		// type
 		let type = elm.type ? elm.type : 'button';
-
 		uiElm.setProperty(new UIProperty('type', type));
 
 		return uiElm;
 	}
 
-	private generateName(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-		idUiElm: string
-	): string {
+	private generateName(elm: DataEntryFields, idUiElm: string): string {
 		let name: string = '';
 
 		if (elm.name) {
