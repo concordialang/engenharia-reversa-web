@@ -3,6 +3,7 @@ import { VariantSentence } from './VariantSentence';
 export class Variant {
 	private name!: string;
 	private sentences!: Array<VariantSentence>;
+	public last!: boolean;
 
 	constructor() {
 		this.sentences = [];

@@ -1,11 +1,11 @@
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
-import { ElementInteractionExecutor } from './ElementInteractionExecutor';
-import { ElementInteractionGenerator } from './ElementInteractionGenerator';
-import { ElementInteraction } from './ElementInteraction';
-import { Variant } from '../spec-analyser/Variant';
-import { FeatureUtil } from '../spec-analyser/FeatureUtil';
-import { UIElement } from '../spec-analyser/UIElement';
+import { ElementInteractionExecutor } from '../crawler/ElementInteractionExecutor';
+import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenerator';
+import { ElementInteraction } from '../crawler/ElementInteraction';
+import { Variant } from './Variant';
+import { FeatureUtil } from './FeatureUtil';
+import { UIElement } from './UIElement';
 import { VariantSentenceActions } from '../types/VariantSentenceActions';
 
 export class VariantGenerator {
@@ -16,20 +16,41 @@ export class VariantGenerator {
 	) {}
 
 	public async generate(
-		contextElement: HTMLElement,
+		analyzedElement: HTMLElement,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		ignoreFormElements: boolean = false
-	): Promise<Variant | null> {
+	): Promise<Variant[]> {
 		let interactableElements: any[] = ignoreFormElements
-			? this.getInteractableElementsIgnoringForm(contextElement)
-			: this.getInteractableElements(contextElement);
+			? this.getInteractableElementsIgnoringForm(analyzedElement)
+			: this.getInteractableElements(analyzedElement);
 
+		let variants: Variant[] = [];
 		if (interactableElements.length <= 0) {
-			return null;
+			let observer = new MutationObserverManager(analyzedElement);
+
+			let variant: Variant | null;
+			do {
+				variant = await this.generateVariant(
+					interactableElements,
+					observer,
+					redirectionCallback
+				);
+				if (variant) {
+					variants.push(variant);
+				}
+			} while (variant && !variant.last);
+
+			observer.disconnect();
 		}
 
-		let observer = new MutationObserverManager(contextElement);
+		return variants;
+	}
 
+	public async generateVariant(
+		interactableElements: any[],
+		observer: MutationObserverManager,
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
+	): Promise<Variant | null> {
 		const variant = this.featureUtil.createVariant();
 
 		for (const element of interactableElements) {
@@ -107,8 +128,6 @@ export class VariantGenerator {
 				observer.resetMutations();
 			}
 		}
-
-		observer.disconnect();
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 

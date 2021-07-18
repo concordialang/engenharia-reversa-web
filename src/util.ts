@@ -2,33 +2,6 @@ export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
-// FIXME passar a variável document como argumento
-export function getPathTo(element: HTMLElement): string | null {
-	if (element.id !== '') {
-		return 'id("' + element.id + '")';
-	}
-	if (element === document.body) {
-		return element.tagName;
-	}
-	let ix = 0;
-	const parentNode = element.parentNode;
-	if (parentNode) {
-		var siblings = parentNode.childNodes;
-		for (let i = 0; i < siblings.length; i++) {
-			const sibling = <HTMLElement>siblings[i];
-			if (sibling === element) {
-				return getPathTo(<HTMLElement>parentNode) + '/' + element.tagName + '[' + ix + ']';
-			}
-			// TODO: Refactor - o que significa 1 ???
-			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-				ix++;
-			}
-		}
-	}
-	return null;
-}
-
 export function getEnumKeyByEnumValue(myEnum, enumValue) {
 	let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
 	return keys.length > 0 ? myEnum[keys[0]] : null;

@@ -1,4 +1,5 @@
 import { Spec } from './spec-analyser/Spec';
+import { FeatureManager } from './spec-analyser/FeatureManager';
 import { AppEvent } from './comm/AppEvent';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { Command } from './comm/Command';
@@ -10,7 +11,7 @@ import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
-import { VariantGenerator } from './crawler/VariantGenerator';
+import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
@@ -58,21 +59,21 @@ const elementInteractionGenerator = new ElementInteractionGenerator(browserConte
 
 const featureUtil = new FeatureUtil();
 
-const variantGenerator: VariantGenerator = new VariantGenerator(
+const variantGenerator = new VariantGenerator(
 	elementInteractionExecutor,
 	elementInteractionGenerator,
 	featureUtil
 );
 
-const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage);
+const featureManager = new FeatureManager(variantGenerator, featureUtil, analyzedElementStorage);
+
+const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
 
 const crawler: Crawler = new Crawler(
 	browserContext,
-	variantGenerator,
 	pageStorage,
 	elementInteractionGraph,
 	visitedURLGraph,
-	analyzedElementStorage,
 	pageAnalyzer
 );
 

@@ -34,4 +34,8 @@ export class Feature {
 	public addScenario(scenario: Scenario): void {
 		this.scenarios.push(scenario);
 	}
+
+	public getScenarios(): Array<Scenario> {
+		return this.scenarios;
+	}
 }

@@ -49,9 +49,10 @@ export class FeatureUtil {
 		return uiElement;
 	}
 
-	createVariant(): Variant {
+	createVariant(variantName = ''): Variant {
 		const variant = new Variant();
-		variant.setName('General Variant');
+		let name = variantName !== '' ? variantName : 'General Variant';
+		variant.setName(name);
 
 		return variant;
 	}

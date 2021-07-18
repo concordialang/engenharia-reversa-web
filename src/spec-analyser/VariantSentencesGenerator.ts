@@ -32,7 +32,13 @@ export class VariantSentencesGenerator {
 				break;
 		}
 
-		return new VariantSentence(VariantSentenceType.WHEN, action, ['{' + target + '}']);
+		return new VariantSentence(
+			VariantSentenceType.WHEN,
+			action,
+			['{' + target + '}'],
+			undefined,
+			uiElment
+		);
 	}
 
 	public generateVariantSentenceFromMutations(mutation): VariantSentence | null {
