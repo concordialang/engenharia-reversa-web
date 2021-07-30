@@ -24,4 +24,8 @@ export class Spec {
 	public getFeatures() {
 		return this.features;
 	}
+
+	public featureCount() {
+		return this.features.length;
+	}
 }

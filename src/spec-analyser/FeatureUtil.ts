@@ -8,18 +8,28 @@ import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from './Spec';
 
+function formatName(name: string): string {
+	name = name.replace(':', '');
+	name = name.charAt(0).toUpperCase() + name.slice(1);
+	return name;
+}
+
 export class FeatureUtil {
 	private uiElementGenerator: UIElementGenerator = new UIElementGenerator();
 	private variantSentencesGenerator: VariantSentencesGenerator = new VariantSentencesGenerator();
 
-	createFeatureFromElement(f: HTMLElement): Feature {
-		const title: HTMLElement | null = this.titleBeforeElemente(f);
+	createFeatureFromElement(f: HTMLElement, featureCount: number): Feature {
+		const title: HTMLElement | null = this.titleBeforeElement(f);
+
+		let featureName: string;
+		if (title) {
+			featureName = title.innerHTML;
+		} else {
+			featureName = f.id ? formatName(f.id) : this.generateDefaultFeatureName(featureCount);
+		}
 
 		const feature = new Feature();
-
-		if (title) {
-			feature.setName(title.innerHTML);
-		}
+		feature.setName(featureName);
 
 		return feature;
 	}
@@ -65,7 +75,7 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.generateVariantSentenceFromMutations(mutation);
 	}
 
-	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {
+	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
 		if (
 			f.previousElementSibling?.nodeName === HTMLNodeTypes.H1 ||
 			f.previousElementSibling?.nodeName === HTMLNodeTypes.H2 ||
@@ -78,8 +88,7 @@ export class FeatureUtil {
 		return null;
 	}
 
-	//TODO
-	private generateFeatureName(featureCount: number, language: string): string {
+	private generateDefaultFeatureName(featureCount: number, language?: string): string {
 		const id = 1 + featureCount;
 		switch (language) {
 			case 'pt-br':

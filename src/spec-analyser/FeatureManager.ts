@@ -3,13 +3,15 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
+import { Spec } from './Spec';
 import { VariantGenerator } from './VariantGenerator';
 
 export class FeatureManager {
 	constructor(
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
-		private analyzedElementStorage: AnalyzedElementStorage
+		private analyzedElementStorage: AnalyzedElementStorage,
+		private spec: Spec
 	) {}
 
 	redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
@@ -22,14 +24,19 @@ export class FeatureManager {
 
 	public async generateFeature(
 		analysisElement: HTMLElement,
-		ignoreFormElements: boolean = false
+		url: URL,
+		ignoreElementsInsideFeatureTags: boolean = false
 	): Promise<Feature | null> {
-		const feature = this.featureUtil.createFeatureFromElement(analysisElement);
+		const feature = this.featureUtil.createFeatureFromElement(
+			analysisElement,
+			this.spec.featureCount()
+		);
 		const scenario = this.featureUtil.createScenario(feature);
 		const variants = await this.variantGenerator.generate(
 			analysisElement,
-			this.redirectionCallback,
-			ignoreFormElements
+			url,
+			ignoreElementsInsideFeatureTags,
+			this.redirectionCallback
 		);
 
 		if (variants.length == 0) {

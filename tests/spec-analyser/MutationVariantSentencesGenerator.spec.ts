@@ -2,7 +2,6 @@ import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { MutationObserverManager } from '../../src/mutation-observer/MutationObserverManager';
 import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
 import { VariantSentenceType } from '../../src/types/VariantSentenceType';
-import { UIElement } from '../../src/spec-analyser/UIElement';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import clearElement from '../../src/util';
 

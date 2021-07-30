@@ -62,10 +62,16 @@ const featureUtil = new FeatureUtil();
 const variantGenerator = new VariantGenerator(
 	elementInteractionExecutor,
 	elementInteractionGenerator,
-	featureUtil
+	featureUtil,
+	analyzedElementStorage
 );
 
-const featureManager = new FeatureManager(variantGenerator, featureUtil, analyzedElementStorage);
+const featureManager = new FeatureManager(
+	variantGenerator,
+	featureUtil,
+	analyzedElementStorage,
+	spec
+);
 
 const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
 

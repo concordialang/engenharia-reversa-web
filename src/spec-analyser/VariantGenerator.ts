@@ -6,57 +6,74 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { UIElement } from './UIElement';
-import { VariantSentenceActions } from '../types/VariantSentenceActions';
+import { AnalyzedElement } from '../crawler/AnalyzedElement';
+import getXPath from 'get-xpath';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGenerator: ElementInteractionGenerator,
-		private featureUtil: FeatureUtil
+		private featureUtil: FeatureUtil,
+		private analyzedElementStorage
 	) {}
 
 	public async generate(
-		analyzedElement: HTMLElement,
-		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
-		ignoreFormElements: boolean = false
+		analysisElement: HTMLElement,
+		url: URL,
+		ignoreElementsInsideFeatureTags: boolean = false,
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant[]> {
-		let interactableElements: any[] = ignoreFormElements
-			? this.getInteractableElementsIgnoringForm(analyzedElement)
-			: this.getInteractableElements(analyzedElement);
-
+		let observer = new MutationObserverManager(analysisElement);
 		let variants: Variant[] = [];
-		if (interactableElements.length <= 0) {
-			let observer = new MutationObserverManager(analyzedElement);
+		let variant: Variant | null;
 
-			let variant: Variant | null;
-			do {
-				variant = await this.generateVariant(
-					interactableElements,
-					observer,
-					redirectionCallback
-				);
-				if (variant) {
-					variants.push(variant);
-				}
-			} while (variant && !variant.last);
+		do {
+			variant = await this.generateVariant(
+				analysisElement,
+				url,
+				observer,
+				ignoreElementsInsideFeatureTags,
+				redirectionCallback
+			);
 
-			observer.disconnect();
-		}
+			if (variant && variant.getSentences().length > 0) {
+				variants.push(variant);
+			}
+		} while (variant && !variant.last);
+
+		observer.disconnect();
 
 		return variants;
 	}
 
 	public async generateVariant(
-		interactableElements: any[],
+		analysisElement: HTMLElement,
+		url: URL,
 		observer: MutationObserverManager,
+		ignoreElementsInsideFeatureTags: boolean,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
 		const variant = this.featureUtil.createVariant();
 
-		for (const element of interactableElements) {
-			const interaction = this.elementInteractionGenerator.generate(element as HTMLElement);
+		while (true) {
+			let element = await this.getNextInteractableElement(
+				analysisElement,
+				ignoreElementsInsideFeatureTags,
+				url
+			);
+			if (!element) {
+				break;
+			}
 
+			let validInteractableNode = this.checkValidInteractableElement(element as HTMLElement);
+			if (!validInteractableNode) {
+				await this.setAnalyzedElement(element, url);
+				continue;
+			}
+
+			const interaction = this.elementInteractionGenerator.generate(element as HTMLElement);
 			if (!interaction) {
+				await this.setAnalyzedElement(element, url);
 				continue;
 			}
 
@@ -82,12 +99,13 @@ export class VariantGenerator {
 			}
 
 			if (!uiElement) {
+				await this.setAnalyzedElement(element, url);
 				continue;
 			}
 
 			const variantSentence = this.featureUtil.createVariantSentence(uiElement);
-
 			if (!variantSentence) {
+				await this.setAnalyzedElement(element, url);
 				continue;
 			}
 
@@ -110,28 +128,23 @@ export class VariantGenerator {
 					}
 
 					variant.setVariantSentence(mutationSentence);
-
-					if (
-						mutationSentence.action === VariantSentenceActions.APPEND ||
-						mutationSentence.action === VariantSentenceActions.SEE
-					) {
-						const isValidInteractableElement = this.checkValidInteractableElement(
-							mutation.target as HTMLElement
-						);
-
-						if (isValidInteractableElement) {
-							interactableElements.push(mutation.target);
-						}
-					}
 				}
 
 				observer.resetMutations();
 			}
+
+			await this.setAnalyzedElement(element, url);
 		}
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
+		variant.last = true;
 		return variant;
+	}
+
+	private async setAnalyzedElement(elm: Element, url: URL) {
+		const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
+		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 	}
 
 	private checkValidInteractableElement(elm: HTMLElement) {
@@ -166,7 +179,45 @@ export class VariantGenerator {
 		return true;
 	}
 
-	private getInteractableElements(element: HTMLElement): ChildNode[] {
+	private async getNextInteractableElement(
+		analyzedElement: HTMLElement,
+		ignoreElementsInsideFeatureTags: boolean,
+		url
+	): Promise<Element | undefined> {
+		let interactableElements: Element[] = ignoreElementsInsideFeatureTags
+			? this.getInteractableElementsIgnoringFeatureTags(analyzedElement)
+			: this.getAllInteractableElements(analyzedElement);
+
+		interactableElements = Array.from(interactableElements);
+
+		let nexElm;
+
+		for (let elm of interactableElements) {
+			const xPathElement = getXPath(elm);
+			const isAnalyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+				xPathElement,
+				url
+			);
+
+			if (!isAnalyzedElement) {
+				nexElm = elm;
+				break;
+			}
+		}
+		// let nexElm = interactableElements.find(async (elm) => {
+		// 	let xPathElement = getXPath(elm);
+		// 	const isAnalyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+		// 		xPathElement,
+		// 		url
+		// 	);
+
+		// 	return !isAnalyzedElement;
+		// });
+
+		return nexElm;
+	}
+
+	private getAllInteractableElements(element: HTMLElement): Element[] {
 		// valid types for interactive elements
 		let elements = Array.from(element.querySelectorAll('input, select, textarea, button'));
 
@@ -177,17 +228,17 @@ export class VariantGenerator {
 		return interactableElements;
 	}
 
-	private getInteractableElementsIgnoringForm(element): ChildNode[] {
-		let interactableElements: ChildNode[] = [];
+	private getInteractableElementsIgnoringFeatureTags(element): Element[] {
+		let interactableElements: HTMLElement[] = [];
 
 		for (let elm of element.childNodes) {
-			if (elm.nodeName !== HTMLNodeTypes.FORM) {
+			if (elm.nodeName !== HTMLNodeTypes.FORM && elm.nodeName !== HTMLNodeTypes.TABLE) {
 				if (this.checkValidInteractableElement(elm)) {
 					interactableElements.push(elm);
 				}
 
 				if (elm.childNodes.length !== 0) {
-					this.getInteractableElementsIgnoringForm(elm);
+					this.getInteractableElementsIgnoringFeatureTags(elm);
 				}
 			}
 		}

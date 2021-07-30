@@ -1,7 +1,6 @@
 import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from '../spec-analyser/Spec';
-import { Variant } from '../spec-analyser/Variant';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { commonAncestorElement, getFeatureElements } from '../util';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
@@ -26,15 +25,15 @@ export class PageAnalyzer {
 		}
 	}
 
-	public async analyseElement(url: URL, analysisElement: HTMLElement): Promise<Variant | null> {
+	public async analyseElement(url: URL, analysisElement: HTMLElement): Promise<void> {
 		let xPath = getXPath(analysisElement);
 		if (xPath) {
-			const isContextAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			const isElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
 				url
 			);
 
-			if (!isContextAnalyzed) {
+			if (!isElementAnalyzed) {
 				let features: Feature[] = await this.analyseFeatureElements(url, analysisElement);
 
 				if (
@@ -44,6 +43,7 @@ export class PageAnalyzer {
 					// generate feature for elements outside feature elements
 					const featureOuterElements = await this.featureManager.generateFeature(
 						analysisElement,
+						url,
 						true
 					);
 
@@ -57,8 +57,6 @@ export class PageAnalyzer {
 				}
 			}
 		}
-
-		return null;
 	}
 
 	private async analyseFeatureElements(
@@ -67,11 +65,12 @@ export class PageAnalyzer {
 	): Promise<Feature[]> {
 		const features: Feature[] = [];
 
+		// case analysisElement is directly a feature element
 		if (
 			analysisElement.nodeName === HTMLNodeTypes.FORM ||
 			analysisElement.nodeName === HTMLNodeTypes.TABLE
 		) {
-			const feature = await this.featureManager.generateFeature(analysisElement);
+			const feature = await this.featureManager.generateFeature(analysisElement, url);
 
 			if (feature) {
 				features.push(feature);
@@ -91,7 +90,8 @@ export class PageAnalyzer {
 
 				if (!analyzedElement) {
 					const feature = await this.featureManager.generateFeature(
-						featureTag as HTMLElement
+						featureTag as HTMLElement,
+						url
 					);
 					if (feature) {
 						features.push(feature);
