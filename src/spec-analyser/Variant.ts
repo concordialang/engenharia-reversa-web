@@ -21,6 +21,12 @@ export class Variant {
 		this.sentences.push(variantSentence);
 	}
 
+	public setVariantsSentences(variantsSentences: VariantSentence[]) {
+		if (variantsSentences.length > 0) {
+			this.sentences = this.sentences.concat(variantsSentences);
+		}
+	}
+
 	public getVariant() {
 		return this.sentences;
 	}

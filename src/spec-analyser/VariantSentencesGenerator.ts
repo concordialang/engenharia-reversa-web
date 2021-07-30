@@ -3,6 +3,7 @@ import { VariantSentence } from './VariantSentence';
 import { EditableTypes } from '../types/EditableTypes';
 import { VariantSentenceActions } from '../types/VariantSentenceActions';
 import { VariantSentenceType } from '../types/VariantSentenceType';
+import getXPath from 'get-xpath';
 
 export class VariantSentencesGenerator {
 	public generateVariantSentenceFromUIElement(uiElment: UIElement): VariantSentence | null {
@@ -61,6 +62,7 @@ export class VariantSentencesGenerator {
 		let sentence: VariantSentence | null = null;
 
 		let property = mutation.target.style[0];
+		let xPathNode = getXPath(mutation.target);
 
 		if (property === 'display') {
 			let value = mutation.target.style.display;
@@ -69,14 +71,14 @@ export class VariantSentencesGenerator {
 				sentence = new VariantSentence(
 					VariantSentenceType.AND,
 					VariantSentenceActions.NOTSEE,
-					['{' + mutation.target.id + '}'],
+					['{' + xPathNode + '}'],
 					[{ property: property, value: value }]
 				);
 			} else if (value === 'block' || value === 'inline-block' || value === 'inline') {
 				sentence = new VariantSentence(
 					VariantSentenceType.AND,
 					VariantSentenceActions.SEE,
-					['{' + mutation.target.id + '}'],
+					['{' + xPathNode + '}'],
 					[{ property: property, value: value }]
 				);
 			}
@@ -93,22 +95,24 @@ export class VariantSentencesGenerator {
 
 		if (addedNodes.length > 0) {
 			const node: any = addedNodes[0];
+			let xPathNode = getXPath(node);
 
 			if (node) {
 				sentence = new VariantSentence(
 					VariantSentenceType.AND,
 					VariantSentenceActions.APPEND,
-					['{' + node.id + '}']
+					['{' + xPathNode + '}']
 				);
 			}
 		} else if (removedNodes.length > 0) {
 			const node: any = removedNodes[0];
+			let xPathNode = getXPath(node);
 
 			if (node) {
 				sentence = new VariantSentence(
 					VariantSentenceType.AND,
 					VariantSentenceActions.REMOVE,
-					['{' + node.id + '}']
+					['{' + xPathNode + '}']
 				);
 			}
 		}
@@ -120,6 +124,7 @@ export class VariantSentencesGenerator {
 		let sentence: VariantSentence | null = null;
 
 		let node = mutation.target;
+		let xPathNode = getXPath(mutation.target);
 
 		if (!node || !node.value) {
 			return sentence;
@@ -129,7 +134,7 @@ export class VariantSentencesGenerator {
 			sentence = new VariantSentence(
 				VariantSentenceType.AND,
 				VariantSentenceActions.FILL,
-				['{' + node.id + '}'],
+				['{' + xPathNode + '}'],
 				[{ property: 'value', value: node.value }]
 			);
 		}
@@ -138,7 +143,7 @@ export class VariantSentencesGenerator {
 			sentence = new VariantSentence(
 				VariantSentenceType.AND,
 				VariantSentenceActions.SELECT,
-				['{' + node.id + '}'],
+				['{' + xPathNode + '}'],
 				[{ property: 'value', value: node.value }]
 			);
 		}

@@ -8,13 +8,15 @@ import { FeatureUtil } from './FeatureUtil';
 import { UIElement } from './UIElement';
 import { AnalyzedElement } from '../crawler/AnalyzedElement';
 import getXPath from 'get-xpath';
+import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
+import { VariantSentence } from './VariantSentence';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private featureUtil: FeatureUtil,
-		private analyzedElementStorage
+		private analyzedElementStorage: AnalyzedElementStorage
 	) {}
 
 	public async generate(
@@ -65,12 +67,6 @@ export class VariantGenerator {
 				break;
 			}
 
-			let validInteractableNode = this.checkValidInteractableElement(element as HTMLElement);
-			if (!validInteractableNode) {
-				await this.setAnalyzedElement(element, url);
-				continue;
-			}
-
 			const interaction = this.elementInteractionGenerator.generate(element as HTMLElement);
 			if (!interaction) {
 				await this.setAnalyzedElement(element, url);
@@ -82,7 +78,6 @@ export class VariantGenerator {
 				redirectionCallback,
 				true
 			);
-
 			if (result && result.getTriggeredRedirection()) {
 				return variant;
 			}
@@ -97,7 +92,6 @@ export class VariantGenerator {
 			) {
 				uiElement = this.featureUtil.createUiElment(element);
 			}
-
 			if (!uiElement) {
 				await this.setAnalyzedElement(element, url);
 				continue;
@@ -111,25 +105,15 @@ export class VariantGenerator {
 
 			variant.setVariantSentence(variantSentence);
 
-			let mutations = observer.getMutations();
+			let mutations: MutationRecord[] = observer.getMutations();
 
 			if (mutations.length == 0) {
 				mutations = observer.getRecords();
 			}
 
 			if (mutations.length > 0) {
-				for (let mutation of mutations) {
-					const mutationSentence = this.featureUtil.createMutationVariantSentence(
-						mutation
-					);
-
-					if (!mutationSentence) {
-						continue;
-					}
-
-					variant.setVariantSentence(mutationSentence);
-				}
-
+				const mutationVariantSentences = this.treatMutationsSentences(mutations);
+				variant.setVariantsSentences(mutationVariantSentences);
 				observer.resetMutations();
 			}
 
@@ -191,7 +175,6 @@ export class VariantGenerator {
 		interactableElements = Array.from(interactableElements);
 
 		let nexElm;
-
 		for (let elm of interactableElements) {
 			const xPathElement = getXPath(elm);
 			const isAnalyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
@@ -204,15 +187,6 @@ export class VariantGenerator {
 				break;
 			}
 		}
-		// let nexElm = interactableElements.find(async (elm) => {
-		// 	let xPathElement = getXPath(elm);
-		// 	const isAnalyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
-		// 		xPathElement,
-		// 		url
-		// 	);
-
-		// 	return !isAnalyzedElement;
-		// });
 
 		return nexElm;
 	}
@@ -244,5 +218,20 @@ export class VariantGenerator {
 		}
 
 		return interactableElements;
+	}
+
+	private treatMutationsSentences(mutations: MutationRecord[]): VariantSentence[] {
+		let mutationSentences: VariantSentence[] = [];
+		for (let mutation of mutations) {
+			const mutationSentence = this.featureUtil.createMutationVariantSentence(mutation);
+
+			if (!mutationSentence) {
+				continue;
+			}
+
+			mutationSentences.push(mutationSentence);
+		}
+
+		return mutationSentences;
 	}
 }
