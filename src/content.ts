@@ -21,6 +21,8 @@ import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerator';
 import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
+import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 
 const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -57,7 +59,9 @@ const pageUrl: URL = new URL(window.location.href);
 const browserContext = new BrowserContext(document, pageUrl, window);
 const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
-const featureUtil = new FeatureUtil();
+const uiElementGenerator = new UIElementGenerator();
+const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 const variantGenerator = new VariantGenerator(
 	elementInteractionExecutor,

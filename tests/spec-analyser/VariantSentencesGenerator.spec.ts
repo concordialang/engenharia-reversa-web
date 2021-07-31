@@ -1,4 +1,5 @@
 import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
+import { UIElement } from '../../src/spec-analyser/UIElement';
 import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
 import { VariantSentenceType } from '../../src/types/VariantSentenceType';
 import clearElement from '../../src/util';
@@ -17,23 +18,21 @@ describe('VariantSentencesGenerator', () => {
             </div>`;
 
 		let input = document.querySelector('input');
-
-		const uiElm: any = featureutil.createUiElment(input as HTMLInputElement);
-
-		if (!uiElm) {
-			throw new Error('UiElm is empty');
+		if (!input) {
+			throw new Error('input is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(uiElm);
-
+		const variantSentence: any = featureutil.createVariantSentence(input);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.FILL);
 		expect(variantSentence.targets).toHaveLength(1);
-		expect(variantSentence.targets[0]).toBe('{Input}');
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
+		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
+		expect(variantSentence.uiElement.getName()).toBe('Input');
+		let teste = 1;
 	});
 
 	it('generate variant setence for textarea', () => {
@@ -43,23 +42,20 @@ describe('VariantSentencesGenerator', () => {
             </div>`;
 
 		let textArea = document.querySelector('textarea');
-
-		const uiElm: any = featureutil.createUiElment(textArea as HTMLTextAreaElement);
-
-		if (!uiElm) {
-			throw new Error('UiElm is empty');
+		if (!textArea) {
+			throw new Error('text area is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(uiElm);
-
+		const variantSentence: any = featureutil.createVariantSentence(textArea);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.FILL);
 		expect(variantSentence.targets).toHaveLength(1);
-		expect(variantSentence.targets[0]).toBe('{TextArea}');
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
+		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
+		expect(variantSentence.uiElement.getName()).toBe('TextArea');
 	});
 
 	it('generate variant setence for select', () => {
@@ -73,22 +69,19 @@ describe('VariantSentencesGenerator', () => {
             </div>`;
 
 		let select = document.querySelector('select');
-
-		const uiElm: any = featureutil.createUiElment(select as HTMLSelectElement);
-
-		if (!uiElm) {
-			throw new Error('UiElm is empty');
+		if (!select) {
+			throw new Error('select is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(uiElm);
-
+		const variantSentence: any = featureutil.createVariantSentence(select);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.SELECT);
 		expect(variantSentence.targets).toHaveLength(1);
-		expect(variantSentence.targets[0]).toBe('{Select}');
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
+		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
+		expect(variantSentence.uiElement.getName()).toBe('Select');
 	});
 });

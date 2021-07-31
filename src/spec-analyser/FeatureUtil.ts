@@ -1,12 +1,9 @@
-import { UIElementGenerator } from './UIElementGenerator';
 import { VariantSentencesGenerator } from './VariantSentencesGenerator';
 import { Feature } from './Feature';
 import { Scenario } from './Scenario';
-import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-import { Spec } from './Spec';
 
 function formatName(name: string): string {
 	name = name.replace(':', '');
@@ -15,8 +12,7 @@ function formatName(name: string): string {
 }
 
 export class FeatureUtil {
-	private uiElementGenerator: UIElementGenerator = new UIElementGenerator();
-	private variantSentencesGenerator: VariantSentencesGenerator = new VariantSentencesGenerator();
+	constructor(private variantSentencesGenerator: VariantSentencesGenerator) {}
 
 	createFeatureFromElement(f: HTMLElement, featureCount: number): Feature {
 		const title: HTMLElement | null = this.titleBeforeElement(f);
@@ -41,24 +37,6 @@ export class FeatureUtil {
 		return scenario;
 	}
 
-	createUiElment(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement
-	): UIElement | null {
-		let uiElement: UIElement | null = null;
-
-		if (
-			elm instanceof HTMLButtonElement ||
-			(elm instanceof HTMLInputElement &&
-				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
-		) {
-			uiElement = this.uiElementGenerator.createUIElementForButton(elm);
-		} else {
-			uiElement = this.uiElementGenerator.createUIElement(elm);
-		}
-
-		return uiElement;
-	}
-
 	createVariant(variantName = ''): Variant {
 		const variant = new Variant();
 		let name = variantName !== '' ? variantName : 'General Variant';
@@ -67,12 +45,12 @@ export class FeatureUtil {
 		return variant;
 	}
 
-	createVariantSentence(uiElment: UIElement): VariantSentence | null {
-		return this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
+	createVariantSentence(element: HTMLElement): VariantSentence | null {
+		return this.variantSentencesGenerator.gerate(element);
 	}
 
-	createMutationVariantSentence(mutation: MutationRecord): VariantSentence | null {
-		return this.variantSentencesGenerator.generateVariantSentenceFromMutations(mutation);
+	createMutationVariantSentence(mutation: MutationRecord): VariantSentence[] | null {
+		return this.variantSentencesGenerator.gerateFromMutations(mutation);
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {

@@ -1,5 +1,4 @@
 import getXPath from 'get-xpath';
-
 import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
@@ -12,11 +11,34 @@ function formatName(name: string): string {
 
 const DEFAULT_MAX_LENGTH = 524288;
 
-type DataEntryFields = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-
 export class UIElementGenerator {
-	public createUIElement(elm: DataEntryFields): UIElement {
-		let uiElm = new UIElement();
+	public createFromElement(elm: HTMLElement): UIElement | null {
+		let uiElement: UIElement | null = null;
+
+		if (
+			!(elm instanceof HTMLInputElement) &&
+			!(elm instanceof HTMLSelectElement) &&
+			!(elm instanceof HTMLTextAreaElement) &&
+			!(elm instanceof HTMLButtonElement)
+		) {
+			return null;
+		}
+
+		if (
+			elm instanceof HTMLButtonElement ||
+			(elm instanceof HTMLInputElement &&
+				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
+		) {
+			uiElement = this.createFromButton(elm);
+		} else {
+			uiElement = this.create(elm);
+		}
+
+		return uiElement;
+	}
+
+	private create(elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): UIElement {
+		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
@@ -79,8 +101,8 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	public createUIElementForButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
-		let uiElm = new UIElement();
+	private createFromButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
+		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
@@ -95,7 +117,10 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private generateName(elm: DataEntryFields, idUiElm: string): string {
+	private generateName(
+		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+		idUiElm: string
+	): string {
 		let name: string = '';
 
 		if (elm.name) {

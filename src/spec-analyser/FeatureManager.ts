@@ -24,8 +24,7 @@ export class FeatureManager {
 
 	public async generateFeature(
 		analysisElement: HTMLElement,
-		url: URL,
-		ignoreElementsInsideFeatureTags: boolean = false
+		ignoreFeatureTags: boolean = false
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
@@ -34,8 +33,7 @@ export class FeatureManager {
 		const scenario = this.featureUtil.createScenario(feature);
 		const variants = await this.variantGenerator.generate(
 			analysisElement,
-			url,
-			ignoreElementsInsideFeatureTags,
+			ignoreFeatureTags,
 			this.redirectionCallback
 		);
 

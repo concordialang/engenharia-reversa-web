@@ -4,7 +4,7 @@ export class UIElement {
 	private name!: string;
 	private properties!: Array<UIProperty>;
 
-	constructor() {
+	constructor(private sourceElement: Element) {
 		this.name = '';
 		this.properties = new Array();
 	}
@@ -35,5 +35,9 @@ export class UIElement {
 
 	public getType() {
 		return this.properties.find((property) => property.getName() === 'type')?.getValue();
+	}
+
+	public getSourceElement() {
+		return this.sourceElement;
 	}
 }

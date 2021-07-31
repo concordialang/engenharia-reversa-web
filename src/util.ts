@@ -27,6 +27,11 @@ export function getElementByXpath(path: string, document: HTMLDocument): HTMLEle
 	}
 	return null;
 }
+
+export function getInteractableElements(element: HTMLElement) {
+	return Array.from(element.querySelectorAll('input, textarea, select, button'));
+}
+
 /**
  * Clear elements from the given element.
  *

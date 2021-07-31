@@ -133,8 +133,7 @@ describe('VariantGenerator', () => {
 	});
 
 	it('generate variants', () => {
-		let html = document.body;
-		const variants = variantGenerator.generate(document.body, url, false);
+		const variants = variantGenerator.generate(document.body, false);
 		expect(variants).toHaveLength(1);
 		expect(variants).toBeInstanceOf(Array);
 	});
