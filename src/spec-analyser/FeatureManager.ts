@@ -1,9 +1,11 @@
 import { AnalyzedElement } from '../crawler/AnalyzedElement';
 import { ElementInteraction } from '../crawler/ElementInteraction';
+import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Spec } from './Spec';
+import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 
 export class FeatureManager {
@@ -31,17 +33,24 @@ export class FeatureManager {
 			this.spec.featureCount()
 		);
 		const scenario = this.featureUtil.createScenario(feature);
-		const variants = await this.variantGenerator.generate(
-			analysisElement,
-			ignoreFeatureTags,
-			this.redirectionCallback
-		);
+		let observer: MutationObserverManager = new MutationObserverManager(analysisElement);
 
-		if (variants.length == 0) {
-			return null;
-		}
+		let variant: Variant | null;
+		do {
+			variant = await this.variantGenerator.generate(
+				analysisElement,
+				observer,
+				ignoreFeatureTags,
+				this.redirectionCallback
+			);
 
-		scenario.setVariants(variants);
+			if (variant && variant.getSentences().length > 0) {
+				scenario.addVariant(variant);
+			}
+		} while (variant && !variant.last);
+
+		observer.disconnect();
+
 		feature.addScenario(scenario);
 
 		return feature;

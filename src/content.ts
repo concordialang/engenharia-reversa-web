@@ -66,8 +66,7 @@ const featureUtil = new FeatureUtil(variantSentencesGenerator);
 const variantGenerator = new VariantGenerator(
 	elementInteractionExecutor,
 	elementInteractionGenerator,
-	featureUtil,
-	analyzedElementStorage
+	featureUtil
 );
 
 const featureManager = new FeatureManager(

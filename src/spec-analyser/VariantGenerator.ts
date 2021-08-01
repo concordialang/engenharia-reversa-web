@@ -5,48 +5,43 @@ import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenera
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
-import { UIElement } from './UIElement';
-import { AnalyzedElement } from '../crawler/AnalyzedElement';
-import getXPath from 'get-xpath';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { VariantSentence } from './VariantSentence';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGenerator: ElementInteractionGenerator,
-		private featureUtil: FeatureUtil,
-		private analyzedElementStorage: AnalyzedElementStorage
+		private featureUtil: FeatureUtil
 	) {}
 
+	// public async generate(
+	// 	analysisElement: HTMLElement,
+	// 	ignoreFeatureTags: boolean = false,
+	// 	redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
+	// ): Promise<Variant[]> {
+	// 	let observer = new MutationObserverManager(analysisElement);
+	// 	let variants: Variant[] = [];
+	// 	let variant: Variant | null;
+
+	// 	do {
+	// 		variant = await this.generateVariant(
+	// 			analysisElement,
+	// 			observer,
+	// 			ignoreFeatureTags,
+	// 			redirectionCallback
+	// 		);
+
+	// 		if (variant && variant.getSentences().length > 0) {
+	// 			variants.push(variant);
+	// 		}
+	// 	} while (variant && !variant.last);
+
+	// 	observer.disconnect();
+
+	// 	return variants;
+	// }
+
 	public async generate(
-		analysisElement: HTMLElement,
-		ignoreFeatureTags: boolean = false,
-		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
-	): Promise<Variant[]> {
-		let observer = new MutationObserverManager(analysisElement);
-		let variants: Variant[] = [];
-		let variant: Variant | null;
-
-		do {
-			variant = await this.generateVariant(
-				analysisElement,
-				observer,
-				ignoreFeatureTags,
-				redirectionCallback
-			);
-
-			if (variant && variant.getSentences().length > 0) {
-				variants.push(variant);
-			}
-		} while (variant && !variant.last);
-
-		observer.disconnect();
-
-		return variants;
-	}
-
-	public async generateVariant(
 		analysisElement: HTMLElement,
 		observer: MutationObserverManager,
 		ignoreFeatureTags: boolean,
