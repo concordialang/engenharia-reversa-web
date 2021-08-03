@@ -32,6 +32,12 @@ export function getInteractableElements(element: HTMLElement) {
 	return Array.from(element.querySelectorAll('input, textarea, select, button'));
 }
 
+export function formatToFirstCapitalLetter(txt: string): string {
+	txt = txt.replace(':', '');
+	txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+	return txt;
+}
+
 /**
  * Clear elements from the given element.
  *

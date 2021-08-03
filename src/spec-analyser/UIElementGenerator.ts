@@ -2,12 +2,7 @@ import getXPath from 'get-xpath';
 import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-
-function formatName(name: string): string {
-	name = name.replace(':', '');
-	name = name.charAt(0).toUpperCase() + name.slice(1);
-	return name;
-}
+import { formatToFirstCapitalLetter } from '../util';
 
 const DEFAULT_MAX_LENGTH = 524288;
 
@@ -124,7 +119,7 @@ export class UIElementGenerator {
 		let name: string = '';
 
 		if (elm.name) {
-			name = formatName(elm.name);
+			name = formatToFirstCapitalLetter(elm.name);
 		} else if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
 			name = this.generateNameFromPreviousLabel(elm);
 		} else if (
@@ -151,9 +146,9 @@ export class UIElementGenerator {
 		let name: string = '';
 
 		if (elm.name) {
-			name = formatName(elm.name);
+			name = formatToFirstCapitalLetter(elm.name);
 		} else if (elm instanceof HTMLButtonElement && elm.innerHTML) {
-			name = formatName(elm.innerHTML);
+			name = formatToFirstCapitalLetter(elm.innerHTML);
 		}
 
 		name = name ? name : 'Button' + idUiElm;
@@ -166,10 +161,10 @@ export class UIElementGenerator {
 		let name: string = '';
 
 		if (!label.innerHTML) {
-			name = formatName(label.innerHTML);
+			name = formatToFirstCapitalLetter(label.innerHTML);
 		} else if (label.htmlFor !== undefined) {
 			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLNodeTypes.BR) {
-				name = formatName(label.htmlFor);
+				name = formatToFirstCapitalLetter(label.htmlFor);
 			}
 		}
 

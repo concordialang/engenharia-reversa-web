@@ -6,6 +6,7 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
+import getXPath from 'get-xpath';
 
 export class VariantGenerator {
 	constructor(
@@ -13,33 +14,6 @@ export class VariantGenerator {
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private featureUtil: FeatureUtil
 	) {}
-
-	// public async generate(
-	// 	analysisElement: HTMLElement,
-	// 	ignoreFeatureTags: boolean = false,
-	// 	redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
-	// ): Promise<Variant[]> {
-	// 	let observer = new MutationObserverManager(analysisElement);
-	// 	let variants: Variant[] = [];
-	// 	let variant: Variant | null;
-
-	// 	do {
-	// 		variant = await this.generateVariant(
-	// 			analysisElement,
-	// 			observer,
-	// 			ignoreFeatureTags,
-	// 			redirectionCallback
-	// 		);
-
-	// 		if (variant && variant.getSentences().length > 0) {
-	// 			variants.push(variant);
-	// 		}
-	// 	} while (variant && !variant.last);
-
-	// 	observer.disconnect();
-
-	// 	return variants;
-	// }
 
 	public async generate(
 		analysisElement: HTMLElement,
@@ -49,14 +23,14 @@ export class VariantGenerator {
 	): Promise<Variant | null> {
 		const variant = this.featureUtil.createVariant();
 
-		const create = async (elm) => {
+		const analyse = async (elm) => {
 			if (this.checkValidFirstChild(elm, ignoreFeatureTags)) {
-				await create(elm.firstElementChild);
+				await analyse(elm.firstElementChild);
 			}
 
 			if (!this.checkValidInteractableElement(elm)) {
 				if (elm.nextElementSibling) {
-					await create(elm.nextElementSibling);
+					await analyse(elm.nextElementSibling);
 				}
 				return;
 			}
@@ -64,7 +38,7 @@ export class VariantGenerator {
 			const interaction = await this.elementInteractionGenerator.generate(elm);
 			if (!interaction) {
 				if (elm.nextElementSibling) {
-					await create(elm.nextElementSibling);
+					await analyse(elm.nextElementSibling);
 				}
 				return;
 			}
@@ -81,7 +55,7 @@ export class VariantGenerator {
 			const variantSentence = this.featureUtil.createVariantSentence(elm);
 			if (!variantSentence) {
 				if (elm.nextElementSibling) {
-					await create(elm.nextElementSibling);
+					await analyse(elm.nextElementSibling);
 				}
 				return;
 			}
@@ -96,13 +70,13 @@ export class VariantGenerator {
 			observer.resetMutations();
 
 			if (elm.nextElementSibling) {
-				await create(elm.nextElementSibling);
+				await analyse(elm.nextElementSibling);
 			}
 		};
 
 		let element: HTMLElement = analysisElement.firstElementChild as HTMLElement;
 		if (element) {
-			await create(analysisElement.firstElementChild as HTMLElement);
+			await analyse(analysisElement.firstElementChild as HTMLElement);
 		}
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();

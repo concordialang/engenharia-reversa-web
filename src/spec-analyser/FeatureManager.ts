@@ -4,7 +4,9 @@ import { MutationObserverManager } from '../mutation-observer/MutationObserverMa
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
+import { Scenario } from './Scenario';
 import { Spec } from './Spec';
+import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 
@@ -32,27 +34,58 @@ export class FeatureManager {
 			analysisElement,
 			this.spec.featureCount()
 		);
-		const scenario = this.featureUtil.createScenario(feature);
 		let observer: MutationObserverManager = new MutationObserverManager(analysisElement);
 
-		let variant: Variant | null;
+		let variants: Variant[] = [];
+		let variantAnalyzed: Variant | null;
 		do {
-			variant = await this.variantGenerator.generate(
+			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
 				observer,
 				ignoreFeatureTags,
 				this.redirectionCallback
 			);
 
-			if (variant && variant.getSentences().length > 0) {
-				scenario.addVariant(variant);
+			if (variantAnalyzed && variantAnalyzed.getSentences().length > 0) {
+				variants.push(variantAnalyzed);
 			}
-		} while (variant && !variant.last);
+		} while (variantAnalyzed && !variantAnalyzed.last);
 
 		observer.disconnect();
 
-		feature.addScenario(scenario);
+		if (variants.length > 0) {
+			const scenario = this.featureUtil.createScenario(feature);
+			scenario.setVariants(variants);
+			feature.addScenario(scenario);
+
+			const uiElements: Array<UIElement> = this.getUniqueUIElements(variants);
+			feature.setUiElements(uiElements);
+		}
 
 		return feature;
+	}
+
+	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {
+		let allUIElements: Array<UIElement> = [];
+
+		for (let variant of variants) {
+			allUIElements = allUIElements.concat(
+				variant.getSentences().map((sentence) => sentence.uiElement)
+			);
+		}
+
+		let uniqueUIElementsNames = [...new Set(allUIElements.map((uie) => uie.getName()))];
+
+		let uniqueUIElements: Array<UIElement> = [];
+
+		for (let nameUI of uniqueUIElementsNames) {
+			let uniqueUIElm = allUIElements.find((uiElm) => uiElm.getName() === nameUI);
+
+			if (uniqueUIElm) {
+				uniqueUIElements.push(uniqueUIElm);
+			}
+		}
+
+		return uniqueUIElements;
 	}
 }

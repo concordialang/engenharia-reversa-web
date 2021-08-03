@@ -2,10 +2,10 @@ import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { Spec } from '../spec-analyser/Spec';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
-import { commonAncestorElement, getFeatureElements } from '../util';
+import { commonAncestorElement, getElementByXpath, getFeatureElements } from '../util';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
-import getXPath from 'get-xpath';
 import { Feature } from '../spec-analyser/Feature';
+import getXPath from 'get-xpath';
 
 export class PageAnalyzer {
 	constructor(
@@ -139,21 +139,12 @@ export class PageAnalyzer {
 
 		const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
 
-		// returns xpath element
-		const xpathResult: XPathResult | null =
+		const analysisContext: HTMLElement | null =
 			xPathParentElementDiff !== null
-				? currentDocument.evaluate(
-						xPathParentElementDiff,
-						currentDocument,
-						null,
-						XPathResult.FIRST_ORDERED_NODE_TYPE, // first node that matches the expression
-						null
-				  )
+				? getElementByXpath(xPathParentElementDiff, currentDocument)
 				: null;
 
-		return xpathResult !== null && xpathResult.singleNodeValue !== null
-			? (xpathResult.singleNodeValue as HTMLElement)
-			: currentDocument.body;
+		return analysisContext !== null ? analysisContext : currentDocument.body;
 	}
 
 	private async getAnalysisElementFromCommonAcestor(

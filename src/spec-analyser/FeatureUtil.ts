@@ -4,12 +4,7 @@ import { Scenario } from './Scenario';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-
-function formatName(name: string): string {
-	name = name.replace(':', '');
-	name = name.charAt(0).toUpperCase() + name.slice(1);
-	return name;
-}
+import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {
 	constructor(private variantSentencesGenerator: VariantSentencesGenerator) {}
@@ -21,7 +16,9 @@ export class FeatureUtil {
 		if (title) {
 			featureName = title.innerHTML;
 		} else {
-			featureName = f.id ? formatName(f.id) : this.generateDefaultFeatureName(featureCount);
+			featureName = f.id
+				? formatToFirstCapitalLetter(f.id)
+				: this.generateDefaultFeatureName(featureCount);
 		}
 
 		const feature = new Feature();
