@@ -1,3 +1,4 @@
+import { VariantSentenceType } from '../types/VariantSentenceType';
 import { VariantSentence } from './VariantSentence';
 
 export class Variant {
@@ -33,5 +34,9 @@ export class Variant {
 
 	public getSentences() {
 		return this.sentences;
+	}
+
+	public isValid() {
+		return this.sentences.some((sentence) => sentence.type !== VariantSentenceType.GIVEN);
 	}
 }

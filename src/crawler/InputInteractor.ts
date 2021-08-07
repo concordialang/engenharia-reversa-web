@@ -68,7 +68,7 @@ export class InputInteractor implements ElementInteractor<HTMLInputElement> {
 		const value = interaction.getValue();
 		if (value) {
 			const element = interaction.getElement();
-			element.checked = value == true ? true : false;
+			element.checked = value ? true : false;
 			this.dispatchEvent(element, HTMLEventType.Change);
 		}
 	}

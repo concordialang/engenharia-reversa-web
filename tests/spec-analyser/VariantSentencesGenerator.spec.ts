@@ -32,7 +32,6 @@ describe('VariantSentencesGenerator', () => {
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
 		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
 		expect(variantSentence.uiElement.getName()).toBe('Input');
-		let teste = 1;
 	});
 
 	it('generate variant setence for textarea', () => {

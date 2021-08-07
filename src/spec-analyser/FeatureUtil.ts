@@ -42,8 +42,15 @@ export class FeatureUtil {
 		return variant;
 	}
 
-	createVariantSentence(element: HTMLElement): VariantSentence | null {
-		return this.variantSentencesGenerator.gerate(element);
+	createVariantSentence(
+		element: HTMLElement,
+		firstAnalyzedSentence: boolean = false
+	): VariantSentence | null {
+		return this.variantSentencesGenerator.gerate(element, firstAnalyzedSentence);
+	}
+
+	createGivenTypeVariantSentence(url: URL): VariantSentence | null {
+		return this.variantSentencesGenerator.gerateGivenTypeSentence(url);
 	}
 
 	createMutationVariantSentence(mutation: MutationRecord): VariantSentence[] | null {

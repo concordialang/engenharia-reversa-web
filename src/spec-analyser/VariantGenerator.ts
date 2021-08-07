@@ -6,7 +6,6 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import getXPath from 'get-xpath';
 
 export class VariantGenerator {
 	constructor(
@@ -17,11 +16,14 @@ export class VariantGenerator {
 
 	public async generate(
 		analysisElement: HTMLElement,
+		url: URL,
 		observer: MutationObserverManager,
 		ignoreFeatureTags: boolean,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
 		const variant = this.featureUtil.createVariant();
+
+		let firstAnalyzeSentence = true;
 
 		const analyse = async (elm) => {
 			if (this.checkValidFirstChild(elm, ignoreFeatureTags)) {
@@ -52,7 +54,14 @@ export class VariantGenerator {
 				return variant;
 			}
 
-			const variantSentence = this.featureUtil.createVariantSentence(elm);
+			const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
+				elm,
+				firstAnalyzeSentence
+			);
+			if (firstAnalyzeSentence) {
+				firstAnalyzeSentence = false;
+			}
+
 			if (!variantSentence) {
 				if (elm.nextElementSibling) {
 					await analyse(elm.nextElementSibling);
@@ -74,9 +83,15 @@ export class VariantGenerator {
 			}
 		};
 
-		let element: HTMLElement = analysisElement.firstElementChild as HTMLElement;
-		if (element) {
-			await analyse(analysisElement.firstElementChild as HTMLElement);
+		let startElement: HTMLElement = analysisElement.firstElementChild as HTMLElement;
+		if (!startElement) {
+			return null;
+		}
+
+		const givenTypeSentence = this.featureUtil.createGivenTypeVariantSentence(url);
+		if (givenTypeSentence) {
+			variant.setVariantSentence(givenTypeSentence);
+			await analyse(startElement);
 		}
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();

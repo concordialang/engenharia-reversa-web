@@ -4,7 +4,6 @@ import { MutationObserverManager } from '../mutation-observer/MutationObserverMa
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
-import { Scenario } from './Scenario';
 import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
@@ -28,6 +27,7 @@ export class FeatureManager {
 
 	public async generateFeature(
 		analysisElement: HTMLElement,
+		url: URL,
 		ignoreFeatureTags: boolean = false
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
@@ -41,26 +41,29 @@ export class FeatureManager {
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
+				url,
 				observer,
 				ignoreFeatureTags,
 				this.redirectionCallback
 			);
 
-			if (variantAnalyzed && variantAnalyzed.getSentences().length > 0) {
+			if (variantAnalyzed && variantAnalyzed.isValid()) {
 				variants.push(variantAnalyzed);
 			}
 		} while (variantAnalyzed && !variantAnalyzed.last);
 
 		observer.disconnect();
 
-		if (variants.length > 0) {
-			const scenario = this.featureUtil.createScenario(feature);
-			scenario.setVariants(variants);
-			feature.addScenario(scenario);
-
-			const uiElements: Array<UIElement> = this.getUniqueUIElements(variants);
-			feature.setUiElements(uiElements);
+		if (variants.length == 0) {
+			return null;
 		}
+
+		const scenario = this.featureUtil.createScenario(feature);
+		scenario.setVariants(variants);
+		feature.addScenario(scenario);
+
+		const uiElements: Array<UIElement> = this.getUniqueUIElements(variants);
+		feature.setUiElements(uiElements);
 
 		return feature;
 	}
@@ -69,9 +72,11 @@ export class FeatureManager {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {
-			allUIElements = allUIElements.concat(
-				variant.getSentences().map((sentence) => sentence.uiElement)
-			);
+			variant.getSentences().forEach((sentence) => {
+				if (sentence.uiElement) {
+					allUIElements.push(sentence.uiElement);
+				}
+			});
 		}
 
 		let uniqueUIElementsNames = [...new Set(allUIElements.map((uie) => uie.getName()))];

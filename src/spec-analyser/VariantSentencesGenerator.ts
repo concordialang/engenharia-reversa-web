@@ -9,21 +9,14 @@ import { UIElementGenerator } from './UIElementGenerator';
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
 
-	public gerate(element: HTMLElement): VariantSentence | null {
+	public gerate(element: HTMLElement, firstAnalyzedSentence: boolean): VariantSentence | null {
 		const uiElement: UIElement | null = this.uiElementGenerator.createFromElement(element);
-		if (!uiElement) {
-			return null;
-		}
-
-		let target: string = uiElement.getName();
-		let type: string = uiElement.getType();
-
-		if (!target || !type) {
+		if (!uiElement || !uiElement.getType()) {
 			return null;
 		}
 
 		let action: string = '';
-		switch (type) {
+		switch (uiElement.getType()) {
 			case EditableTypes.TEXTBOX:
 				action = VariantSentenceActions.FILL;
 				break;
@@ -41,7 +34,21 @@ export class VariantSentencesGenerator {
 				break;
 		}
 
-		return new VariantSentence(VariantSentenceType.WHEN, action, uiElement);
+		const variantType = firstAnalyzedSentence
+			? VariantSentenceType.WHEN
+			: VariantSentenceType.AND;
+
+		return new VariantSentence(variantType, action, uiElement);
+	}
+
+	public gerateGivenTypeSentence(url: URL): VariantSentence {
+		return new VariantSentence(
+			VariantSentenceType.GIVEN,
+			VariantSentenceActions.AMON,
+			undefined,
+			undefined,
+			url
+		);
 	}
 
 	public gerateFromMutations(mutation: MutationRecord): VariantSentence[] | null {

@@ -6,6 +6,7 @@ import { commonAncestorElement, getElementByXpath, getFeatureElements } from '..
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Feature } from '../spec-analyser/Feature';
 import getXPath from 'get-xpath';
+import { AnalyzedElement } from './AnalyzedElement';
 
 export class PageAnalyzer {
 	constructor(
@@ -34,6 +35,9 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
+				//TO-DO
+				// this.setAnalyzedElement(analysisElement, url);
+
 				let features: Feature[] = await this.analyseFeatureElements(url, analysisElement);
 
 				if (
@@ -43,6 +47,7 @@ export class PageAnalyzer {
 					// generate feature for elements outside feature elements
 					const featureOuterElements = await this.featureManager.generateFeature(
 						analysisElement,
+						url,
 						true
 					);
 
@@ -69,7 +74,7 @@ export class PageAnalyzer {
 			analysisElement.nodeName === HTMLNodeTypes.FORM ||
 			analysisElement.nodeName === HTMLNodeTypes.TABLE
 		) {
-			const feature = await this.featureManager.generateFeature(analysisElement);
+			const feature = await this.featureManager.generateFeature(analysisElement, url);
 
 			if (feature) {
 				features.push(feature);
@@ -89,7 +94,8 @@ export class PageAnalyzer {
 
 				if (!analyzedElement) {
 					const feature = await this.featureManager.generateFeature(
-						featureTag as HTMLElement
+						featureTag as HTMLElement,
+						url
 					);
 					if (feature) {
 						features.push(feature);
@@ -165,5 +171,10 @@ export class PageAnalyzer {
 		}
 
 		return ancestorElement ? ancestorElement : document.body;
+	}
+
+	private async setAnalyzedElement(elm: Element, url: URL) {
+		const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
+		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 	}
 }

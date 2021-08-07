@@ -36,7 +36,7 @@ export class ElementInteractionGenerator {
 		if (type == HTMLInputType.Text) {
 			return this.generateTextInputInteraction(input);
 		} else if (type == HTMLInputType.Email) {
-			return this.generateRadioInputInteraction(input);
+			return this.generateTextInputInteraction(input);
 		} else if (type == HTMLInputType.Radio) {
 			return this.generateRadioInputInteraction(input);
 		} else if (type == HTMLInputType.Checkbox) {
