@@ -12,7 +12,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 	}
 
 	protected stringifyObject(obj: ElementInteraction<HTMLElement>): string {
-		const pathToElement = getPathTo(obj.getElement());
+		const pathToElement = getPathTo(obj.getElement(), document);
 		const eventType = obj.getEventType();
 		const value = obj.getValue();
 		const pageUrl = obj.getPageUrl();
@@ -30,7 +30,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 				eventType: eventType,
 				pageUrl: pageUrl.toString(),
 				value: value,
-				elementSelector: getPathTo(obj.getElement()),
+				elementSelector: getPathTo(obj.getElement(), this.document),
 			};
 			return JSON.stringify(json);
 		} else {

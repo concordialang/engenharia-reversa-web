@@ -1,10 +1,12 @@
+import { DiffDomManager } from './diff-dom/DiffDomManager';
+
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
 // FIXME passar a variável document como argumento
-export function getPathTo(element: HTMLElement): string | null {
+export function getPathTo(element: HTMLElement, document: HTMLDocument): string | null {
 	if (element.id !== '') {
 		return 'id("' + element.id + '")';
 	}
@@ -18,7 +20,14 @@ export function getPathTo(element: HTMLElement): string | null {
 		for (let i = 0; i < siblings.length; i++) {
 			const sibling = <HTMLElement>siblings[i];
 			if (sibling === element) {
-				return getPathTo(<HTMLElement>parentNode) + '/' + element.tagName + '[' + ix + ']';
+				return (
+					getPathTo(<HTMLElement>parentNode, document) +
+					'/' +
+					element.tagName +
+					'[' +
+					ix +
+					']'
+				);
 			}
 			// TODO: Refactor - o que significa 1 ???
 			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
@@ -54,6 +63,33 @@ export function getElementByXpath(path: string, document: HTMLDocument): HTMLEle
 	}
 	return null;
 }
+
+export async function getDiff(
+	currentDocument: HTMLDocument,
+	previousDocument: HTMLDocument
+): Promise<HTMLElement> {
+	const diffDomManager: DiffDomManager = new DiffDomManager(
+		previousDocument.body,
+		currentDocument.body
+	);
+
+	const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
+	const xpathResult: XPathResult | null =
+		xPathParentElementDiff !== null
+			? currentDocument.evaluate(
+					xPathParentElementDiff,
+					currentDocument,
+					null,
+					XPathResult.FIRST_ORDERED_NODE_TYPE,
+					null
+			  )
+			: null;
+
+	return xpathResult !== null && xpathResult.singleNodeValue !== null
+		? (xpathResult.singleNodeValue as HTMLElement)
+		: currentDocument.body;
+}
+
 /**
  * Clear elements from the given element.
  *

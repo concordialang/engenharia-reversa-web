@@ -21,5 +21,5 @@ extension.searchTab({ url: 'http://localhost/*' }).then((tabs) => {
 });
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const manager: ExtensionManager = new ExtensionManager(extension, communicationChannel, 1);
+const manager: ExtensionManager = new ExtensionManager(extension, communicationChannel, 4);
 manager.setup();

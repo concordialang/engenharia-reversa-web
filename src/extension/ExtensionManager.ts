@@ -45,18 +45,36 @@ export class ExtensionManager {
 			}
 		);
 
-		this.communicationChannel.setMessageListener(function (message: Message, sender?: Tab) {
+		this.communicationChannel.setMessageListener(function (
+			message: Message,
+			sender?: Tab,
+			responseCallback?: (response?: any) => void
+		) {
+			if (
+				sender instanceof Tab &&
+				sender.getId() &&
+				message.includesAction(Command.GetTabId)
+			) {
+				if (responseCallback) responseCallback(new Message([], sender.getId()));
+			}
+
 			if (_this.extensionIsEnabled) {
 				if (message.includesAction(Command.OpenNewTab)) {
 					const extra = message.getExtra();
 					if (extra && extra.url) _this.openNewTab(new URL(extra.url));
 				} else if (
-					message.includesAction(AppEvent.Loaded) &&
 					sender instanceof Tab &&
 					sender.getId() &&
 					_this.tabWasOpenedByThisExtension(sender)
 				) {
-					_this.sendOrderToCrawlTab(sender);
+					if (message.includesAction(AppEvent.Loaded)) {
+						_this.sendOrderToCrawlTab(sender);
+					} else if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
+						if (responseCallback)
+							responseCallback(
+								new Message([], _this.openedTabsLimit - _this.openedTabsCounter)
+							);
+					}
 				}
 			}
 		});

@@ -21,94 +21,130 @@ import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerat
 import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
 
-const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
-const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
-
-const pageStorage = new PageStorage('engenharia-reversa-web');
-
-const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
-const graphKey = 'graph';
-const elementInteractionGraphKey = 'interactions-graph';
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const inputInteractor = new InputInteractor();
-const buttonInteractor = new ButtonInteractor(window);
-const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
-const spec: Spec = new Spec('pt-br');
-const analyzedElementStorage = new AnalyzedElementStorage(window.localStorage, document);
 
-const elementInteractionGraph = new ElementInteractionGraph(
-	elementInteracationStorage,
-	analyzedElementStorage,
-	graphStorage,
-	interactionsGraphMutex
-);
+getTabId(communicationChannel).then((tabId) => {
+	tabId = 'tab-' + tabId;
 
-const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
+	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-const elementInteractionExecutor = new ElementInteractionExecutor(
-	inputInteractor,
-	buttonInteractor,
-	elementInteractionGraph
-);
+	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
 
-const pageUrl: URL = new URL(window.location.href);
+	const pageStorage = new PageStorage('engenharia-reversa-web');
 
-const browserContext = new BrowserContext(document, pageUrl, window);
-const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
+	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
-const featureUtil = new FeatureUtil();
+	const inputInteractor = new InputInteractor();
+	const buttonInteractor = new ButtonInteractor(window);
+	const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
+	const spec: Spec = new Spec('pt-br');
+	const analyzedElementStorage = new AnalyzedElementStorage(window.localStorage, document);
 
-const variantGenerator: VariantGenerator = new VariantGenerator(
-	elementInteractionExecutor,
-	elementInteractionGenerator,
-	featureUtil
-);
+	const elementInteractionGraph = new ElementInteractionGraph(
+		tabId,
+		elementInteracationStorage,
+		analyzedElementStorage,
+		graphStorage,
+		interactionsGraphMutex
+	);
 
-const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage);
+	const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
-const crawler: Crawler = new Crawler(
-	browserContext,
-	pageStorage,
-	elementInteractionGraph,
-	visitedURLGraph,
-	pageAnalyzer
-);
+	const elementInteractionExecutor = new ElementInteractionExecutor(
+		inputInteractor,
+		buttonInteractor,
+		elementInteractionGraph
+	);
 
-communicationChannel.setMessageListener(function (message: Message) {
-	if (message.includesAction(Command.CleanGraph)) {
-		clean();
-	}
-	if (message.includesAction(Command.Crawl)) {
-		overwriteJavascriptPopups();
-		crawler.crawl();
+	const pageUrl: URL = new URL(window.location.href);
+
+	const browserContext = new BrowserContext(document, pageUrl, window);
+	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
+
+	const featureUtil = new FeatureUtil();
+
+	const variantGenerator: VariantGenerator = new VariantGenerator(
+		elementInteractionExecutor,
+		elementInteractionGenerator,
+		featureUtil
+	);
+
+	const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage, browserContext);
+
+	const crawler: Crawler = new Crawler(
+		browserContext,
+		pageStorage,
+		elementInteractionGraph,
+		visitedURLGraph,
+		pageAnalyzer,
+		communicationChannel,
+		analyzedElementStorage
+	);
+
+	communicationChannel.setMessageListener(function (message: Message) {
+		if (message.includesAction(Command.CleanGraph)) {
+			clean();
+		}
+		if (message.includesAction(Command.Crawl)) {
+			overrideWindowOpen();
+			overrideJavascriptPopups();
+			crawler.crawl();
+		}
+	});
+
+	//definir no protocolo de comunicação maneira para que a comunicação da extensão não interfira com a de outras extensões, e vice-versa
+	communicationChannel.sendMessageToAll(new Message([AppEvent.Loaded]));
+
+	// FIXME Na chamada a essa função, esperar ela terminar antes de executar o resto, caso contrário, não irá esperar limpar tudo antes de continuar
+	async function clean(): Promise<void> {
+		await elementInteractionGraph.clean();
+		//temporario
+		const keys = Object.keys(window.localStorage);
+		for (const key of keys) {
+			window.localStorage.removeItem(key);
+		}
+		crawler.resetLastPage();
 	}
 });
 
-//definir no protocolo de comunicação maneira para que a comunicação da extensão não interfira com a de outras extensões, e vice-versa
-communicationChannel.sendMessageToAll(new Message([AppEvent.Loaded]));
-
-// FIXME Na chamada a essa função, esperar ela terminar antes de executar o resto, caso contrário, não irá esperar limpar tudo antes de continuar
-function clean(): void {
-	graphStorage
-		.remove(graphKey)
-		.then(() => {
-			graphStorage.remove(elementInteractionGraphKey);
-		})
-		.then(() => {
-			//temporario
-			const keys = Object.keys(window.localStorage);
-			for (const key of keys) {
-				window.localStorage.removeItem(key);
-			}
-		})
-		.then(() => {
-			crawler.resetLastPage();
-		});
+function overrideJavascriptPopups() {
+	const script = document.createElement('script');
+	const func = () => {
+		// @ts-ignore
+		alert = function () {};
+		// @ts-ignore
+		confirm = function () {
+			return true;
+		};
+		// @ts-ignore
+		prompt = function (text, defaultText) {
+			return defaultText;
+		};
+	};
+	script.innerHTML = `const overridePopups = ${func.toString()}; overridePopups();`;
+	document.body.appendChild(script);
 }
 
-function overwriteJavascriptPopups() {
-	var script = document.createElement('script');
-	script.innerHTML =
-		'alert = function(){};confirm = function(){return true;};prompt = function(text,defaultText){return defaultText;}';
+function overrideWindowOpen() {
+	const script = document.createElement('script');
+	const func = () => {
+		document.querySelectorAll('[target="_blank"]').forEach(function (element) {
+			element.removeAttribute('target');
+		});
+
+		// @ts-ignore
+		window.open = (url) => {
+			// @ts-ignore
+			window.location.href = url;
+		};
+	};
+	script.innerHTML = `const overrideWindowOpen = ${func.toString()}; overrideWindowOpen();`;
 	document.body.appendChild(script);
+}
+
+async function getTabId(communicationChannel: CommunicationChannel): Promise<string> {
+	const message = new Message([Command.GetTabId]);
+	const responseMessage = await communicationChannel.sendMessageToAll(message);
+	const tabId = responseMessage.getExtra();
+	return tabId;
 }
