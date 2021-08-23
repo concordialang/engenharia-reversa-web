@@ -7,7 +7,6 @@ import { ElementInteractionGenerator } from '../src/crawler/ElementInteractionGe
 import { ElementInteractionGraph } from '../src/crawler/ElementInteractionGraph';
 import { InputInteractor } from '../src/crawler/InputInteractor';
 import { PageAnalyzer } from '../src/crawler/PageAnalyzer';
-import { VariantGenerator } from '../src/crawler/VariantGenerator';
 import { VisitedURLGraph } from '../src/crawler/VisitedURLGraph';
 import Mutex from '../src/mutex/Mutex';
 import { FeatureUtil } from '../src/spec-analyser/FeatureUtil';
@@ -21,6 +20,10 @@ import { Message } from '../src/comm/Message';
 import { Command } from '../src/comm/Command';
 import { AnalyzedElement } from '../src/crawler/AnalyzedElement';
 import { LocalStorageMock } from './util/LocalStorageMock';
+import { FeatureManager } from '../src/spec-analyser/FeatureManager';
+import { UIElementGenerator } from '../src/spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from '../src/spec-analyser/VariantSentencesGenerator';
+import { VariantGenerator } from '../src/spec-analyser/VariantGenerator';
 
 describe('Crawler', () => {
 	it('opens link on new tab when its not analyzed', async () => {
@@ -258,7 +261,11 @@ describe('Crawler', () => {
 		const browserContext = new BrowserContext(dom, pageUrl, window);
 		const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
-		const featureUtil = new FeatureUtil();
+		const uiElementGenerator = new UIElementGenerator();
+
+		const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+
+		const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionExecutor,
@@ -266,11 +273,14 @@ describe('Crawler', () => {
 			featureUtil
 		);
 
-		const pageAnalyzer = new PageAnalyzer(
+		const featureManager = new FeatureManager(
 			variantGenerator,
+			featureUtil,
 			analyzedElementStorage,
-			browserContext
+			spec
 		);
+
+		const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
 
 		const crawler: Crawler = new Crawler(
 			browserContext,
