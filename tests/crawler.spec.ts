@@ -193,6 +193,67 @@ describe('Crawler', () => {
 		}
 	});
 
+	it('respects the number of available tabs when opening links in new tabs', async () => {
+		const communicationChannel = new ChromeCommunicationChannel();
+		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
+			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
+				const message = new Message([], 2);
+				return message;
+			}
+		});
+		communicationChannel.sendMessageToAll = sendMessageToAll;
+
+		const link1 = 'www.link1.com';
+		const link2 = 'www.link2.com';
+		const link3 = 'www.link3.com';
+		const link4 = 'www.link4.com';
+
+		const document = getRootHtmlDocument();
+		const innerHTML = `
+		<div id="link-parent">
+			<a id="link1" href="${link1}"></a>
+			<a id="link2" href="${link2}"></a>
+			<a id="link3" href="${link3}"></a>
+			<a id="link4" href="${link4}"></a>
+		</div>`;
+		const div = document.createElement('div');
+		div.innerHTML = innerHTML;
+
+		const div2 = document.createElement('div');
+		div2.id = 'link-parent-parent';
+		div2.appendChild(div);
+
+		const body = document.getElementsByTagName('body')[0];
+		body.appendChild(div2);
+
+		const linkParentParentElement = document.getElementById('link-parent-parent');
+		expect(linkParentParentElement).not.toBeNull();
+
+		if (linkParentParentElement) {
+			const crawler: Crawler = buildCrawler({
+				communicationChannel: communicationChannel,
+				document: document,
+			});
+			await crawler.crawl();
+
+			expect(communicationChannel.sendMessageToAll).toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link1 })
+			);
+
+			expect(communicationChannel.sendMessageToAll).toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link2 })
+			);
+
+			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link3 })
+			);
+
+			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link4 })
+			);
+		}
+	});
+
 	function getRootHtmlDocument(): HTMLDocument {
 		const dom = document.implementation.createHTMLDocument('Fake document');
 		return dom;
