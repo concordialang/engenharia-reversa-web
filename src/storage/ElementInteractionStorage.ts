@@ -2,7 +2,6 @@ import { HTMLEventType } from '../html/HTMLEventType';
 import { getElementByXpath, getEnumKeyByEnumValue, getPathTo } from '../util';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { LocalObjectStorage } from './LocalObjectStorage';
-
 export class ElementInteractionStorage extends LocalObjectStorage<ElementInteraction<HTMLElement>> {
 	private document: HTMLDocument;
 
@@ -12,7 +11,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 	}
 
 	protected stringifyObject(obj: ElementInteraction<HTMLElement>): string {
-		const pathToElement = getPathTo(obj.getElement(), document);
+		const pathToElement = getPathTo(obj.getElement());
 		const eventType = obj.getEventType();
 		const value = obj.getValue();
 		const pageUrl = obj.getPageUrl();
@@ -30,7 +29,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 				eventType: eventType,
 				pageUrl: pageUrl.toString(),
 				value: value,
-				elementSelector: getPathTo(obj.getElement(), this.document),
+				elementSelector: getPathTo(obj.getElement()),
 			};
 			return JSON.stringify(json);
 		} else {

@@ -39,12 +39,4 @@ export class MutationObserverManager {
 	public disconnect() {
 		this.observer.disconnect();
 	}
-
-	public getFeatureTagsFromMutation(mutation) {
-		let teste1 = 1;
-		let teste2 = mutation.target;
-		let teste3 = Array.from(
-			mutation.target.querySelectorAll('input, select, textarea, button')
-		);
-	}
 }

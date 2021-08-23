@@ -1,22 +1,39 @@
 import getXPath from 'get-xpath';
-
 import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-
-function formatName(name: string): string {
-	name = name.replace(':', '');
-	name = name.charAt(0).toUpperCase() + name.slice(1);
-	return name;
-}
+import { formatToFirstCapitalLetter, getPathTo } from '../util';
 
 const DEFAULT_MAX_LENGTH = 524288;
 
-type DataEntryFields = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-
 export class UIElementGenerator {
-	public createUIElement(elm: DataEntryFields): UIElement {
-		let uiElm = new UIElement();
+	public createFromElement(elm: HTMLElement): UIElement | null {
+		let uiElement: UIElement | null = null;
+
+		if (
+			!(elm instanceof HTMLInputElement) &&
+			!(elm instanceof HTMLSelectElement) &&
+			!(elm instanceof HTMLTextAreaElement) &&
+			!(elm instanceof HTMLButtonElement)
+		) {
+			return null;
+		}
+
+		if (
+			elm instanceof HTMLButtonElement ||
+			(elm instanceof HTMLInputElement &&
+				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
+		) {
+			uiElement = this.createFromButton(elm);
+		} else {
+			uiElement = this.create(elm);
+		}
+
+		return uiElement;
+	}
+
+	private create(elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): UIElement {
+		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
@@ -79,8 +96,8 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	public createUIElementForButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
-		let uiElm = new UIElement();
+	private createFromButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
+		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
@@ -95,11 +112,14 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private generateName(elm: DataEntryFields, idUiElm: string): string {
+	private generateName(
+		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+		idUiElm: string
+	): string {
 		let name: string = '';
 
 		if (elm.name) {
-			name = formatName(elm.name);
+			name = formatToFirstCapitalLetter(elm.name);
 		} else if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
 			name = this.generateNameFromPreviousLabel(elm);
 		} else if (
@@ -126,9 +146,9 @@ export class UIElementGenerator {
 		let name: string = '';
 
 		if (elm.name) {
-			name = formatName(elm.name);
+			name = formatToFirstCapitalLetter(elm.name);
 		} else if (elm instanceof HTMLButtonElement && elm.innerHTML) {
-			name = formatName(elm.innerHTML);
+			name = formatToFirstCapitalLetter(elm.innerHTML);
 		}
 
 		name = name ? name : 'Button' + idUiElm;
@@ -141,10 +161,10 @@ export class UIElementGenerator {
 		let name: string = '';
 
 		if (!label.innerHTML) {
-			name = formatName(label.innerHTML);
+			name = formatToFirstCapitalLetter(label.innerHTML);
 		} else if (label.htmlFor !== undefined) {
 			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLNodeTypes.BR) {
-				name = formatName(label.htmlFor);
+				name = formatToFirstCapitalLetter(label.htmlFor);
 			}
 		}
 
@@ -157,7 +177,7 @@ export class UIElementGenerator {
 		if (elm.id) {
 			id = elm.id;
 		} else {
-			id = getXPath(elm);
+			id = getPathTo(elm);
 		}
 
 		return id;

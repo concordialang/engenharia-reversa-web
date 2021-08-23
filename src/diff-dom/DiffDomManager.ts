@@ -1,6 +1,6 @@
 import { DiffDOM } from 'diff-dom';
-import getXPath from 'get-xpath';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { getPathTo } from '../util';
 
 export class DiffDomManager {
 	private diffDom: DiffDOM;
@@ -98,7 +98,7 @@ export class DiffDomManager {
 				}
 
 				if (htmlElement.parentElement) {
-					return getXPath(htmlElement.parentElement);
+					return getPathTo(htmlElement.parentElement);
 				}
 			}
 		}

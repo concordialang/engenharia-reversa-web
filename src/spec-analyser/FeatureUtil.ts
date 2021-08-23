@@ -1,25 +1,28 @@
-import { UIElementGenerator } from './UIElementGenerator';
 import { VariantSentencesGenerator } from './VariantSentencesGenerator';
 import { Feature } from './Feature';
 import { Scenario } from './Scenario';
-import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-import { Spec } from './Spec';
+import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {
-	private uiElementGenerator: UIElementGenerator = new UIElementGenerator();
-	private variantSentencesGenerator: VariantSentencesGenerator = new VariantSentencesGenerator();
+	constructor(private variantSentencesGenerator: VariantSentencesGenerator) {}
 
-	createFeatureFromElement(f: HTMLElement): Feature {
-		const title: HTMLElement | null = this.titleBeforeElemente(f);
+	createFeatureFromElement(f: HTMLElement, featureCount: number): Feature {
+		const title: HTMLElement | null = this.titleBeforeElement(f);
+
+		let featureName: string;
+		if (title) {
+			featureName = title.innerHTML;
+		} else {
+			featureName = f.id
+				? formatToFirstCapitalLetter(f.id)
+				: this.generateDefaultFeatureName(featureCount);
+		}
 
 		const feature = new Feature();
-
-		if (title) {
-			feature.setName(title.innerHTML);
-		}
+		feature.setName(featureName);
 
 		return feature;
 	}
@@ -31,40 +34,30 @@ export class FeatureUtil {
 		return scenario;
 	}
 
-	createUiElment(
-		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement
-	): UIElement | null {
-		let uiElement: UIElement | null = null;
-
-		if (
-			elm instanceof HTMLButtonElement ||
-			(elm instanceof HTMLInputElement &&
-				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
-		) {
-			uiElement = this.uiElementGenerator.createUIElementForButton(elm);
-		} else {
-			uiElement = this.uiElementGenerator.createUIElement(elm);
-		}
-
-		return uiElement;
-	}
-
-	createVariant(): Variant {
+	createVariant(variantName = ''): Variant {
 		const variant = new Variant();
-		variant.setName('General Variant');
+		let name = variantName !== '' ? variantName : 'General Variant';
+		variant.setName(name);
 
 		return variant;
 	}
 
-	createVariantSentence(uiElment: UIElement): VariantSentence | null {
-		return this.variantSentencesGenerator.generateVariantSentenceFromUIElement(uiElment);
+	createVariantSentence(
+		element: HTMLElement,
+		firstAnalyzedSentence: boolean = false
+	): VariantSentence | null {
+		return this.variantSentencesGenerator.gerate(element, firstAnalyzedSentence);
 	}
 
-	createMutationVariantSentence(mutation: MutationRecord): VariantSentence | null {
-		return this.variantSentencesGenerator.generateVariantSentenceFromMutations(mutation);
+	createGivenTypeVariantSentence(url: URL): VariantSentence | null {
+		return this.variantSentencesGenerator.gerateGivenTypeSentence(url);
 	}
 
-	private titleBeforeElemente(f: HTMLElement): HTMLElement | null {
+	createMutationVariantSentence(mutation: MutationRecord): VariantSentence[] | null {
+		return this.variantSentencesGenerator.gerateFromMutations(mutation);
+	}
+
+	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
 		if (
 			f.previousElementSibling?.nodeName === HTMLNodeTypes.H1 ||
 			f.previousElementSibling?.nodeName === HTMLNodeTypes.H2 ||
@@ -77,8 +70,7 @@ export class FeatureUtil {
 		return null;
 	}
 
-	//TODO
-	private generateFeatureName(featureCount: number, language: string): string {
+	private generateDefaultFeatureName(featureCount: number, language?: string): string {
 		const id = 1 + featureCount;
 		switch (language) {
 			case 'pt-br':

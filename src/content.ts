@@ -1,4 +1,5 @@
 import { Spec } from './spec-analyser/Spec';
+import { FeatureManager } from './spec-analyser/FeatureManager';
 import { AppEvent } from './comm/AppEvent';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { Command } from './comm/Command';
@@ -10,7 +11,7 @@ import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
-import { VariantGenerator } from './crawler/VariantGenerator';
+import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
 import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
@@ -20,6 +21,8 @@ import { VisitedURLGraph } from './crawler/VisitedURLGraph';
 import { ElementInteractionGenerator } from './crawler/ElementInteractionGenerator';
 import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
+import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
 
@@ -61,7 +64,11 @@ getTabId(communicationChannel).then((tabId) => {
 	const browserContext = new BrowserContext(document, pageUrl, window);
 	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
-	const featureUtil = new FeatureUtil();
+	const uiElementGenerator = new UIElementGenerator();
+
+	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+
+	const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionExecutor,
@@ -69,7 +76,14 @@ getTabId(communicationChannel).then((tabId) => {
 		featureUtil
 	);
 
-	const pageAnalyzer = new PageAnalyzer(variantGenerator, analyzedElementStorage, browserContext);
+	const featureManager = new FeatureManager(
+		variantGenerator,
+		featureUtil,
+		analyzedElementStorage,
+		spec
+	);
+
+	const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
 
 	const crawler: Crawler = new Crawler(
 		browserContext,

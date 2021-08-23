@@ -1,42 +1,47 @@
 import { DiffDomManager } from './diff-dom/DiffDomManager';
+import getXPath from 'get-xpath';
 
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
-// FIXME passar a variável document como argumento
-export function getPathTo(element: HTMLElement, document: HTMLDocument): string | null {
-	if (element.id !== '') {
-		return 'id("' + element.id + '")';
-	}
-	if (element === document.body) {
-		return element.tagName;
-	}
-	let ix = 0;
-	const parentNode = element.parentNode;
-	if (parentNode) {
-		var siblings = parentNode.childNodes;
-		for (let i = 0; i < siblings.length; i++) {
-			const sibling = <HTMLElement>siblings[i];
-			if (sibling === element) {
-				return (
-					getPathTo(<HTMLElement>parentNode, document) +
-					'/' +
-					element.tagName +
-					'[' +
-					ix +
-					']'
-				);
-			}
-			// TODO: Refactor - o que significa 1 ???
-			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-				ix++;
-			}
-		}
-	}
-	return null;
+export function getPathTo(element: HTMLElement): string {
+	return getXPath(element);
 }
+
+// // TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
+// // FIXME passar a variável document como argumento
+// export function getPathTo(element: HTMLElement, document: HTMLDocument): string | null {
+// 	if (element.id !== '') {
+// 		return 'id("' + element.id + '")';
+// 	}
+// 	if (element === document.body) {
+// 		return element.tagName;
+// 	}
+// 	let ix = 0;
+// 	const parentNode = element.parentNode;
+// 	if (parentNode) {
+// 		var siblings = parentNode.childNodes;
+// 		for (let i = 0; i < siblings.length; i++) {
+// 			const sibling = <HTMLElement>siblings[i];
+// 			if (sibling === element) {
+// 				return (
+// 					getPathTo(<HTMLElement>parentNode, document) +
+// 					'/' +
+// 					element.tagName +
+// 					'[' +
+// 					ix +
+// 					']'
+// 				);
+// 			}
+// 			// TODO: Refactor - o que significa 1 ???
+// 			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+// 				ix++;
+// 			}
+// 		}
+// 	}
+// 	return null;
+// }
 
 export function getEnumKeyByEnumValue(myEnum, enumValue) {
 	let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
@@ -74,20 +79,23 @@ export async function getDiff(
 	);
 
 	const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
-	const xpathResult: XPathResult | null =
+
+	const analysisContext: HTMLElement | null =
 		xPathParentElementDiff !== null
-			? currentDocument.evaluate(
-					xPathParentElementDiff,
-					currentDocument,
-					null,
-					XPathResult.FIRST_ORDERED_NODE_TYPE,
-					null
-			  )
+			? getElementByXpath(xPathParentElementDiff, currentDocument)
 			: null;
 
-	return xpathResult !== null && xpathResult.singleNodeValue !== null
-		? (xpathResult.singleNodeValue as HTMLElement)
-		: currentDocument.body;
+	return analysisContext !== null ? analysisContext : currentDocument.body;
+}
+
+export function getInteractableElements(element: HTMLElement) {
+	return Array.from(element.querySelectorAll('input, textarea, select, button'));
+}
+
+export function formatToFirstCapitalLetter(txt: string): string {
+	txt = txt.replace(':', '');
+	txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+	return txt;
 }
 
 /**

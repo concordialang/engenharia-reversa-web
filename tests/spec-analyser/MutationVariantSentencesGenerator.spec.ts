@@ -2,7 +2,6 @@ import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { MutationObserverManager } from '../../src/mutation-observer/MutationObserverManager';
 import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
 import { VariantSentenceType } from '../../src/types/VariantSentenceType';
-import { UIElement } from '../../src/spec-analyser/UIElement';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import clearElement from '../../src/util';
 
@@ -34,8 +33,6 @@ describe('MutationVariantSentencesGenerator', () => {
 			<div id="divXpto">
                 <input type="text" id="xpto" name="xpto">
             </div>`;
-
-		observer = new MutationObserverManager(document.body);
 	});
 
 	afterEach(() => {
@@ -44,6 +41,7 @@ describe('MutationVariantSentencesGenerator', () => {
 	});
 
 	it('generate mutation variant sentence of type attribute style display none', () => {
+		observer = new MutationObserverManager(document.body);
 		let elm = document.getElementById('inputFoo') as HTMLInputElement;
 		elm.setAttribute('style', 'display: none;');
 
@@ -65,6 +63,7 @@ describe('MutationVariantSentencesGenerator', () => {
 	});
 
 	it('generate mutation variant sentence of type attribute style display block', () => {
+		observer = new MutationObserverManager(document.body);
 		let elm = document.getElementById('inputFoo') as HTMLInputElement;
 		elm.setAttribute('style', 'display: block;');
 
@@ -91,6 +90,7 @@ describe('MutationVariantSentencesGenerator', () => {
 	});
 
 	it('generate mutation variant sentence of removed element', () => {
+		observer = new MutationObserverManager(document.body);
 		let elm = document.getElementById('divXpto') as HTMLDivElement;
 		elm.remove();
 
@@ -113,9 +113,21 @@ describe('MutationVariantSentencesGenerator', () => {
 
 	it('generate mutation variant sentence of append element', () => {
 		let elm = document.getElementById('divXpto') as HTMLDivElement;
+		let div = document.createElement('div');
+		div.setAttribute('id', 'divXpto2');
+
 		let btn = document.createElement('button');
 		btn.setAttribute('id', 'btnXpto');
-		elm.appendChild(btn);
+
+		let input = document.createElement('input');
+		input.setAttribute('id', 'inputXptoTest');
+
+		div.appendChild(btn);
+		div.appendChild(input);
+
+		observer = new MutationObserverManager(document.body);
+
+		elm.appendChild(div);
 
 		let mutations = observer.getRecords();
 

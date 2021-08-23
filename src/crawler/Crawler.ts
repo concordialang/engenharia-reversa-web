@@ -93,7 +93,7 @@ export class Crawler {
 		const unanalyzedLinks: HTMLLinkElement[] = [];
 		const links = element.querySelectorAll('[href]');
 		for (let link of links) {
-			const xPath = getPathTo(<HTMLLinkElement>link, this.browserContext.getDocument());
+			const xPath = getPathTo(<HTMLLinkElement>link);
 			if (xPath) {
 				let isElementAnalyzed: boolean = await this.analyzedElementStorage.isElementAnalyzed(
 					xPath,
@@ -119,7 +119,7 @@ export class Crawler {
 			return false;
 		}
 		if (parent) {
-			parentXPath = getPathTo(parent, this.browserContext.getDocument());
+			parentXPath = getPathTo(parent);
 		}
 		if (parentXPath) {
 			const isParentElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(

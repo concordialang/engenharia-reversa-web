@@ -1,94 +1,77 @@
-import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-import { Variant } from '../spec-analyser/Variant';
+import { Feature } from '../spec-analyser/Feature';
+import { FeatureManager } from '../spec-analyser/FeatureManager';
+import { Spec } from '../spec-analyser/Spec';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
-import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
+import { getFeatureElements, getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
-import { BrowserContext } from './BrowserContext';
-import { ElementInteraction } from './ElementInteraction';
-import { VariantGenerator } from './VariantGenerator';
 
 export class PageAnalyzer {
 	constructor(
-		private variantGenerator: VariantGenerator,
+		private featureManager: FeatureManager,
 		private analyzedElementStorage: AnalyzedElementStorage,
-		private browserContext: BrowserContext
+		private spec: Spec
 	) {}
 
-	public async analyze(url: URL, contextElement: HTMLElement): Promise<Variant | null> {
-		let xPath = getPathTo(contextElement, this.browserContext.getDocument());
+	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
+		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const analyzedContext = await this.analyzedElementStorage.isElementAnalyzed(xPath, url);
+			const isElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+				xPath,
+				url
+			);
 
-			if (!analyzedContext) {
-				// TODO - VERIFICAR E REMOVER
-				const variantsOutsideForm = await this.analyseVariantElements(url, contextElement);
+			if (!isElementAnalyzed) {
+				//TO-DO
+				// this.setAnalyzedElement(analysisElement, url);
 
-				const _this = this;
-				const redirectionCallback = async (
-					interaction: ElementInteraction<HTMLElement>
-				) => {
-					const analyzedElement = new AnalyzedElement(
-						interaction.getElement(),
-						interaction.getPageUrl()
-					);
-					await _this.analyzedElementStorage.set(
-						analyzedElement.getId(),
-						analyzedElement
-					);
-				};
+				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
 
 				if (
 					contextElement.nodeName !== HTMLNodeTypes.FORM &&
 					contextElement.nodeName !== HTMLNodeTypes.TABLE
 				) {
-					// generate variant for elements outside feature elements
-					return await this.variantGenerator.generate(
+					// generate feature for elements outside feature elements
+					const featureOuterElements = await this.featureManager.generateFeature(
 						contextElement,
-						redirectionCallback,
+						url,
 						true
 					);
+
+					if (featureOuterElements) {
+						features.push(featureOuterElements);
+					}
+				}
+
+				if (features.length > 0) {
+					this.spec.addFeatures(features);
 				}
 			}
-		} else {
-			// TODO - tratar excecao para nao travar o programa
-			throw new Error('Unable to get element XPath');
 		}
-		return null;
 	}
 
-	private async analyseVariantElements(
+	private async analyseFeatureElements(
 		url: URL,
-		contextElement: HTMLElement
-	): Promise<Variant[]> {
-		const variants: Variant[] = [];
+		analysisElement: HTMLElement
+	): Promise<Feature[]> {
+		const features: Feature[] = [];
 
-		const _this = this;
-		const redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
-			const analyzedElement = new AnalyzedElement(
-				interaction.getElement(),
-				interaction.getPageUrl()
-			);
-			await _this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
-		};
-
+		// case analysisElement is directly a feature element
 		if (
-			contextElement.nodeName === HTMLNodeTypes.FORM ||
-			contextElement.nodeName === HTMLNodeTypes.TABLE
+			analysisElement.nodeName === HTMLNodeTypes.FORM ||
+			analysisElement.nodeName === HTMLNodeTypes.TABLE
 		) {
-			const variant = await this.variantGenerator.generate(
-				contextElement,
-				redirectionCallback
-			);
-			if (variant) {
-				variants.push(variant);
+			const feature = await this.featureManager.generateFeature(analysisElement, url);
+
+			if (feature) {
+				features.push(feature);
 			}
 		}
 
-		const variantTags: any = getFeatureElements(contextElement);
-		if (variantTags.length > 0) {
-			for (let variantTag of variantTags) {
-				let xPathElement = getPathTo(variantTag, this.browserContext.getDocument());
+		const featureTags: NodeListOf<Element> = getFeatureElements(analysisElement);
+		if (featureTags.length > 0) {
+			for (let featureTag of featureTags) {
+				let xPathElement = getPathTo(<HTMLElement>featureTag);
 				if (!xPathElement) continue;
 
 				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
@@ -97,17 +80,22 @@ export class PageAnalyzer {
 				);
 
 				if (!analyzedElement) {
-					const feature = await this.variantGenerator.generate(
-						variantTag,
-						redirectionCallback
+					const feature = await this.featureManager.generateFeature(
+						featureTag as HTMLElement,
+						url
 					);
 					if (feature) {
-						variants.push(feature);
+						features.push(feature);
 					}
 				}
 			}
 		}
 
-		return variants;
+		return features;
+	}
+
+	private async setAnalyzedElement(elm: Element, url: URL) {
+		const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
+		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 	}
 }
