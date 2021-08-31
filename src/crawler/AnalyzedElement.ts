@@ -1,4 +1,4 @@
-import getXPath from 'get-xpath';
+import { getPathTo } from '../util';
 
 export class AnalyzedElement {
 	private id?: string;
@@ -11,7 +11,7 @@ export class AnalyzedElement {
 
 	public getPathToElement(): string {
 		if (!this.pathToElement) {
-			const pathToElement = getXPath(this.element);
+			const pathToElement = getPathTo(this.element);
 			if (!pathToElement) {
 				throw new Error(
 					"Analyzed Element could not be saved because it doesn't have an id and it was not possible to get its xpath"

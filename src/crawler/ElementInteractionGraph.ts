@@ -10,16 +10,18 @@ export class ElementInteractionGraph {
 	private lastInteractionKey: string;
 
 	constructor(
+		private id: string,
 		private elementInteractionStorage: ElementInteractionStorage,
 		private analyzedElementStorage: AnalyzedElementStorage,
 		private graphStorage: GraphStorage,
 		private mutex: Mutex
 	) {
+		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.analyzedElementStorage = analyzedElementStorage;
 		this.mutex = mutex;
-		this.elementInteractionGraphKey = 'interactions-graph';
-		this.lastInteractionKey = 'last-interaction';
+		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
+		this.lastInteractionKey = 'last-interaction-' + this.id;
 	}
 
 	public async addElementInteractionToGraph(
@@ -152,5 +154,9 @@ export class ElementInteractionGraph {
 
 	public async getLastInteraction(): Promise<ElementInteraction<HTMLElement> | null> {
 		return await this.elementInteractionStorage.get(this.lastInteractionKey);
+	}
+
+	public async clean(): Promise<void> {
+		await this.graphStorage.remove(this.elementInteractionGraphKey);
 	}
 }

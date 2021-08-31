@@ -2,7 +2,7 @@ import getXPath from 'get-xpath';
 import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
-import { formatToFirstCapitalLetter } from '../util';
+import { formatToFirstCapitalLetter, getPathTo } from '../util';
 
 const DEFAULT_MAX_LENGTH = 524288;
 
@@ -177,7 +177,7 @@ export class UIElementGenerator {
 		if (elm.id) {
 			id = elm.id;
 		} else {
-			id = getXPath(elm);
+			id = getPathTo(elm);
 		}
 
 		return id;

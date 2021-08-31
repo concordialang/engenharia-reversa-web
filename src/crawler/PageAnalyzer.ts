@@ -1,11 +1,9 @@
-import { DiffDomManager } from '../diff-dom/DiffDomManager';
 import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { Feature } from '../spec-analyser/Feature';
+import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
-import { commonAncestorElement, getElementByXpath, getFeatureElements } from '../util';
-import { FeatureManager } from '../spec-analyser/FeatureManager';
-import { Feature } from '../spec-analyser/Feature';
-import getXPath from 'get-xpath';
+import { getFeatureElements, getPathTo } from '../util';
 import { AnalyzedElement } from './AnalyzedElement';
 
 export class PageAnalyzer {
@@ -15,19 +13,8 @@ export class PageAnalyzer {
 		private spec: Spec
 	) {}
 
-	public async analyze(
-		url: URL,
-		document: HTMLDocument,
-		previousDocument: HTMLDocument | null = null
-	): Promise<void> {
-		const analysisElement = await this.getAnalysisElement(document, previousDocument);
-		if (analysisElement) {
-			await this.analyseElement(url, analysisElement);
-		}
-	}
-
-	public async analyseElement(url: URL, analysisElement: HTMLElement): Promise<void> {
-		let xPath = getXPath(analysisElement);
+	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
+		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			const isElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
 				xPath,
@@ -37,15 +24,15 @@ export class PageAnalyzer {
 			if (!isElementAnalyzed) {
 				// this.setAnalyzedElement(analysisElement, url);
 
-				let features: Feature[] = await this.analyseFeatureElements(url, analysisElement);
+				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
 
 				if (
-					analysisElement.nodeName !== HTMLNodeTypes.FORM &&
-					analysisElement.nodeName !== HTMLNodeTypes.TABLE
+					contextElement.nodeName !== HTMLNodeTypes.FORM &&
+					contextElement.nodeName !== HTMLNodeTypes.TABLE
 				) {
 					// generate feature for elements outside feature elements
 					const featureOuterElements = await this.featureManager.generateFeature(
-						analysisElement,
+						contextElement,
 						url,
 						true
 					);
@@ -83,7 +70,7 @@ export class PageAnalyzer {
 		const featureTags: NodeListOf<Element> = getFeatureElements(analysisElement);
 		if (featureTags.length > 0) {
 			for (let featureTag of featureTags) {
-				let xPathElement = getXPath(featureTag);
+				let xPathElement = getPathTo(<HTMLElement>featureTag);
 				if (!xPathElement) continue;
 
 				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
@@ -105,75 +92,4 @@ export class PageAnalyzer {
 
 		return features;
 	}
-
-	private async getAnalysisElement(
-		currentDocument: HTMLDocument,
-		previousDocument: HTMLDocument | null = null
-	): Promise<HTMLElement> {
-		let analysisElement: HTMLElement | null = null;
-
-		if (previousDocument) {
-			const analysisContext: HTMLElement = await this.getAnalysisContextFromDiffPages(
-				currentDocument,
-				previousDocument
-			);
-
-			analysisElement =
-				analysisContext.nodeName === HTMLNodeTypes.FORM ||
-				analysisContext.nodeName === HTMLNodeTypes.TABLE
-					? analysisContext
-					: await this.getAnalysisElementFromCommonAcestor(
-							analysisContext,
-							currentDocument
-					  );
-		} else {
-			analysisElement = currentDocument.body;
-		}
-
-		return analysisElement;
-	}
-
-	private async getAnalysisContextFromDiffPages(
-		currentDocument: HTMLDocument,
-		previousDocument: HTMLDocument
-	): Promise<HTMLElement> {
-		const diffDomManager: DiffDomManager = new DiffDomManager(
-			previousDocument.body,
-			currentDocument.body
-		);
-
-		const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
-
-		const analysisContext: HTMLElement | null =
-			xPathParentElementDiff !== null
-				? getElementByXpath(xPathParentElementDiff, currentDocument)
-				: null;
-
-		return analysisContext !== null ? analysisContext : currentDocument.body;
-	}
-
-	private async getAnalysisElementFromCommonAcestor(
-		analysisContext: HTMLElement,
-		document: HTMLDocument
-	): Promise<HTMLElement> {
-		let ancestorElement: HTMLElement | null = null;
-
-		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
-
-		if (featureTags.length >= 1) {
-			ancestorElement = commonAncestorElement(Array.from(featureTags));
-		} else if (featureTags.length == 0) {
-			const inputFieldTags = analysisContext.querySelectorAll(
-				'input, select, textarea, button'
-			);
-			ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
-		}
-
-		return ancestorElement ? ancestorElement : document.body;
-	}
-
-	// private async setAnalyzedElement(elm: Element, url: URL) {
-	// 	const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
-	// 	await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
-	// }
 }
