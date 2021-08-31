@@ -38,6 +38,7 @@ export class FeatureManager {
 
 		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;
+
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,

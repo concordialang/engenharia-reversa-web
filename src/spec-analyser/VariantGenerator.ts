@@ -6,6 +6,7 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
+import oneWise from 'one-wise';
 
 export class VariantGenerator {
 	constructor(

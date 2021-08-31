@@ -35,7 +35,6 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
-				//TO-DO
 				// this.setAnalyzedElement(analysisElement, url);
 
 				let features: Feature[] = await this.analyseFeatureElements(url, analysisElement);
@@ -173,8 +172,8 @@ export class PageAnalyzer {
 		return ancestorElement ? ancestorElement : document.body;
 	}
 
-	private async setAnalyzedElement(elm: Element, url: URL) {
-		const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
-		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
-	}
+	// private async setAnalyzedElement(elm: Element, url: URL) {
+	// 	const analyzedElement = new AnalyzedElement(elm as HTMLElement, url);
+	// 	await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+	// }
 }
