@@ -4,7 +4,6 @@ import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
 import { getFeatureElements, getPathTo } from '../util';
-import { AnalyzedElement } from './AnalyzedElement';
 
 export class PageAnalyzer {
 	constructor(
@@ -22,8 +21,6 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
-				// this.setAnalyzedElement(analysisElement, url);
-
 				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
 
 				if (

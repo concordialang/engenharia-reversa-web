@@ -38,7 +38,7 @@ export class VariantGenerator {
 				return;
 			}
 
-			const interaction = await this.elementInteractionGenerator.generate(elm);
+			const interaction = await this.elementInteractionGenerator.generate(elm, variant);
 			if (!interaction) {
 				if (elm.nextElementSibling) {
 					await analyse(elm.nextElementSibling);

@@ -1,6 +1,7 @@
 import { HTMLElementType } from '../html/HTMLElementType';
 import { HTMLEventType } from '../html/HTMLEventType';
 import { HTMLInputType } from '../html/HTMLInputType';
+import { Variant } from '../spec-analyser/Variant';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 
@@ -11,7 +12,10 @@ export class ElementInteractionGenerator {
 		this.radioGroupsAlreadyFilled = [];
 	}
 
-	public generate(element: HTMLElement): ElementInteraction<HTMLElement> | null {
+	public generate(
+		element: HTMLElement,
+		variant: Variant
+	): ElementInteraction<HTMLElement> | null {
 		let interaction: ElementInteraction<HTMLElement> | null = null;
 		if (element instanceof HTMLInputElement) {
 			interaction = this.generateInputInteraction(element);
@@ -22,6 +26,9 @@ export class ElementInteractionGenerator {
 				this.browserContext.getUrl()
 			);
 		}
+
+		interaction?.setVariant(variant);
+
 		return interaction;
 	}
 
