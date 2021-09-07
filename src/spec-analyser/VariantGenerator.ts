@@ -22,7 +22,7 @@ export class VariantGenerator {
 		ignoreFeatureTags: boolean,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		const variant = this.featureUtil.createVariant();
+		let variant = this.featureUtil.createVariant();
 
 		let firstAnalyzeSentence = true;
 
@@ -97,6 +97,7 @@ export class VariantGenerator {
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
+		variant = this.featureUtil.createThenTypeVariantSentence(variant);
 		variant.last = true;
 		return variant;
 	}
@@ -156,7 +157,7 @@ export class VariantGenerator {
 
 		if (mutations.length > 0) {
 			for (let mutation of mutations) {
-				const mutationSentence = this.featureUtil.createMutationVariantSentence(mutation);
+				const mutationSentence = this.featureUtil.createMutationVariantSentences(mutation);
 
 				if (!mutationSentence) {
 					continue;

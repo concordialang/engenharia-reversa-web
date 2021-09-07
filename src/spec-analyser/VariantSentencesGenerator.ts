@@ -20,6 +20,9 @@ export class VariantSentencesGenerator {
 			case EditableTypes.TEXTBOX:
 				action = VariantSentenceActions.FILL;
 				break;
+			case EditableTypes.BUTTON:
+				action = VariantSentenceActions.CLICK;
+				break;
 			case EditableTypes.TEXTAREA:
 				action = VariantSentenceActions.FILL;
 				break;
@@ -51,6 +54,12 @@ export class VariantSentencesGenerator {
 		);
 	}
 
+	public gerateThenTypeSentence(sentence: VariantSentence): VariantSentence {
+		sentence.type = VariantSentenceType.THEN;
+
+		return sentence;
+	}
+
 	public gerateFromMutations(mutation: MutationRecord): VariantSentence[] | null {
 		let sentences: VariantSentence[] = [];
 
@@ -73,17 +82,22 @@ export class VariantSentencesGenerator {
 		let property = mutation.target.style[0];
 		const node = mutation.target;
 
-		if (property === 'display') {
-			let value = mutation.target.style.display;
+		if (property === 'display' || property === 'visibility') {
+			let value = mutation.target.style.display
+				? mutation.target.style.display
+				: mutation.target.style.visibility;
 
-			if (value === 'none') {
+			if (
+				(value === 'none' && property == 'display') ||
+				(value === 'hidden' && property == 'visibility')
+			) {
 				sentences = this.createSentencesForMutations(
 					node,
 					VariantSentenceType.AND,
 					VariantSentenceActions.NOTSEE,
 					[{ property: property, value: value }]
 				);
-			} else if (value === 'block' || value === 'inline-block' || value === 'inline') {
+			} else {
 				sentences = this.createSentencesForMutations(
 					node,
 					VariantSentenceType.AND,

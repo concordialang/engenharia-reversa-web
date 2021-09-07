@@ -4,9 +4,13 @@ import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
 import { VariantSentenceType } from '../../src/types/VariantSentenceType';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import clearElement from '../../src/util';
+import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
+import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
 
 describe('MutationVariantSentencesGenerator', () => {
-	const featureutil = new FeatureUtil();
+	const uiElementGenerator = new UIElementGenerator();
+	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+	const featureutil = new FeatureUtil(variantSentencesGenerator);
 	let observer: MutationObserverManager;
 
 	beforeEach(() => {
@@ -40,6 +44,29 @@ describe('MutationVariantSentencesGenerator', () => {
 		observer.disconnect();
 	});
 
+	function checkMutationSentences(mutationSentences: VariantSentence[], data: any) {
+		for (let i in mutationSentences) {
+			const mutationSentence = mutationSentences[i];
+
+			expect(mutationSentence).toBeInstanceOf(VariantSentence);
+			expect(mutationSentence.action).toBe(data.action);
+			expect(mutationSentence.type).toBe(data.type);
+
+			if (mutationSentence.uiElement) {
+				expect(mutationSentence.uiElement.getName()).toBe(data.uiElmName[i]);
+			} else {
+				throw new Error('uiElement is invalid');
+			}
+
+			if (mutationSentence.attributtes && mutationSentence.attributtes.length > 0) {
+				expect(mutationSentence.attributtes[0]).toEqual({
+					property: data.attributtes.property,
+					value: data.attributtes.value,
+				});
+			}
+		}
+	}
+
 	it('generate mutation variant sentence of type attribute style display none', () => {
 		observer = new MutationObserverManager(document.body);
 		let elm = document.getElementById('inputFoo') as HTMLInputElement;
@@ -49,17 +76,53 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		expect(mutations).toHaveLength(1);
 
-		const mutationSentence: any = featureutil.createMutationVariantSentence(mutations[0]);
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
 
-		if (mutationSentence) {
-			expect(mutationSentence).toBeInstanceOf(VariantSentence);
-			expect(mutationSentence.action).toBe(VariantSentenceActions.NOTSEE);
-			expect(mutationSentence.targets).toHaveLength(1);
-			expect(mutationSentence.targets[0]).toBe('{inputFoo}');
-			expect(mutationSentence.type).toBe(VariantSentenceType.AND);
-		} else {
-			throw new Error('mutationSentence is empty');
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
 		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.NOTSEE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'display', value: 'none' },
+		};
+
+		checkMutationSentences(mutationSentences, data);
+	});
+
+	it('generate mutation variant sentence of type attribute style visibility hidden', () => {
+		observer = new MutationObserverManager(document.body);
+		let elm = document.getElementById('inputFoo') as HTMLInputElement;
+		elm.setAttribute('style', 'visibility: hidden;');
+
+		let mutations = observer.getRecords();
+
+		expect(mutations).toHaveLength(1);
+
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
+
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
+		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.NOTSEE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'visibility', value: 'hidden' },
+		};
+
+		checkMutationSentences(mutationSentences, data);
 	});
 
 	it('generate mutation variant sentence of type attribute style display block', () => {
@@ -71,22 +134,24 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		expect(mutations).toHaveLength(1);
 
-		const mutationSentence: any = featureutil.createMutationVariantSentence(mutations[0]);
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
 
-		if (mutationSentence) {
-			expect(mutationSentence).toBeInstanceOf(VariantSentence);
-			expect(mutationSentence.action).toBe(VariantSentenceActions.SEE);
-			expect(mutationSentence.targets).toHaveLength(1);
-			expect(mutationSentence.targets[0]).toBe('{inputFoo}');
-			expect(mutationSentence.type).toBe(VariantSentenceType.AND);
-			expect(mutationSentence.attributtes).toHaveLength(1);
-			expect(mutationSentence.attributtes[0]).toEqual({
-				property: 'display',
-				value: 'block',
-			});
-		} else {
-			throw new Error('mutationSentence is empty');
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
 		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.SEE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'display', value: 'block' },
+		};
+
+		checkMutationSentences(mutationSentences, data);
 	});
 
 	it('generate mutation variant sentence of removed element', () => {
@@ -98,17 +163,23 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		expect(mutations).toHaveLength(1);
 
-		const mutationSentence: any = featureutil.createMutationVariantSentence(mutations[0]);
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
 
-		if (mutationSentence) {
-			expect(mutationSentence).toBeInstanceOf(VariantSentence);
-			expect(mutationSentence.action).toBe(VariantSentenceActions.REMOVE);
-			expect(mutationSentence.targets).toHaveLength(1);
-			expect(mutationSentence.targets[0]).toBe('{divXpto}');
-			expect(mutationSentence.type).toBe(VariantSentenceType.AND);
-		} else {
-			throw new Error('mutationSentence is empty');
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
 		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.REMOVE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['Xpto'],
+		};
+
+		checkMutationSentences(mutationSentences, data);
 	});
 
 	it('generate mutation variant sentence of append element', () => {
@@ -122,8 +193,8 @@ describe('MutationVariantSentencesGenerator', () => {
 		let input = document.createElement('input');
 		input.setAttribute('id', 'inputXptoTest');
 
-		div.appendChild(btn);
 		div.appendChild(input);
+		div.appendChild(btn);
 
 		observer = new MutationObserverManager(document.body);
 
@@ -133,20 +204,27 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		expect(mutations).toHaveLength(1);
 
-		const mutationSentence: any = featureutil.createMutationVariantSentence(mutations[0]);
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
 
-		if (mutationSentence) {
-			expect(mutationSentence).toBeInstanceOf(VariantSentence);
-			expect(mutationSentence.action).toBe(VariantSentenceActions.APPEND);
-			expect(mutationSentence.targets).toHaveLength(1);
-			expect(mutationSentence.targets[0]).toBe('{btnXpto}');
-			expect(mutationSentence.type).toBe(VariantSentenceType.AND);
-		} else {
-			throw new Error('mutationSentence is empty');
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
 		}
+
+		expect(mutationSentences).toHaveLength(2);
+
+		const data = {
+			action: VariantSentenceActions.APPEND,
+			type: VariantSentenceType.AND,
+			uiElmName: ['INPUTinputXptoTest', 'ButtonbtnXpto'],
+		};
+
+		checkMutationSentences(mutationSentences, data);
 	});
 
 	it('generate mutation variant sentence for value assignment', () => {
+		observer = new MutationObserverManager(document.body);
 		let elm = document.getElementById('inputFoo') as HTMLInputElement;
 		elm.setAttribute('value', 'Test');
 
@@ -154,18 +232,23 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		expect(mutations).toHaveLength(1);
 
-		const mutationSentence: any = featureutil.createMutationVariantSentence(mutations[0]);
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
 
-		if (mutationSentence) {
-			expect(mutationSentence).toBeInstanceOf(VariantSentence);
-			expect(mutationSentence.action).toBe(VariantSentenceActions.FILL);
-			expect(mutationSentence.targets).toHaveLength(1);
-			expect(mutationSentence.targets[0]).toBe('{inputFoo}');
-			expect(mutationSentence.type).toBe(VariantSentenceType.AND);
-			expect(mutationSentence.attributtes).toHaveLength(1);
-			expect(mutationSentence.attributtes[0]).toEqual({ property: 'value', value: 'Test' });
-		} else {
-			throw new Error('mutationSentence is empty');
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
 		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.FILL,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'value', value: 'Test' },
+		};
+
+		checkMutationSentences(mutationSentences, data);
 	});
 });

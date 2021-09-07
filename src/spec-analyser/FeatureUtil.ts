@@ -53,8 +53,24 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.gerateGivenTypeSentence(url);
 	}
 
-	createMutationVariantSentence(mutation: MutationRecord): VariantSentence[] | null {
+	createMutationVariantSentences(mutation: MutationRecord): VariantSentence[] | null {
 		return this.variantSentencesGenerator.gerateFromMutations(mutation);
+	}
+
+	createThenTypeVariantSentence(variant: Variant): Variant {
+		const sentences = variant.getSentences();
+
+		const lastSentenceIndex = sentences.length - 1;
+
+		const lastSentence = sentences[lastSentenceIndex];
+
+		const lastSentenceThen = this.variantSentencesGenerator.gerateThenTypeSentence(
+			lastSentence
+		);
+
+		variant.getSentences()[lastSentenceIndex] = lastSentenceThen;
+
+		return variant;
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
