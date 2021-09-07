@@ -1,7 +1,6 @@
-import getXPath from 'get-xpath';
 import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { formatToFirstCapitalLetter, getPathTo } from '../util';
 
 const DEFAULT_MAX_LENGTH = 524288;
@@ -120,16 +119,16 @@ export class UIElementGenerator {
 
 		if (elm.name) {
 			name = formatToFirstCapitalLetter(elm.name);
-		} else if (elm.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL) {
+		} else if (elm.previousElementSibling?.nodeName === HTMLElementType.LABEL) {
 			name = this.generateNameFromPreviousLabel(elm);
 		} else if (
-			elm.previousElementSibling?.nodeName === HTMLNodeTypes.BR &&
-			elm.previousElementSibling?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
+			elm.previousElementSibling?.nodeName === HTMLElementType.BR &&
+			elm.previousElementSibling?.previousElementSibling?.nodeName === HTMLElementType.LABEL
 		) {
 			name = this.generateNameFromPreviousLabel(elm.previousElementSibling as HTMLElement);
 		} else if (
-			elm.parentElement?.nodeName === HTMLNodeTypes.DIV &&
-			elm.parentElement?.previousElementSibling?.nodeName === HTMLNodeTypes.LABEL
+			elm.parentElement?.nodeName === HTMLElementType.DIV &&
+			elm.parentElement?.previousElementSibling?.nodeName === HTMLElementType.LABEL
 		) {
 			name = this.generateNameFromPreviousLabel(elm.parentElement);
 		}
@@ -163,7 +162,7 @@ export class UIElementGenerator {
 		if (!label.innerHTML) {
 			name = formatToFirstCapitalLetter(label.innerHTML);
 		} else if (label.htmlFor !== undefined) {
-			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLNodeTypes.BR) {
+			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLElementType.BR) {
 				name = formatToFirstCapitalLetter(label.htmlFor);
 			}
 		}

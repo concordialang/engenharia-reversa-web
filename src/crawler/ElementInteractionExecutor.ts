@@ -1,5 +1,5 @@
-import { HTMLElementType } from '../html/HTMLElementType';
-import { HTMLInputType } from '../html/HTMLInputType';
+import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLInputType } from '../types/HTMLInputType';
 import { sleep } from '../util';
 import { ButtonInteractor } from './ButtonInteractor';
 import { ElementInteraction } from './ElementInteraction';
@@ -28,7 +28,7 @@ export class ElementInteractionExecutor {
 		const element = interaction.getElement();
 		const type = element.tagName;
 		let result: InteractionResult | null = null;
-		if (type == HTMLElementType.Input) {
+		if (type == HTMLElementType.INPUT) {
 			const inputType = element.getAttribute('type');
 			if (inputType == HTMLInputType.Submit) {
 				result = await this.buttonInteractor.execute(
@@ -41,7 +41,7 @@ export class ElementInteractionExecutor {
 					redirectionCallback
 				);
 			}
-		} else if (type == HTMLElementType.Button) {
+		} else if (type == HTMLElementType.BUTTON) {
 			result = await this.buttonInteractor.execute(
 				<ElementInteraction<HTMLButtonElement>>interaction,
 				redirectionCallback

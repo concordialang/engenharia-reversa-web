@@ -1,4 +1,4 @@
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { Feature } from '../spec-analyser/Feature';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
@@ -24,8 +24,8 @@ export class PageAnalyzer {
 				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
 
 				if (
-					contextElement.nodeName !== HTMLNodeTypes.FORM &&
-					contextElement.nodeName !== HTMLNodeTypes.TABLE
+					contextElement.nodeName !== HTMLElementType.FORM &&
+					contextElement.nodeName !== HTMLElementType.TABLE
 				) {
 					// generate feature for elements outside feature elements
 					const featureOuterElements = await this.featureManager.generateFeature(
@@ -54,8 +54,8 @@ export class PageAnalyzer {
 
 		// case analysisElement is directly a feature element
 		if (
-			analysisElement.nodeName === HTMLNodeTypes.FORM ||
-			analysisElement.nodeName === HTMLNodeTypes.TABLE
+			analysisElement.nodeName === HTMLElementType.FORM ||
+			analysisElement.nodeName === HTMLElementType.TABLE
 		) {
 			const feature = await this.featureManager.generateFeature(analysisElement, url);
 

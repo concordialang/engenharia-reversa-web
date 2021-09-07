@@ -3,7 +3,7 @@ import { Feature } from './Feature';
 import { Scenario } from './Scenario';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {
@@ -75,10 +75,10 @@ export class FeatureUtil {
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
 		if (
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H1 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H2 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H3 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.LEGEND
+			f.previousElementSibling?.nodeName === HTMLElementType.H1 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.H2 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.H3 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.LEGEND
 		) {
 			return f.previousElementSibling as HTMLElement;
 		}

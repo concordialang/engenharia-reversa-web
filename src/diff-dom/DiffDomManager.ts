@@ -1,5 +1,5 @@
 import { DiffDOM } from 'diff-dom';
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { getPathTo } from '../util';
 
 export class DiffDomManager {
@@ -49,7 +49,7 @@ export class DiffDomManager {
 		diffDom = diffDom.filter(
 			(diff) =>
 				diff.element === undefined ||
-				(diff.element !== undefined && diff.element.nodeName !== HTMLNodeTypes.SCRIPT)
+				(diff.element !== undefined && diff.element.nodeName !== HTMLElementType.SCRIPT)
 		);
 
 		return diffDom;

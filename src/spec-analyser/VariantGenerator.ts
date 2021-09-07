@@ -1,4 +1,4 @@
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementInteractionExecutor } from '../crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenerator';
@@ -6,7 +6,6 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import oneWise from 'one-wise';
 
 export class VariantGenerator {
 	constructor(
@@ -103,10 +102,10 @@ export class VariantGenerator {
 	}
 
 	private checkValidFirstChild(elm, ignoreFeatureTags): boolean {
-		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLNodeTypes.OPTION) {
+		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
 			if (
 				!ignoreFeatureTags ||
-				(elm.nodeName !== HTMLNodeTypes.FORM && elm.nodeName !== HTMLNodeTypes.TABLE)
+				(elm.nodeName !== HTMLElementType.FORM && elm.nodeName !== HTMLElementType.TABLE)
 			) {
 				return true;
 			}

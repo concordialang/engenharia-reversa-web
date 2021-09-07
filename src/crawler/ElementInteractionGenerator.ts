@@ -1,6 +1,6 @@
-import { HTMLElementType } from '../html/HTMLElementType';
-import { HTMLEventType } from '../html/HTMLEventType';
-import { HTMLInputType } from '../html/HTMLInputType';
+import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLEventType } from '../types/HTMLEventType';
+import { HTMLInputType } from '../types/HTMLInputType';
 import { Variant } from '../spec-analyser/Variant';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
@@ -122,7 +122,7 @@ export class ElementInteractionGenerator {
 		name: string
 	): HTMLInputElement[] {
 		const matchedInputs: HTMLInputElement[] = [];
-		const inputs = form.getElementsByTagName(HTMLElementType.Input);
+		const inputs = form.getElementsByTagName(HTMLElementType.INPUT);
 		for (const input of inputs) {
 			const inputNameAttr = input.getAttribute('name');
 			if (inputNameAttr && inputNameAttr == name) {
