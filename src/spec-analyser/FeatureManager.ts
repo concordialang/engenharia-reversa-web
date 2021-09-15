@@ -45,6 +45,8 @@ export class FeatureManager {
 				url,
 				observer,
 				ignoreFeatureTags,
+				feature.getName(),
+				variants.length,
 				this.redirectionCallback
 			);
 
@@ -59,7 +61,7 @@ export class FeatureManager {
 			return null;
 		}
 
-		const scenario = this.featureUtil.createScenario(feature);
+		const scenario = this.featureUtil.createScenario(feature.getName());
 		scenario.setVariants(variants);
 		feature.addScenario(scenario);
 

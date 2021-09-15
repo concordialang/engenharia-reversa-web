@@ -27,16 +27,17 @@ export class FeatureUtil {
 		return feature;
 	}
 
-	createScenario(feature: Feature): Scenario {
+	createScenario(featureName: string): Scenario {
 		const scenario = new Scenario();
-		scenario.setName(feature.getName() + ' - Scenario 1');
+		scenario.setName(featureName + ' - General Scenario');
 
 		return scenario;
 	}
 
-	createVariant(variantName = ''): Variant {
+	createVariant(variantName, variantsCount: number): Variant {
+		let id = 1 + variantsCount;
 		const variant = new Variant();
-		let name = variantName !== '' ? variantName : 'General Variant';
+		let name = variantName + ' - Variant ' + id;
 		variant.setName(name);
 
 		return variant;
@@ -57,20 +58,10 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.gerateFromMutations(mutation);
 	}
 
-	createThenTypeVariantSentence(variant: Variant): Variant {
-		const sentences = variant.getSentences();
+	createThenTypeVariantSentence(featureName: string): VariantSentence {
+		const thenSentence = this.variantSentencesGenerator.gerateThenTypeSentence(featureName);
 
-		const lastSentenceIndex = sentences.length - 1;
-
-		const lastSentence = sentences[lastSentenceIndex];
-
-		const lastSentenceThen = this.variantSentencesGenerator.gerateThenTypeSentence(
-			lastSentence
-		);
-
-		variant.getSentences()[lastSentenceIndex] = lastSentenceThen;
-
-		return variant;
+		return thenSentence;
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
@@ -88,6 +79,7 @@ export class FeatureUtil {
 
 	private generateDefaultFeatureName(featureCount: number, language?: string): string {
 		const id = 1 + featureCount;
+
 		switch (language) {
 			case 'pt-br':
 				return 'Funcionalidade ' + id;

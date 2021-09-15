@@ -19,9 +19,11 @@ export class VariantGenerator {
 		url: URL,
 		observer: MutationObserverManager,
 		ignoreFeatureTags: boolean,
+		featureName: string,
+		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		let variant = this.featureUtil.createVariant();
+		let variant = this.featureUtil.createVariant(featureName, variantsCount);
 
 		let firstAnalyzeSentence = true;
 
@@ -96,7 +98,7 @@ export class VariantGenerator {
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
-		variant = this.featureUtil.createThenTypeVariantSentence(variant);
+		variant.setVariantSentence(this.featureUtil.createThenTypeVariantSentence(featureName));
 		variant.last = true;
 		return variant;
 	}

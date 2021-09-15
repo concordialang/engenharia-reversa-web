@@ -251,4 +251,62 @@ describe('MutationVariantSentencesGenerator', () => {
 
 		checkMutationSentences(mutationSentences, data);
 	});
+
+	it('generate mutation variant sentence for disable element', () => {
+		observer = new MutationObserverManager(document.body);
+		let elm = document.getElementById('inputFoo') as HTMLInputElement;
+		elm.disabled = true;
+
+		let mutations = observer.getRecords();
+
+		expect(mutations).toHaveLength(1);
+
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
+
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
+		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.SEE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'disabled', value: true },
+		};
+
+		checkMutationSentences(mutationSentences, data);
+	});
+
+	it('generate mutation variant sentence for readonly element', () => {
+		observer = new MutationObserverManager(document.body);
+		let elm = document.getElementById('inputFoo') as HTMLInputElement;
+		elm.readOnly = true;
+
+		let mutations = observer.getRecords();
+
+		expect(mutations).toHaveLength(1);
+
+		const mutationSentences:
+			| VariantSentence[]
+			| null = featureutil.createMutationVariantSentences(mutations[0]);
+
+		if (!mutationSentences) {
+			throw new Error('mutationSentences is invalid');
+		}
+
+		expect(mutationSentences).toHaveLength(1);
+
+		const data = {
+			action: VariantSentenceActions.SEE,
+			type: VariantSentenceType.AND,
+			uiElmName: ['InputFoo'],
+			attributtes: { property: 'readonly', value: true },
+		};
+
+		checkMutationSentences(mutationSentences, data);
+	});
 });

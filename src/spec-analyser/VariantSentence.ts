@@ -6,6 +6,7 @@ export class VariantSentence {
 		public action: string,
 		public uiElement?: UIElement,
 		public attributtes?: Array<{ property: string; value: string }>,
-		public url?: URL
+		public url?: URL,
+		public statePostCondition?: string
 	) {}
 }

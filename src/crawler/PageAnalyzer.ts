@@ -21,7 +21,7 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
-				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
+				await this.analyseFeatureElements(url, contextElement);
 
 				if (
 					contextElement.nodeName !== HTMLElementType.FORM &&
@@ -35,12 +35,10 @@ export class PageAnalyzer {
 					);
 
 					if (featureOuterElements) {
-						features.push(featureOuterElements);
+						this.spec.addFeature(featureOuterElements);
 					}
-				}
 
-				if (features.length > 0) {
-					this.spec.addFeatures(features);
+					let teste = 1;
 				}
 			}
 		}
@@ -81,7 +79,7 @@ export class PageAnalyzer {
 						url
 					);
 					if (feature) {
-						features.push(feature);
+						this.spec.addFeature(feature);
 					}
 				}
 			}
