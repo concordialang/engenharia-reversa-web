@@ -1,7 +1,8 @@
-import { HTMLEventType } from '../html/HTMLEventType';
+import { HTMLEventType } from '../types/HTMLEventType';
 import { getElementByXpath, getEnumKeyByEnumValue, getPathTo } from '../util';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { LocalObjectStorage } from './LocalObjectStorage';
+import { Variant } from '../spec-analyser/Variant';
 export class ElementInteractionStorage extends LocalObjectStorage<ElementInteraction<HTMLElement>> {
 	private document: HTMLDocument;
 
@@ -15,6 +16,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 		const eventType = obj.getEventType();
 		const value = obj.getValue();
 		const pageUrl = obj.getPageUrl();
+		const variant = JSON.stringify(obj.getVariant());
 		if (pathToElement) {
 			const json: {
 				id: string;
@@ -23,6 +25,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 				pageUrl: string;
 				value: string | boolean | null;
 				elementSelector: string | null;
+				variant: string | null;
 			} = {
 				id: obj.getId(),
 				element: pathToElement,
@@ -30,6 +33,7 @@ export class ElementInteractionStorage extends LocalObjectStorage<ElementInterac
 				pageUrl: pageUrl.toString(),
 				value: value,
 				elementSelector: getPathTo(obj.getElement()),
+				variant: variant,
 			};
 			return JSON.stringify(json);
 		} else {

@@ -40,12 +40,15 @@ export class FeatureManager {
 
 		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;
+
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
 				url,
 				observer,
 				ignoreFeatureTags,
+				feature.getName(),
+				variants.length,
 				this.redirectionCallback
 			);
 
@@ -60,7 +63,7 @@ export class FeatureManager {
 			return null;
 		}
 
-		const scenario = this.featureUtil.createScenario(feature);
+		const scenario = this.featureUtil.createScenario(feature.getName());
 		scenario.setVariants(variants);
 		feature.addScenario(scenario);
 

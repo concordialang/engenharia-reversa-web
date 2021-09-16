@@ -1,4 +1,4 @@
-import { HTMLEventType } from '../html/HTMLEventType';
+import { HTMLEventType } from '../types/HTMLEventType';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -9,10 +9,9 @@ import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
 import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ElementAnalysis } from './ElementAnalysis';
-
+import { HTMLElementType } from '../types/HTMLElementType';
 export class Crawler {
 	private lastPageKey: string;
 
@@ -184,8 +183,8 @@ export class Crawler {
 			const analysisContext: HTMLElement = await getDiff(currentDocument, previousDocument);
 
 			analysisElement =
-				analysisContext.nodeName === HTMLNodeTypes.FORM ||
-				analysisContext.nodeName === HTMLNodeTypes.TABLE
+				analysisContext.nodeName === HTMLElementType.FORM ||
+				analysisContext.nodeName === HTMLElementType.TABLE
 					? analysisContext
 					: await this.getAnalysisElementFromCommonAcestor(
 							analysisContext,

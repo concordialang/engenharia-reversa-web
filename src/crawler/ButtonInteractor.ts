@@ -1,4 +1,4 @@
-import { HTMLEventType } from '../html/HTMLEventType';
+import { HTMLEventType } from '../types/HTMLEventType';
 import { sleep } from '../util';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractor } from './ElementInteractor';

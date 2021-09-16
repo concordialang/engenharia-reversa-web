@@ -1,5 +1,6 @@
-export enum HTMLNodeTypes {
+export enum HTMLElementType {
 	BODY = 'BODY',
+	BUTTON = 'BUTTON',
 	BR = 'BR',
 	DIV = 'DIV',
 	FORM = 'FORM',
@@ -26,5 +27,4 @@ export enum HTMLNodeTypes {
 	TH = 'TH',
 	THEAD = 'THEAD',
 	UL = 'UL',
-	BUTTON = 'BUTTON',
 }

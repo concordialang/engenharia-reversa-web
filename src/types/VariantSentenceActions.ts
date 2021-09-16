@@ -12,6 +12,7 @@ export enum VariantSentenceActions {
 	DISCONNECT = 'disconnect',
 	DRAG = 'drag',
 	FILL = 'fill',
+	HAVE = 'have',
 	HIDE = 'hide',
 	INSTALL = 'install',
 	MAXIMIZE = 'maximize',

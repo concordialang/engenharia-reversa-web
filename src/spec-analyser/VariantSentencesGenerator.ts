@@ -20,6 +20,9 @@ export class VariantSentencesGenerator {
 			case EditableTypes.TEXTBOX:
 				action = VariantSentenceActions.FILL;
 				break;
+			case EditableTypes.BUTTON:
+				action = VariantSentenceActions.CLICK;
+				break;
 			case EditableTypes.TEXTAREA:
 				action = VariantSentenceActions.FILL;
 				break;
@@ -51,14 +54,29 @@ export class VariantSentencesGenerator {
 		);
 	}
 
+	public gerateThenTypeSentence(featureName: string): VariantSentence {
+		return new VariantSentence(
+			VariantSentenceType.THEN,
+			VariantSentenceActions.HAVE,
+			undefined,
+			undefined,
+			undefined,
+			featureName.toLocaleLowerCase()
+		);
+	}
+
 	public gerateFromMutations(mutation: MutationRecord): VariantSentence[] | null {
 		let sentences: VariantSentence[] = [];
 
 		if (mutation.type === 'attributes') {
 			if (mutation.attributeName === 'style') {
-				sentences = this.buildAttibutesStyleSentence(mutation);
+				sentences = this.buildAttrStyleSentence(mutation);
 			} else if (mutation.attributeName === 'value') {
-				sentences = this.buildAttibutesValueSentence(mutation);
+				sentences = this.buildAttrValueSentence(mutation);
+			} else if (mutation.attributeName === 'disabled') {
+				sentences = this.buildAttrDisabledSentence(mutation);
+			} else if (mutation.attributeName === 'readonly') {
+				sentences = this.buildAttrReadOnlySentence(mutation);
 			}
 		} else if (mutation.type === 'childList') {
 			sentences = this.buildChildListSentence(mutation);
@@ -67,23 +85,28 @@ export class VariantSentencesGenerator {
 		return sentences.length >= 1 ? sentences : null;
 	}
 
-	private buildAttibutesStyleSentence(mutation): VariantSentence[] {
+	private buildAttrStyleSentence(mutation): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 
 		let property = mutation.target.style[0];
 		const node = mutation.target;
 
-		if (property === 'display') {
-			let value = mutation.target.style.display;
+		if (property === 'display' || property === 'visibility') {
+			let value = mutation.target.style.display
+				? mutation.target.style.display
+				: mutation.target.style.visibility;
 
-			if (value === 'none') {
+			if (
+				(value === 'none' && property == 'display') ||
+				(value === 'hidden' && property == 'visibility')
+			) {
 				sentences = this.createSentencesForMutations(
 					node,
 					VariantSentenceType.AND,
 					VariantSentenceActions.NOTSEE,
 					[{ property: property, value: value }]
 				);
-			} else if (value === 'block' || value === 'inline-block' || value === 'inline') {
+			} else {
 				sentences = this.createSentencesForMutations(
 					node,
 					VariantSentenceType.AND,
@@ -123,7 +146,7 @@ export class VariantSentencesGenerator {
 		return sentences;
 	}
 
-	private buildAttibutesValueSentence(mutation): VariantSentence[] {
+	private buildAttrValueSentence(mutation): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 
 		let node = mutation.target;
@@ -148,6 +171,42 @@ export class VariantSentencesGenerator {
 				[{ property: 'value', value: node.value }]
 			);
 		}
+
+		return sentences;
+	}
+
+	private buildAttrDisabledSentence(mutation): VariantSentence[] {
+		let sentences: VariantSentence[] = [];
+
+		const node = mutation.target;
+		if (!node || !node.disabled) {
+			return sentences;
+		}
+
+		sentences = this.createSentencesForMutations(
+			node,
+			VariantSentenceType.AND,
+			VariantSentenceActions.SEE,
+			[{ property: 'disabled', value: node.disabled }]
+		);
+
+		return sentences;
+	}
+
+	private buildAttrReadOnlySentence(mutation): VariantSentence[] {
+		let sentences: VariantSentence[] = [];
+
+		const node = mutation.target;
+		if (!node || !node.readOnly) {
+			return sentences;
+		}
+
+		sentences = this.createSentencesForMutations(
+			node,
+			VariantSentenceType.AND,
+			VariantSentenceActions.SEE,
+			[{ property: 'readonly', value: node.readOnly }]
+		);
 
 		return sentences;
 	}

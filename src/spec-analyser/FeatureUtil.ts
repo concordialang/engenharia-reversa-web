@@ -3,7 +3,7 @@ import { Feature } from './Feature';
 import { Scenario } from './Scenario';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {
@@ -27,16 +27,17 @@ export class FeatureUtil {
 		return feature;
 	}
 
-	createScenario(feature: Feature): Scenario {
+	createScenario(featureName: string): Scenario {
 		const scenario = new Scenario();
-		scenario.setName(feature.getName() + ' - Scenario 1');
+		scenario.setName(featureName + ' - General Scenario');
 
 		return scenario;
 	}
 
-	createVariant(variantName = ''): Variant {
+	createVariant(variantName, variantsCount: number): Variant {
+		let id = 1 + variantsCount;
 		const variant = new Variant();
-		let name = variantName !== '' ? variantName : 'General Variant';
+		let name = variantName + ' - Variant ' + id;
 		variant.setName(name);
 
 		return variant;
@@ -53,16 +54,22 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.gerateGivenTypeSentence(url);
 	}
 
-	createMutationVariantSentence(mutation: MutationRecord): VariantSentence[] | null {
+	createMutationVariantSentences(mutation: MutationRecord): VariantSentence[] | null {
 		return this.variantSentencesGenerator.gerateFromMutations(mutation);
+	}
+
+	createThenTypeVariantSentence(featureName: string): VariantSentence {
+		const thenSentence = this.variantSentencesGenerator.gerateThenTypeSentence(featureName);
+
+		return thenSentence;
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
 		if (
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H1 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H2 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.H3 ||
-			f.previousElementSibling?.nodeName === HTMLNodeTypes.LEGEND
+			f.previousElementSibling?.nodeName === HTMLElementType.H1 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.H2 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.H3 ||
+			f.previousElementSibling?.nodeName === HTMLElementType.LEGEND
 		) {
 			return f.previousElementSibling as HTMLElement;
 		}
@@ -72,6 +79,7 @@ export class FeatureUtil {
 
 	private generateDefaultFeatureName(featureCount: number, language?: string): string {
 		const id = 1 + featureCount;
+
 		switch (language) {
 			case 'pt-br':
 				return 'Funcionalidade ' + id;

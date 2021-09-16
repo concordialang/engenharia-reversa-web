@@ -1,4 +1,4 @@
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { Feature } from '../spec-analyser/Feature';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
@@ -23,14 +23,11 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
-				//TO-DO
-				// this.setAnalyzedElement(analysisElement, url);
-
-				let features: Feature[] = await this.analyseFeatureElements(url, contextElement);
+				await this.analyseFeatureElements(url, contextElement);
 
 				if (
-					contextElement.nodeName !== HTMLNodeTypes.FORM &&
-					contextElement.nodeName !== HTMLNodeTypes.TABLE
+					contextElement.nodeName !== HTMLElementType.FORM &&
+					contextElement.nodeName !== HTMLElementType.TABLE
 				) {
 					// generate feature for elements outside feature elements
 					const featureOuterElements = await this.featureManager.generateFeature(
@@ -40,12 +37,10 @@ export class PageAnalyzer {
 					);
 
 					if (featureOuterElements) {
-						features.push(featureOuterElements);
+						this.spec.addFeature(featureOuterElements);
 					}
-				}
 
-				if (features.length > 0) {
-					this.spec.addFeatures(features);
+					let teste = 1;
 				}
 			}
 		}
@@ -59,8 +54,8 @@ export class PageAnalyzer {
 
 		// case analysisElement is directly a feature element
 		if (
-			analysisElement.nodeName === HTMLNodeTypes.FORM ||
-			analysisElement.nodeName === HTMLNodeTypes.TABLE
+			analysisElement.nodeName === HTMLElementType.FORM ||
+			analysisElement.nodeName === HTMLElementType.TABLE
 		) {
 			const feature = await this.featureManager.generateFeature(analysisElement, url);
 
@@ -86,21 +81,12 @@ export class PageAnalyzer {
 						url
 					);
 					if (feature) {
-						features.push(feature);
+						this.spec.addFeature(feature);
 					}
 				}
 			}
 		}
 
 		return features;
-	}
-
-	private async setElementAsAnalyzed(elm: Element, url: URL) {
-		const elementAnalysis = new ElementAnalysis(
-			elm as HTMLElement,
-			url,
-			ElementAnalysisStatus.Done
-		);
-		await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 	}
 }

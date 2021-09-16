@@ -1,4 +1,4 @@
-import { HTMLNodeTypes } from '../html/HTMLNodeTypes';
+import { HTMLElementType } from '../types/HTMLElementType';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementInteractionExecutor } from '../crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenerator';
@@ -19,9 +19,11 @@ export class VariantGenerator {
 		url: URL,
 		observer: MutationObserverManager,
 		ignoreFeatureTags: boolean,
+		featureName: string,
+		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		const variant = this.featureUtil.createVariant();
+		let variant = this.featureUtil.createVariant(featureName, variantsCount);
 
 		let firstAnalyzeSentence = true;
 
@@ -37,7 +39,7 @@ export class VariantGenerator {
 				return;
 			}
 
-			const interaction = await this.elementInteractionGenerator.generate(elm);
+			const interaction = await this.elementInteractionGenerator.generate(elm, variant);
 			if (!interaction) {
 				if (elm.nextElementSibling) {
 					await analyse(elm.nextElementSibling);
@@ -96,15 +98,16 @@ export class VariantGenerator {
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
+		variant.setVariantSentence(this.featureUtil.createThenTypeVariantSentence(featureName));
 		variant.last = true;
 		return variant;
 	}
 
 	private checkValidFirstChild(elm, ignoreFeatureTags): boolean {
-		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLNodeTypes.OPTION) {
+		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
 			if (
 				!ignoreFeatureTags ||
-				(elm.nodeName !== HTMLNodeTypes.FORM && elm.nodeName !== HTMLNodeTypes.TABLE)
+				(elm.nodeName !== HTMLElementType.FORM && elm.nodeName !== HTMLElementType.TABLE)
 			) {
 				return true;
 			}
@@ -155,7 +158,7 @@ export class VariantGenerator {
 
 		if (mutations.length > 0) {
 			for (let mutation of mutations) {
-				const mutationSentence = this.featureUtil.createMutationVariantSentence(mutation);
+				const mutationSentence = this.featureUtil.createMutationVariantSentences(mutation);
 
 				if (!mutationSentence) {
 					continue;
