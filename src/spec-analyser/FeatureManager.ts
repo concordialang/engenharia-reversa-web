@@ -1,7 +1,8 @@
-import { AnalyzedElement } from '../crawler/AnalyzedElement';
+import { ElementAnalysis } from '../crawler/ElementAnalysis';
+import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
+import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Spec } from './Spec';
@@ -13,16 +14,17 @@ export class FeatureManager {
 	constructor(
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
-		private analyzedElementStorage: AnalyzedElementStorage,
+		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec
 	) {}
 
 	redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
-		const analyzedElement = new AnalyzedElement(
+		const elementAnalysis = new ElementAnalysis(
 			interaction.getElement(),
-			interaction.getPageUrl()
+			interaction.getPageUrl(),
+			ElementAnalysisStatus.Done
 		);
-		await this.analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+		await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 	};
 
 	public async generateFeature(

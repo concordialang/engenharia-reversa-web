@@ -5,7 +5,7 @@ import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { Command } from './comm/Command';
 import { CommunicationChannel } from './comm/CommunicationChannel';
 import { Message } from './comm/Message';
-import { AnalyzedElementStorage } from './storage/AnalyzedElementStorage';
+import { ElementAnalysisStorage } from './storage/ElementAnalysisStorage';
 import { BrowserContext } from './crawler/BrowserContext';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
@@ -41,12 +41,12 @@ getTabId(communicationChannel).then((tabId) => {
 	const buttonInteractor = new ButtonInteractor(window);
 	const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
 	const spec: Spec = new Spec('pt-br');
-	const analyzedElementStorage = new AnalyzedElementStorage(window.localStorage, document);
+	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, document);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
 		tabId,
 		elementInteracationStorage,
-		analyzedElementStorage,
+		elementAnalysisStorage,
 		graphStorage,
 		interactionsGraphMutex
 	);
@@ -79,11 +79,11 @@ getTabId(communicationChannel).then((tabId) => {
 	const featureManager = new FeatureManager(
 		variantGenerator,
 		featureUtil,
-		analyzedElementStorage,
+		elementAnalysisStorage,
 		spec
 	);
 
-	const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
+	const pageAnalyzer = new PageAnalyzer(featureManager, elementAnalysisStorage, spec);
 
 	const crawler: Crawler = new Crawler(
 		browserContext,
@@ -92,7 +92,7 @@ getTabId(communicationChannel).then((tabId) => {
 		visitedURLGraph,
 		pageAnalyzer,
 		communicationChannel,
-		analyzedElementStorage
+		elementAnalysisStorage
 	);
 
 	communicationChannel.setMessageListener(function (message: Message) {
