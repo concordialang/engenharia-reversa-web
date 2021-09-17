@@ -2,20 +2,22 @@ import { HTMLElementType } from '../types/HTMLElementType';
 import { Feature } from '../spec-analyser/Feature';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
+import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getFeatureElements, getPathTo } from '../util';
+import { ElementAnalysis } from './ElementAnalysis';
+import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
 export class PageAnalyzer {
 	constructor(
 		private featureManager: FeatureManager,
-		private analyzedElementStorage: AnalyzedElementStorage,
+		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec
 	) {}
 
 	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const isElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			const isElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
 				xPath,
 				url
 			);
@@ -66,12 +68,12 @@ export class PageAnalyzer {
 				let xPathElement = getPathTo(<HTMLElement>featureTag);
 				if (!xPathElement) continue;
 
-				const analyzedElement = await this.analyzedElementStorage.isElementAnalyzed(
+				const elementAnalysis = await this.elementAnalysisStorage.isElementAnalyzed(
 					xPathElement,
 					url
 				);
 
-				if (!analyzedElement) {
+				if (!elementAnalysis) {
 					const feature = await this.featureManager.generateFeature(
 						featureTag as HTMLElement,
 						url

@@ -1,5 +1,5 @@
 import { Graph } from '../graph/Graph';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
+import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import Mutex from '../mutex/Mutex';
@@ -12,13 +12,13 @@ export class ElementInteractionGraph {
 	constructor(
 		private id: string,
 		private elementInteractionStorage: ElementInteractionStorage,
-		private analyzedElementStorage: AnalyzedElementStorage,
+		private elementAnalysisStorage: ElementAnalysisStorage,
 		private graphStorage: GraphStorage,
 		private mutex: Mutex
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
-		this.analyzedElementStorage = analyzedElementStorage;
+		this.elementAnalysisStorage = elementAnalysisStorage;
 		this.mutex = mutex;
 		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
 		this.lastInteractionKey = 'last-interaction-' + this.id;
@@ -138,7 +138,7 @@ export class ElementInteractionGraph {
 		const nextInteractionElementSelector = interaction.getElementSelector();
 		if (!nextInteractionElementSelector)
 			throw new Error('Current Interaction element selector is null');
-		const interactionAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+		const interactionAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
 			nextInteractionElementSelector,
 			interaction.getPageUrl()
 		);

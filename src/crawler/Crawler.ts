@@ -9,9 +9,9 @@ import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
 import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
+import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
+import { ElementAnalysis } from './ElementAnalysis';
 import { HTMLElementType } from '../types/HTMLElementType';
-import { AnalyzedElementStorage } from '../storage/AnalyzedElementStorage';
-
 export class Crawler {
 	private lastPageKey: string;
 
@@ -22,7 +22,7 @@ export class Crawler {
 		private visitedURLGraph: VisitedURLGraph,
 		private pageAnalyzer: PageAnalyzer,
 		private communicationChannel: CommunicationChannel,
-		private analyzedElementStorage: AnalyzedElementStorage
+		private elementAnalysisStorage: ElementAnalysisStorage
 	) {
 		this.lastPageKey = 'last-page';
 	}
@@ -94,7 +94,7 @@ export class Crawler {
 		for (let link of links) {
 			const xPath = getPathTo(<HTMLLinkElement>link);
 			if (xPath) {
-				let isElementAnalyzed: boolean = await this.analyzedElementStorage.isElementAnalyzed(
+				let isElementAnalyzed: boolean = await this.elementAnalysisStorage.isElementAnalyzed(
 					xPath,
 					this.browserContext.getUrl()
 				);
@@ -121,7 +121,7 @@ export class Crawler {
 			parentXPath = getPathTo(parent);
 		}
 		if (parentXPath) {
-			const isParentElementAnalyzed = await this.analyzedElementStorage.isElementAnalyzed(
+			const isParentElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
 				parentXPath,
 				this.browserContext.getUrl()
 			);
