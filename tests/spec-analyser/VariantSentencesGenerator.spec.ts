@@ -1,11 +1,15 @@
 import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { UIElement } from '../../src/spec-analyser/UIElement';
+import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
 import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
 import { VariantSentenceType } from '../../src/types/VariantSentenceType';
 import clearElement from '../../src/util';
 
 describe('VariantSentencesGenerator', () => {
-	const featureutil = new FeatureUtil();
+	const uiElementGenerator = new UIElementGenerator();
+	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+	const featureutil = new FeatureUtil(variantSentencesGenerator);
 
 	afterEach(() => {
 		clearElement(document.body);

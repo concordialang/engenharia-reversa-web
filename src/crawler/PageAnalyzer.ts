@@ -37,8 +37,6 @@ export class PageAnalyzer {
 					if (featureOuterElements) {
 						this.spec.addFeature(featureOuterElements);
 					}
-
-					let teste = 1;
 				}
 			}
 		}
