@@ -36,7 +36,9 @@ export class FeatureManager {
 			analysisElement,
 			this.spec.featureCount()
 		);
-		let observer: MutationObserverManager = new MutationObserverManager(analysisElement);
+		let observer: MutationObserverManager = new MutationObserverManager(
+			analysisElement.ownerDocument.body
+		);
 
 		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;

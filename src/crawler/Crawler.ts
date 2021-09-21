@@ -10,7 +10,6 @@ import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
 import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { ElementAnalysis } from './ElementAnalysis';
 import { HTMLElementType } from '../types/HTMLElementType';
 export class Crawler {
 	private lastPageKey: string;
@@ -74,11 +73,6 @@ export class Crawler {
 
 		await this.pageAnalyzer.analyze(this.browserContext.getUrl(), analysisElement);
 
-		// const analysisElement = await this.getAnalysisElement();
-		// if (analysisElement) {
-		// 	await this.analyse(analysisElement);
-		// }
-
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
 			lastUnanalyzed &&
@@ -133,9 +127,8 @@ export class Crawler {
 			} else {
 				return false;
 			}
-		} else {
-			throw new Error('Unable to get element xPath');
 		}
+
 		return false;
 	}
 
@@ -163,19 +156,19 @@ export class Crawler {
 		return null;
 	}
 
-	private async getPreviousDocument(): Promise<HTMLDocument | null> {
+	private async getPreviousDocument(): Promise<Document | null> {
 		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);
 		if (previousHTML) {
 			const previousDoc: Document = document.implementation.createHTMLDocument();
 			previousDoc.body.innerHTML = previousHTML;
-			return <HTMLDocument>previousDoc;
+			return previousDoc;
 		}
 		return null;
 	}
 
 	private async getAnalysisElement(
-		currentDocument: HTMLDocument,
-		previousDocument: HTMLDocument | null = null
+		currentDocument: Document,
+		previousDocument: Document | null = null
 	): Promise<HTMLElement> {
 		let analysisElement: HTMLElement | null = null;
 
@@ -199,7 +192,7 @@ export class Crawler {
 
 	private async getAnalysisElementFromCommonAcestor(
 		analysisContext: HTMLElement,
-		document: HTMLDocument
+		document: Document
 	): Promise<HTMLElement> {
 		let ancestorElement: HTMLElement | null = null;
 

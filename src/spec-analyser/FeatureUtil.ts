@@ -14,7 +14,7 @@ export class FeatureUtil {
 
 		let featureName: string;
 		if (title) {
-			featureName = title.innerHTML;
+			featureName = title.innerText;
 		} else {
 			featureName = f.id
 				? formatToFirstCapitalLetter(f.id)

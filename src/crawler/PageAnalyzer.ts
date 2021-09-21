@@ -4,8 +4,6 @@ import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getFeatureElements, getPathTo } from '../util';
-import { ElementAnalysis } from './ElementAnalysis';
-import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
 export class PageAnalyzer {
 	constructor(
@@ -44,12 +42,7 @@ export class PageAnalyzer {
 		}
 	}
 
-	private async analyseFeatureElements(
-		url: URL,
-		analysisElement: HTMLElement
-	): Promise<Feature[]> {
-		const features: Feature[] = [];
-
+	private async analyseFeatureElements(url: URL, analysisElement: HTMLElement) {
 		// case analysisElement is directly a feature element
 		if (
 			analysisElement.nodeName === HTMLElementType.FORM ||
@@ -58,7 +51,7 @@ export class PageAnalyzer {
 			const feature = await this.featureManager.generateFeature(analysisElement, url);
 
 			if (feature) {
-				features.push(feature);
+				this.spec.addFeature(feature);
 			}
 		}
 
@@ -84,7 +77,5 @@ export class PageAnalyzer {
 				}
 			}
 		}
-
-		return features;
 	}
 }
