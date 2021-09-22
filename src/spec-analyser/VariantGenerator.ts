@@ -18,7 +18,7 @@ export class VariantGenerator {
 		analysisElement: HTMLElement,
 		url: URL,
 		observer: MutationObserverManager,
-		ignoreFeatureTags: boolean,
+		ignoreFormElements: boolean,
 		featureName: string,
 		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
@@ -28,7 +28,7 @@ export class VariantGenerator {
 		let firstAnalyzeSentence = true;
 
 		const analyse = async (elm) => {
-			if (this.checkValidFirstChild(elm, ignoreFeatureTags)) {
+			if (this.checkValidFirstChild(elm, ignoreFormElements)) {
 				await analyse(elm.firstElementChild);
 			}
 
@@ -103,12 +103,9 @@ export class VariantGenerator {
 		return variant;
 	}
 
-	private checkValidFirstChild(elm, ignoreFeatureTags): boolean {
+	private checkValidFirstChild(elm, ignoreFormElements): boolean {
 		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
-			if (
-				!ignoreFeatureTags ||
-				(elm.nodeName !== HTMLElementType.FORM && elm.nodeName !== HTMLElementType.TABLE)
-			) {
+			if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
 				return true;
 			}
 		}

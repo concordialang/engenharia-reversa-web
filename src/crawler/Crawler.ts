@@ -8,7 +8,7 @@ import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
-import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
+import { commonAncestorElement, getDiff, getFormElements, getPathTo } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { HTMLElementType } from '../types/HTMLElementType';
 export class Crawler {
@@ -176,8 +176,7 @@ export class Crawler {
 			const analysisContext: HTMLElement = await getDiff(currentDocument, previousDocument);
 
 			analysisElement =
-				analysisContext.nodeName === HTMLElementType.FORM ||
-				analysisContext.nodeName === HTMLElementType.TABLE
+				analysisContext.nodeName === HTMLElementType.FORM
 					? analysisContext
 					: await this.getAnalysisElementFromCommonAcestor(
 							analysisContext,
@@ -196,11 +195,11 @@ export class Crawler {
 	): Promise<HTMLElement> {
 		let ancestorElement: HTMLElement | null = null;
 
-		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
+		const formElements: NodeListOf<Element> = getFormElements(analysisContext);
 
-		if (featureTags.length >= 1) {
-			ancestorElement = commonAncestorElement(Array.from(featureTags));
-		} else if (featureTags.length == 0) {
+		if (formElements.length >= 1) {
+			ancestorElement = commonAncestorElement(Array.from(formElements));
+		} else if (formElements.length == 0) {
 			const inputFieldTags = analysisContext.querySelectorAll(
 				'input, select, textarea, button'
 			);

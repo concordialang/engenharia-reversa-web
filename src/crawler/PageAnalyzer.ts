@@ -1,9 +1,8 @@
 import { HTMLElementType } from '../types/HTMLElementType';
-import { Feature } from '../spec-analyser/Feature';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { getFeatureElements, getPathTo } from '../util';
+import { getFormElements, getPathTo } from '../util';
 
 export class PageAnalyzer {
 	constructor(
@@ -21,56 +20,49 @@ export class PageAnalyzer {
 			);
 
 			if (!isElementAnalyzed) {
-				await this.analyseFeatureElements(url, contextElement);
+				await this.analyseFormElements(url, contextElement);
 
-				if (
-					contextElement.nodeName !== HTMLElementType.FORM &&
-					contextElement.nodeName !== HTMLElementType.TABLE
-				) {
-					// generate feature for elements outside feature elements
-					const featureOuterElements = await this.featureManager.generateFeature(
+				if (contextElement.nodeName !== HTMLElementType.FORM) {
+					// generate feature for elements outside forms
+					const featureOuterFormElements = await this.featureManager.generateFeature(
 						contextElement,
 						url,
 						true
 					);
 
-					if (featureOuterElements) {
-						this.spec.addFeature(featureOuterElements);
+					if (featureOuterFormElements) {
+						this.spec.addFeature(featureOuterFormElements);
 					}
 				}
 			}
 		}
 	}
 
-	private async analyseFeatureElements(url: URL, analysisElement: HTMLElement) {
-		// case analysisElement is directly a feature element
-		if (
-			analysisElement.nodeName === HTMLElementType.FORM ||
-			analysisElement.nodeName === HTMLElementType.TABLE
-		) {
-			const feature = await this.featureManager.generateFeature(analysisElement, url);
+	private async analyseFormElements(url: URL, analysisElement: HTMLElement) {
+		const formElements: NodeListOf<Element> | HTMLElement[] =
+			analysisElement.nodeName === HTMLElementType.FORM
+				? [analysisElement]
+				: getFormElements(analysisElement);
 
-			if (feature) {
-				this.spec.addFeature(feature);
-			}
-		}
+		if (formElements.length > 0) {
+			for (let formElement of formElements) {
+				let xPathElement = getPathTo(formElement as HTMLElement);
 
-		const featureTags: NodeListOf<Element> = getFeatureElements(analysisElement);
-		if (featureTags.length > 0) {
-			for (let featureTag of featureTags) {
-				let xPathElement = getPathTo(<HTMLElement>featureTag);
-				if (!xPathElement) continue;
+				if (!xPathElement) {
+					continue;
+				}
 
-				const elementAnalysis = await this.elementAnalysisStorage.isElementAnalyzed(
+				const isElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
 					xPathElement,
 					url
 				);
 
-				if (!elementAnalysis) {
+				if (!isElementAnalyzed) {
 					const feature = await this.featureManager.generateFeature(
-						featureTag as HTMLElement,
+						formElement as HTMLElement,
 						url
 					);
+
 					if (feature) {
 						this.spec.addFeature(feature);
 					}

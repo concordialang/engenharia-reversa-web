@@ -30,7 +30,7 @@ export class FeatureManager {
 	public async generateFeature(
 		analysisElement: HTMLElement,
 		url: URL,
-		ignoreFeatureTags: boolean = false
+		ignoreFormElements: boolean = false
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
@@ -48,7 +48,7 @@ export class FeatureManager {
 				analysisElement,
 				url,
 				observer,
-				ignoreFeatureTags,
+				ignoreFormElements,
 				feature.getName(),
 				variants.length,
 				this.redirectionCallback
