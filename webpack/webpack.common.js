@@ -3,10 +3,6 @@ const path = require('path');
 const srcDir = '../src/';
 const CreateFileWebpack = require('create-file-webpack');
 
-const myCallback = function () {
-	console.log('Implementing alien intelligence');
-};
-
 module.exports = {
 	entry: {
 		background: path.join(__dirname, srcDir + 'background.ts'),
