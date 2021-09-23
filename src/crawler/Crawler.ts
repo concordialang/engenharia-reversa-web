@@ -12,6 +12,7 @@ import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '.
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ElementAnalysis } from './ElementAnalysis';
 import { HTMLElementType } from '../types/HTMLElementType';
+import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 export class Crawler {
 	private lastPageKey: string;
 
@@ -73,7 +74,6 @@ export class Crawler {
 		}
 
 		await this.pageAnalyzer.analyze(this.browserContext.getUrl(), analysisElement);
-
 		// const analysisElement = await this.getAnalysisElement();
 		// if (analysisElement) {
 		// 	await this.analyse(analysisElement);
@@ -94,12 +94,15 @@ export class Crawler {
 		for (let link of links) {
 			const xPath = getPathTo(<HTMLLinkElement>link);
 			if (xPath) {
-				let isElementAnalyzed: boolean = await this.elementAnalysisStorage.isElementAnalyzed(
-					xPath,
-					this.browserContext.getUrl()
-				);
-				let insideAnalyzedElement: boolean = await this.isInsideAnalyzedElement(
-					<HTMLLinkElement>link
+				let isElementAnalyzed: boolean =
+					(await this.elementAnalysisStorage.getElementAnalysisStatus(
+						xPath,
+						this.browserContext.getUrl()
+					)) == ElementAnalysisStatus.Done;
+				let insideAnalyzedElement: boolean = await this.elementAnalysisStorage.isInsideElementWithStatus(
+					ElementAnalysisStatus.Done,
+					<HTMLLinkElement>link,
+					this.browserContext
 				);
 				if (!isElementAnalyzed && !insideAnalyzedElement) {
 					unanalyzedLinks.push(<HTMLLinkElement>link);
@@ -109,34 +112,6 @@ export class Crawler {
 			}
 		}
 		return unanalyzedLinks;
-	}
-
-	private async isInsideAnalyzedElement(element: HTMLElement): Promise<boolean> {
-		const parent = element.parentElement;
-		let parentXPath: string | null = null;
-		if (element.tagName == 'HTML') {
-			return false;
-		}
-		if (parent) {
-			parentXPath = getPathTo(parent);
-		}
-		if (parentXPath) {
-			const isParentElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
-				parentXPath,
-				this.browserContext.getUrl()
-			);
-			if (isParentElementAnalyzed) {
-				return true;
-			}
-			if (parent?.parentElement) {
-				return this.isInsideAnalyzedElement(parent.parentElement);
-			} else {
-				return false;
-			}
-		} else {
-			throw new Error('Unable to get element xPath');
-		}
-		return false;
 	}
 
 	public resetLastPage() {

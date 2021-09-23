@@ -6,23 +6,33 @@ import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getFeatureElements, getPathTo } from '../util';
 import { ElementAnalysis } from './ElementAnalysis';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
+import { BrowserContext } from './BrowserContext';
 
 export class PageAnalyzer {
 	constructor(
 		private featureManager: FeatureManager,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private spec: Spec
+		private spec: Spec,
+		private browserContext: BrowserContext
 	) {}
 
 	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const isElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
-				xPath,
-				url
-			);
+			const isElementAnalyzed =
+				(await this.elementAnalysisStorage.getElementAnalysisStatus(xPath, url)) ==
+				ElementAnalysisStatus.Done;
 
 			if (!isElementAnalyzed) {
+				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
+				analisar novamente depois
+				*/
+				const elementAnalysis = new ElementAnalysis(
+					contextElement,
+					this.browserContext.getUrl(),
+					ElementAnalysisStatus.InProgress
+				);
+				this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 				await this.analyseFeatureElements(url, contextElement);
 
 				if (
@@ -70,12 +80,13 @@ export class PageAnalyzer {
 				let xPathElement = getPathTo(<HTMLElement>featureTag);
 				if (!xPathElement) continue;
 
-				const elementAnalysis = await this.elementAnalysisStorage.isElementAnalyzed(
-					xPathElement,
-					url
-				);
+				const isElementAnalyzed =
+					(await this.elementAnalysisStorage.getElementAnalysisStatus(
+						xPathElement,
+						url
+					)) == ElementAnalysisStatus.Done;
 
-				if (!elementAnalysis) {
+				if (!isElementAnalyzed) {
 					const feature = await this.featureManager.generateFeature(
 						featureTag as HTMLElement,
 						url
