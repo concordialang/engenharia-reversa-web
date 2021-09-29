@@ -13,7 +13,8 @@ export class UIElementGenerator {
 			!(elm instanceof HTMLInputElement) &&
 			!(elm instanceof HTMLSelectElement) &&
 			!(elm instanceof HTMLTextAreaElement) &&
-			!(elm instanceof HTMLButtonElement)
+			!(elm instanceof HTMLButtonElement) &&
+			!(elm instanceof HTMLTableRowElement)
 		) {
 			return null;
 		}
@@ -24,6 +25,8 @@ export class UIElementGenerator {
 				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
 		) {
 			uiElement = this.createFromButton(elm);
+		} else if (elm instanceof HTMLTableRowElement) {
+			uiElement = this.createFromRow(elm);
 		} else {
 			uiElement = this.create(elm);
 		}
@@ -107,6 +110,15 @@ export class UIElementGenerator {
 		// type
 		let type = elm.type ? elm.type : 'button';
 		uiElm.setProperty(new UIProperty('type', type));
+
+		return uiElm;
+	}
+
+	private createFromRow(elm: HTMLTableRowElement): UIElement {
+		let uiElm = new UIElement(elm);
+
+		// id
+		uiElm.setProperty(new UIProperty('id', this.generateId(elm)));
 
 		return uiElm;
 	}

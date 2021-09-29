@@ -55,7 +55,7 @@ export async function getDiff(
 }
 
 export function getInteractableElements(element: HTMLElement) {
-	return Array.from(element.querySelectorAll('input, textarea, select, button'));
+	return Array.from(element.querySelectorAll('input, textarea, select, button, tr'));
 }
 
 export function formatToFirstCapitalLetter(txt: string): string {
