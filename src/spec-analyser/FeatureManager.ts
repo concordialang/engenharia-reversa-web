@@ -30,13 +30,15 @@ export class FeatureManager {
 	public async generateFeature(
 		analysisElement: HTMLElement,
 		url: URL,
-		ignoreFeatureTags: boolean = false
+		ignoreFormElements: boolean = false
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
 			this.spec.featureCount()
 		);
-		let observer: MutationObserverManager = new MutationObserverManager(analysisElement);
+		let observer: MutationObserverManager = new MutationObserverManager(
+			analysisElement.ownerDocument.body
+		);
 
 		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;
@@ -46,7 +48,7 @@ export class FeatureManager {
 				analysisElement,
 				url,
 				observer,
-				ignoreFeatureTags,
+				ignoreFormElements,
 				feature.getName(),
 				variants.length,
 				this.redirectionCallback

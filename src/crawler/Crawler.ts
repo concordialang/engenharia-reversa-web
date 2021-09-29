@@ -8,9 +8,8 @@ import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
-import { commonAncestorElement, getDiff, getFeatureElements, getPathTo } from '../util';
+import { commonAncestorElement, getDiff, getFormElements, getPathTo } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { ElementAnalysis } from './ElementAnalysis';
 import { HTMLElementType } from '../types/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 export class Crawler {
@@ -74,10 +73,6 @@ export class Crawler {
 		}
 
 		await this.pageAnalyzer.analyze(this.browserContext.getUrl(), analysisElement);
-		// const analysisElement = await this.getAnalysisElement();
-		// if (analysisElement) {
-		// 	await this.analyse(analysisElement);
-		// }
 
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
@@ -137,19 +132,19 @@ export class Crawler {
 		return null;
 	}
 
-	private async getPreviousDocument(): Promise<HTMLDocument | null> {
+	private async getPreviousDocument(): Promise<Document | null> {
 		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);
 		if (previousHTML) {
 			const previousDoc: Document = document.implementation.createHTMLDocument();
 			previousDoc.body.innerHTML = previousHTML;
-			return <HTMLDocument>previousDoc;
+			return previousDoc;
 		}
 		return null;
 	}
 
 	private async getAnalysisElement(
-		currentDocument: HTMLDocument,
-		previousDocument: HTMLDocument | null = null
+		currentDocument: Document,
+		previousDocument: Document | null = null
 	): Promise<HTMLElement> {
 		let analysisElement: HTMLElement | null = null;
 
@@ -157,8 +152,7 @@ export class Crawler {
 			const analysisContext: HTMLElement = await getDiff(currentDocument, previousDocument);
 
 			analysisElement =
-				analysisContext.nodeName === HTMLElementType.FORM ||
-				analysisContext.nodeName === HTMLElementType.TABLE
+				analysisContext.nodeName === HTMLElementType.FORM
 					? analysisContext
 					: await this.getAnalysisElementFromCommonAcestor(
 							analysisContext,
@@ -173,15 +167,15 @@ export class Crawler {
 
 	private async getAnalysisElementFromCommonAcestor(
 		analysisContext: HTMLElement,
-		document: HTMLDocument
+		document: Document
 	): Promise<HTMLElement> {
 		let ancestorElement: HTMLElement | null = null;
 
-		const featureTags: NodeListOf<Element> = getFeatureElements(analysisContext);
+		const formElements: NodeListOf<Element> = getFormElements(analysisContext);
 
-		if (featureTags.length >= 1) {
-			ancestorElement = commonAncestorElement(Array.from(featureTags));
-		} else if (featureTags.length == 0) {
+		if (formElements.length >= 1) {
+			ancestorElement = commonAncestorElement(Array.from(formElements));
+		} else if (formElements.length == 0) {
 			const inputFieldTags = analysisContext.querySelectorAll(
 				'input, select, textarea, button'
 			);

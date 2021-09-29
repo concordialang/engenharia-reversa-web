@@ -9,40 +9,6 @@ export function getPathTo(element: HTMLElement): string {
 	return getXPath(element);
 }
 
-// // TODO: Por que não usou a função getXPath do pacote 'get-xpath' ?? Substituir ?
-// // FIXME passar a variável document como argumento
-// export function getPathTo(element: HTMLElement, document: HTMLDocument): string | null {
-// 	if (element.id !== '') {
-// 		return 'id("' + element.id + '")';
-// 	}
-// 	if (element === document.body) {
-// 		return element.tagName;
-// 	}
-// 	let ix = 0;
-// 	const parentNode = element.parentNode;
-// 	if (parentNode) {
-// 		var siblings = parentNode.childNodes;
-// 		for (let i = 0; i < siblings.length; i++) {
-// 			const sibling = <HTMLElement>siblings[i];
-// 			if (sibling === element) {
-// 				return (
-// 					getPathTo(<HTMLElement>parentNode, document) +
-// 					'/' +
-// 					element.tagName +
-// 					'[' +
-// 					ix +
-// 					']'
-// 				);
-// 			}
-// 			// TODO: Refactor - o que significa 1 ???
-// 			if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
-// 				ix++;
-// 			}
-// 		}
-// 	}
-// 	return null;
-// }
-
 export function getEnumKeyByEnumValue(myEnum, enumValue) {
 	let keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
 	return keys.length > 0 ? myEnum[keys[0]] : null;
@@ -56,11 +22,11 @@ export function commonAncestorElement(elements: Element[]) {
 }
 
 // get elements that confirm a feature
-export function getFeatureElements(element: HTMLElement): NodeListOf<Element> {
-	return element.querySelectorAll('form, table');
+export function getFormElements(element: HTMLElement): NodeListOf<Element> {
+	return element.querySelectorAll('form');
 }
 
-export function getElementByXpath(path: string, document: HTMLDocument): HTMLElement | null {
+export function getElementByXpath(path: string, document: Document): HTMLElement | null {
 	const node = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
 		.singleNodeValue;
 	if (node) {
@@ -70,8 +36,8 @@ export function getElementByXpath(path: string, document: HTMLDocument): HTMLEle
 }
 
 export async function getDiff(
-	currentDocument: HTMLDocument,
-	previousDocument: HTMLDocument
+	currentDocument: Document,
+	previousDocument: Document
 ): Promise<HTMLElement> {
 	const diffDomManager: DiffDomManager = new DiffDomManager(
 		previousDocument.body,
@@ -89,7 +55,7 @@ export async function getDiff(
 }
 
 export function getInteractableElements(element: HTMLElement) {
-	return Array.from(element.querySelectorAll('input, textarea, select, button'));
+	return Array.from(element.querySelectorAll('input, textarea, select, button, tr'));
 }
 
 export function formatToFirstCapitalLetter(txt: string): string {

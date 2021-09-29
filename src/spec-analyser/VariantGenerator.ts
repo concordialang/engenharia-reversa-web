@@ -6,6 +6,7 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
+import { getPathTo } from '../util';
 
 export class VariantGenerator {
 	constructor(
@@ -18,7 +19,7 @@ export class VariantGenerator {
 		analysisElement: HTMLElement,
 		url: URL,
 		observer: MutationObserverManager,
-		ignoreFeatureTags: boolean,
+		ignoreFormElements: boolean,
 		featureName: string,
 		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
@@ -28,7 +29,12 @@ export class VariantGenerator {
 		let firstAnalyzeSentence = true;
 
 		const analyse = async (elm) => {
-			if (this.checkValidFirstChild(elm, ignoreFeatureTags)) {
+			const validFirstChild = await this.checkValidFirstChild(
+				elm,
+				ignoreFormElements,
+				variant
+			);
+			if (validFirstChild) {
 				await analyse(elm.firstElementChild);
 			}
 
@@ -103,12 +109,40 @@ export class VariantGenerator {
 		return variant;
 	}
 
-	private checkValidFirstChild(elm, ignoreFeatureTags): boolean {
+	private async checkValidFirstChild(elm, ignoreFormElements, variant): Promise<boolean> {
 		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
+			if (elm instanceof HTMLTableRowElement) {
+				if (await this.checkValidRowTable(elm, variant)) {
+					return true;
+				}
+			} else if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// check if element is the first content row or the first header row of the table and interact with it
+	private async checkValidRowTable(elm, variant: Variant): Promise<boolean> {
+		const xpathRowElement = getPathTo(elm as HTMLElement);
+		if (elm.offsetParent && elm.offsetParent instanceof HTMLTableElement) {
+			const xpathTableFirstRowContent = getPathTo(
+				elm.offsetParent.getElementsByTagName('td')[0].parentElement as HTMLElement
+			);
+			const xpathTableFirstRowHeader = getPathTo(
+				elm.offsetParent.getElementsByTagName('th')[0].parentElement as HTMLElement
+			);
+
 			if (
-				!ignoreFeatureTags ||
-				(elm.nodeName !== HTMLElementType.FORM && elm.nodeName !== HTMLElementType.TABLE)
+				xpathRowElement == xpathTableFirstRowContent ||
+				xpathRowElement == xpathTableFirstRowHeader
 			) {
+				const interaction = await this.elementInteractionGenerator.generate(elm, variant);
+				if (interaction) {
+					await this.elementInteractionExecutor.execute(interaction, undefined, false);
+				}
+
 				return true;
 			}
 		}

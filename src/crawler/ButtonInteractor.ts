@@ -23,10 +23,6 @@ export class ButtonInteractor implements ElementInteractor<HTMLButtonElement | H
 		});
 		element.click();
 
-		const evt = document.createEvent('HTMLEvents');
-		evt.initEvent(HTMLEventType.Click, false, true);
-		element.dispatchEvent(evt);
-
 		let timePassed = 0;
 		const timeLimit = 300;
 		const timeBetweenChecks = 5;
