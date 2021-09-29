@@ -47,10 +47,13 @@ export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> 
 	}
 
 	public async isInsideElementWithStatus(
-		status: ElementAnalysisStatus,
+		status: ElementAnalysisStatus | ElementAnalysisStatus[],
 		element: HTMLElement,
 		browserContext: BrowserContext
 	): Promise<boolean> {
+		if (!Array.isArray(status)) {
+			status = [status];
+		}
 		const parent = element.parentElement;
 		let parentXPath: string | null = null;
 		if (element.tagName == 'HTML') {
@@ -64,7 +67,7 @@ export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> 
 				parentXPath,
 				browserContext.getUrl()
 			);
-			if (parentAnalysisStatus == status) {
+			if (status.includes(parentAnalysisStatus)) {
 				return true;
 			}
 			if (parent?.parentElement) {

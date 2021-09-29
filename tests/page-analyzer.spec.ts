@@ -21,6 +21,7 @@ import { PageStorage } from '../src/storage/PageStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { getPathTo } from '../src/util';
 import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
+import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -53,6 +54,48 @@ describe('Page Analyzer', () => {
 			);
 
 			expect(div1AnalysisStatus).toBe(ElementAnalysisStatus.InProgress);
+		}
+	});
+
+	it("doesn't analyze element if its analysis status is in progress", async () => {
+		const document = getRootHtmlDocument();
+
+		const innerHTML = `<div id="div1"><input id="input1" type="text"></input></div>`;
+		const div = document.createElement('div');
+		div.innerHTML = innerHTML;
+		const body = document.getElementsByTagName('body')[0];
+		body.appendChild(div);
+
+		const pageUrl: URL = new URL(window.location.href);
+		const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, document);
+
+		const elementAnalysisStorageMock = new ElementAnalysisStorage(
+			window.localStorage,
+			document
+		);
+
+		const set = jest.fn().mockImplementation((key: string, obj: ElementAnalysis) => {});
+		elementAnalysisStorageMock.set = set;
+
+		const pageAnalyzer = buildPageAnalyzer({
+			document: document,
+			pageUrl: pageUrl,
+			elementAnalysisStorage: elementAnalysisStorageMock,
+		});
+
+		const div1 = document.getElementById('div1');
+		expect(div1).not.toBeNull();
+		if (div1) {
+			const elementAnalysis = new ElementAnalysis(
+				div1,
+				pageUrl,
+				ElementAnalysisStatus.InProgress
+			);
+			elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			await pageAnalyzer.analyze(pageUrl, div1);
+
+			expect(set).not.toHaveBeenCalled();
 		}
 	});
 

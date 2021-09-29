@@ -139,15 +139,13 @@ export class ElementInteractionGraph {
 		const nextInteractionElementSelector = interaction.getElementSelector();
 		if (!nextInteractionElementSelector)
 			throw new Error('Current Interaction element selector is null');
-		const interactionAnalyzed =
-			ElementAnalysisStatus.Done ==
-			(await this.elementAnalysisStorage.getElementAnalysisStatus(
-				nextInteractionElementSelector,
-				interaction.getPageUrl()
-			));
+		const analysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
+			nextInteractionElementSelector,
+			interaction.getPageUrl()
+		);
 		if (
-			(isInteractionAnalyzed && !interactionAnalyzed) ||
-			(!isInteractionAnalyzed && interactionAnalyzed)
+			(isInteractionAnalyzed && analysisStatus == ElementAnalysisStatus.Pending) ||
+			(!isInteractionAnalyzed && analysisStatus != ElementAnalysisStatus.Pending)
 		) {
 			return false;
 		}

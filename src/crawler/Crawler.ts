@@ -94,17 +94,16 @@ export class Crawler {
 		for (let link of links) {
 			const xPath = getPathTo(<HTMLLinkElement>link);
 			if (xPath) {
-				let isElementAnalyzed: boolean =
-					(await this.elementAnalysisStorage.getElementAnalysisStatus(
-						xPath,
-						this.browserContext.getUrl()
-					)) == ElementAnalysisStatus.Done;
+				const analysisStatus: ElementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
+					xPath,
+					this.browserContext.getUrl()
+				);
 				let insideAnalyzedElement: boolean = await this.elementAnalysisStorage.isInsideElementWithStatus(
-					ElementAnalysisStatus.Done,
+					[ElementAnalysisStatus.Done, ElementAnalysisStatus.InProgress],
 					<HTMLLinkElement>link,
 					this.browserContext
 				);
-				if (!isElementAnalyzed && !insideAnalyzedElement) {
+				if (analysisStatus == ElementAnalysisStatus.Pending && !insideAnalyzedElement) {
 					unanalyzedLinks.push(<HTMLLinkElement>link);
 				}
 			} else {

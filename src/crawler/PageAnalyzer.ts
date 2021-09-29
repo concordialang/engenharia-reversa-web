@@ -19,11 +19,11 @@ export class PageAnalyzer {
 	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const isElementAnalyzed =
-				(await this.elementAnalysisStorage.getElementAnalysisStatus(xPath, url)) ==
-				ElementAnalysisStatus.Done;
-
-			if (!isElementAnalyzed) {
+			const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
+				xPath,
+				url
+			);
+			if (elementAnalysisStatus == ElementAnalysisStatus.Pending) {
 				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
 				analisar novamente depois
 				*/
