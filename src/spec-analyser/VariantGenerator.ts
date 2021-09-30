@@ -138,9 +138,19 @@ export class VariantGenerator {
 				xpathRowElement == xpathTableFirstRowContent ||
 				xpathRowElement == xpathTableFirstRowHeader
 			) {
-				const interaction = await this.elementInteractionGenerator.generate(elm, variant);
-				if (interaction) {
-					await this.elementInteractionExecutor.execute(interaction, undefined, false);
+				// interactable row
+				if (xpathRowElement == xpathTableFirstRowContent) {
+					const interaction = await this.elementInteractionGenerator.generate(
+						elm,
+						variant
+					);
+					if (interaction) {
+						await this.elementInteractionExecutor.execute(
+							interaction,
+							undefined,
+							false
+						);
+					}
 				}
 
 				return true;

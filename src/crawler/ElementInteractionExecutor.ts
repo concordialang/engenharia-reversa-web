@@ -6,12 +6,14 @@ import { ElementInteraction } from './ElementInteraction';
 import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
+import { TableRowInteractor } from './TableRowInteractor';
 
 // TODO: Refatorar essa classe
 export class ElementInteractionExecutor {
 	constructor(
 		private inputInteractor: InputInteractor,
 		private buttonInteractor: ButtonInteractor,
+		private tableRowInteractor: TableRowInteractor,
 		private elementInteractionGraph: ElementInteractionGraph
 	) {
 		this.inputInteractor = inputInteractor;
@@ -45,6 +47,10 @@ export class ElementInteractionExecutor {
 			result = await this.buttonInteractor.execute(
 				<ElementInteraction<HTMLButtonElement>>interaction,
 				redirectionCallback
+			);
+		} else if (type == HTMLElementType.TR) {
+			result = await this.tableRowInteractor.execute(
+				<ElementInteraction<HTMLTableRowElement>>interaction
 			);
 		}
 
