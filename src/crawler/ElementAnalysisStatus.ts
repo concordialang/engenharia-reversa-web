@@ -1,5 +1,5 @@
 export enum ElementAnalysisStatus {
 	Pending = 'pending',
-	InProgress = 'inProgress',
+	InProgress = 'in-progress',
 	Done = 'done',
 }

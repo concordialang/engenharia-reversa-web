@@ -11,19 +11,20 @@ import { VisitedURLGraph } from '../src/crawler/VisitedURLGraph';
 import Mutex from '../src/mutex/Mutex';
 import { FeatureUtil } from '../src/spec-analyser/FeatureUtil';
 import { Spec } from '../src/spec-analyser/Spec';
-import { AnalyzedElementStorage } from '../src/storage/AnalyzedElementStorage';
+import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
 import { ElementInteractionStorage } from '../src/storage/ElementInteractionStorage';
 import { GraphStorage } from '../src/storage/GraphStorage';
 import { PageStorage } from '../src/storage/PageStorage';
 import { ChromeCommunicationChannel } from '../src/comm/ChromeCommunicationChannel';
 import { Message } from '../src/comm/Message';
 import { Command } from '../src/comm/Command';
-import { AnalyzedElement } from '../src/crawler/AnalyzedElement';
+import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { FeatureManager } from '../src/spec-analyser/FeatureManager';
 import { UIElementGenerator } from '../src/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../src/spec-analyser/VariantSentencesGenerator';
 import { VariantGenerator } from '../src/spec-analyser/VariantGenerator';
+import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
 
 describe('Crawler', () => {
 	it('opens link on new tab when its not analyzed', async () => {
@@ -56,6 +57,96 @@ describe('Crawler', () => {
 		);
 	});
 
+	it("doesn't open link on new tab when its analysis is in progress", async () => {
+		const communicationChannel = new ChromeCommunicationChannel();
+		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
+			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
+				const message = new Message([], 1);
+				return message;
+			}
+		});
+		communicationChannel.sendMessageToAll = sendMessageToAll;
+
+		const link1 = 'www.link1.com';
+
+		const document = getRootHtmlDocument();
+		const innerHTML = `<div id="link1-parent"><a id="link1" href="${link1}"></a></div>`;
+		const div = document.createElement('div');
+		div.innerHTML = innerHTML;
+		const body = document.getElementsByTagName('body')[0];
+		body.appendChild(div);
+
+		const link1Element = document.getElementById('link1');
+		expect(link1Element).not.toBeNull();
+
+		if (link1Element) {
+			const localStorage = new LocalStorageMock();
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElement = new ElementAnalysis(
+				link1Element,
+				new URL(window.location.href),
+				ElementAnalysisStatus.InProgress
+			);
+			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+
+			const crawler: Crawler = buildCrawler({
+				communicationChannel: communicationChannel,
+				document: document,
+				analyzedElementStorage: analyzedElementStorage,
+			});
+			await crawler.crawl();
+
+			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link1 })
+			);
+		}
+	});
+
+	it("doesn't open link on new tab when a link parent element its analysis is in progress", async () => {
+		const communicationChannel = new ChromeCommunicationChannel();
+		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
+			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
+				const message = new Message([], 1);
+				return message;
+			}
+		});
+		communicationChannel.sendMessageToAll = sendMessageToAll;
+
+		const link1 = 'www.link1.com';
+
+		const document = getRootHtmlDocument();
+		const innerHTML = `<div id="link1-parent-parent"><div id="link1-parent"><a id="link1" href="${link1}"></a></div></div>`;
+		const div = document.createElement('div');
+		div.innerHTML = innerHTML;
+		const body = document.getElementsByTagName('body')[0];
+		body.appendChild(div);
+
+		const link1ParentElement = document.getElementById('link1-parent');
+		expect(link1ParentElement).not.toBeNull();
+
+		if (link1ParentElement) {
+			const localStorage = new LocalStorageMock();
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElement = new ElementAnalysis(
+				link1ParentElement,
+				new URL(window.location.href),
+				ElementAnalysisStatus.InProgress
+			);
+			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
+
+			const crawler: Crawler = buildCrawler({
+				communicationChannel: communicationChannel,
+				document: document,
+				analyzedElementStorage: analyzedElementStorage,
+			});
+			await crawler.crawl();
+
+			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
+				new Message([Command.OpenNewTab], { url: link1 })
+			);
+		}
+	});
+
 	it("doesn't open link on new tab when its analyzed", async () => {
 		const communicationChannel = new ChromeCommunicationChannel();
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
@@ -80,10 +171,11 @@ describe('Crawler', () => {
 
 		if (link1Element) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new AnalyzedElementStorage(localStorage, document);
-			const analyzedElement = new AnalyzedElement(
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElement = new ElementAnalysis(
 				link1Element,
-				new URL(window.location.href)
+				new URL(window.location.href),
+				ElementAnalysisStatus.Done
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -124,10 +216,11 @@ describe('Crawler', () => {
 
 		if (link1ParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new AnalyzedElementStorage(localStorage, document);
-			const analyzedElement = new AnalyzedElement(
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
-				new URL(window.location.href)
+				new URL(window.location.href),
+				ElementAnalysisStatus.Done
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -173,10 +266,11 @@ describe('Crawler', () => {
 
 		if (link1ParentParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new AnalyzedElementStorage(localStorage, document);
-			const analyzedElement = new AnalyzedElement(
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElement = new ElementAnalysis(
 				link1ParentParentElement,
-				new URL(window.location.href)
+				new URL(window.location.href),
+				ElementAnalysisStatus.Done
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -264,7 +358,7 @@ describe('Crawler', () => {
 			| {
 					document?: HTMLDocument;
 					communicationChannel?: CommunicationChannel;
-					analyzedElementStorage?: AnalyzedElementStorage;
+					analyzedElementStorage?: ElementAnalysisStorage;
 			  }
 			| undefined = {}
 	): Crawler {
@@ -287,11 +381,11 @@ describe('Crawler', () => {
 		const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, dom);
 		const spec: Spec = new Spec('pt-br');
 
-		let analyzedElementStorage: AnalyzedElementStorage;
+		let analyzedElementStorage: ElementAnalysisStorage;
 		if (options.analyzedElementStorage) {
 			analyzedElementStorage = options.analyzedElementStorage;
 		} else {
-			analyzedElementStorage = new AnalyzedElementStorage(new LocalStorageMock(), dom);
+			analyzedElementStorage = new ElementAnalysisStorage(new LocalStorageMock(), dom);
 		}
 
 		let communicationChannel: CommunicationChannel;
@@ -341,7 +435,12 @@ describe('Crawler', () => {
 			spec
 		);
 
-		const pageAnalyzer = new PageAnalyzer(featureManager, analyzedElementStorage, spec);
+		const pageAnalyzer = new PageAnalyzer(
+			featureManager,
+			analyzedElementStorage,
+			spec,
+			browserContext
+		);
 
 		const crawler: Crawler = new Crawler(
 			browserContext,

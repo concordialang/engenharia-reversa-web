@@ -3,23 +3,35 @@ import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getFormElements, getPathTo } from '../util';
+import { ElementAnalysis } from './ElementAnalysis';
+import { ElementAnalysisStatus } from './ElementAnalysisStatus';
+import { BrowserContext } from './BrowserContext';
 
 export class PageAnalyzer {
 	constructor(
 		private featureManager: FeatureManager,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private spec: Spec
+		private spec: Spec,
+		private browserContext: BrowserContext
 	) {}
 
 	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
-			const isElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
+			const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
 				xPath,
 				url
 			);
-
-			if (!isElementAnalyzed) {
+			if (elementAnalysisStatus == ElementAnalysisStatus.Pending) {
+				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
+				analisar novamente depois
+				*/
+				const elementAnalysis = new ElementAnalysis(
+					contextElement,
+					this.browserContext.getUrl(),
+					ElementAnalysisStatus.InProgress
+				);
+				this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 				await this.analyseFormElements(url, contextElement);
 
 				if (contextElement.nodeName !== HTMLElementType.FORM) {
@@ -52,10 +64,11 @@ export class PageAnalyzer {
 					continue;
 				}
 
-				const isElementAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
-					xPathElement,
-					url
-				);
+				const isElementAnalyzed =
+					(await this.elementAnalysisStorage.getElementAnalysisStatus(
+						xPathElement,
+						url
+					)) == ElementAnalysisStatus.Done;
 
 				if (!isElementAnalyzed) {
 					const feature = await this.featureManager.generateFeature(

@@ -86,7 +86,12 @@ getTabId(communicationChannel).then((tabId) => {
 		spec
 	);
 
-	const pageAnalyzer = new PageAnalyzer(featureManager, elementAnalysisStorage, spec);
+	const pageAnalyzer = new PageAnalyzer(
+		featureManager,
+		elementAnalysisStorage,
+		spec,
+		browserContext
+	);
 
 	const crawler: Crawler = new Crawler(
 		browserContext,

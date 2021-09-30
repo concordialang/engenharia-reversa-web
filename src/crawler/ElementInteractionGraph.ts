@@ -4,6 +4,7 @@ import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import Mutex from '../mutex/Mutex';
 import { GraphStorage } from '../storage/GraphStorage';
+import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -138,13 +139,13 @@ export class ElementInteractionGraph {
 		const nextInteractionElementSelector = interaction.getElementSelector();
 		if (!nextInteractionElementSelector)
 			throw new Error('Current Interaction element selector is null');
-		const interactionAnalyzed = await this.elementAnalysisStorage.isElementAnalyzed(
+		const analysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
 			nextInteractionElementSelector,
 			interaction.getPageUrl()
 		);
 		if (
-			(isInteractionAnalyzed && !interactionAnalyzed) ||
-			(!isInteractionAnalyzed && interactionAnalyzed)
+			(isInteractionAnalyzed && analysisStatus == ElementAnalysisStatus.Pending) ||
+			(!isInteractionAnalyzed && analysisStatus != ElementAnalysisStatus.Pending)
 		) {
 			return false;
 		}
