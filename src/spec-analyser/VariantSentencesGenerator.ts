@@ -91,28 +91,30 @@ export class VariantSentencesGenerator {
 		let property = mutation.target.style[0];
 		const node = mutation.target;
 
-		if (property === 'display' || property === 'visibility') {
+		if (property && node && (property === 'display' || property === 'visibility')) {
 			let value = mutation.target.style.display
 				? mutation.target.style.display
 				: mutation.target.style.visibility;
 
-			if (
-				(value === 'none' && property == 'display') ||
-				(value === 'hidden' && property == 'visibility')
-			) {
-				sentences = this.createSentencesForMutations(
-					node,
-					VariantSentenceType.AND,
-					VariantSentenceActions.NOTSEE,
-					[{ property: property, value: value }]
-				);
-			} else {
-				sentences = this.createSentencesForMutations(
-					node,
-					VariantSentenceType.AND,
-					VariantSentenceActions.SEE,
-					[{ property: property, value: value }]
-				);
+			if (value != mutation.oldValue) {
+				if (
+					(value === 'none' && property == 'display') ||
+					(value === 'hidden' && property == 'visibility')
+				) {
+					sentences = this.createSentencesForMutations(
+						node,
+						VariantSentenceType.AND,
+						VariantSentenceActions.NOTSEE,
+						[{ property: property, value: value }]
+					);
+				} else {
+					sentences = this.createSentencesForMutations(
+						node,
+						VariantSentenceType.AND,
+						VariantSentenceActions.SEE,
+						[{ property: property, value: value }]
+					);
+				}
 			}
 		}
 
@@ -125,7 +127,7 @@ export class VariantSentencesGenerator {
 		let addedNodes = Object.values(mutation.addedNodes);
 		let removedNodes = Object.values(mutation.removedNodes);
 
-		if (addedNodes.length > 0) {
+		if (addedNodes && addedNodes.length > 0) {
 			const node: any = addedNodes[0];
 
 			sentences = this.createSentencesForMutations(
@@ -133,7 +135,7 @@ export class VariantSentencesGenerator {
 				VariantSentenceType.AND,
 				VariantSentenceActions.APPEND
 			);
-		} else if (removedNodes.length > 0) {
+		} else if (removedNodes && removedNodes.length > 0) {
 			const node: any = removedNodes[0];
 
 			sentences = this.createSentencesForMutations(
@@ -150,26 +152,25 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		let node = mutation.target;
-		if (!node || !node.value) {
-			return sentences;
-		}
 
-		if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.FILL,
-				[{ property: 'value', value: node.value }]
-			);
-		}
+		if (node && node.value !== mutation.oldValue) {
+			if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+				sentences = this.createSentencesForMutations(
+					node,
+					VariantSentenceType.AND,
+					VariantSentenceActions.FILL,
+					[{ property: 'value', value: node.value }]
+				);
+			}
 
-		if (node instanceof HTMLSelectElement) {
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.SELECT,
-				[{ property: 'value', value: node.value }]
-			);
+			if (node instanceof HTMLSelectElement) {
+				sentences = this.createSentencesForMutations(
+					node,
+					VariantSentenceType.AND,
+					VariantSentenceActions.SELECT,
+					[{ property: 'value', value: node.value }]
+				);
+			}
 		}
 
 		return sentences;
@@ -179,16 +180,17 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		if (!node || !node.disabled) {
-			return sentences;
-		}
+		// TODO - analisar
+		const oldValue = mutation.oldValue == 'true' || mutation.oldValue === true ? true : false;
 
-		sentences = this.createSentencesForMutations(
-			node,
-			VariantSentenceType.AND,
-			VariantSentenceActions.SEE,
-			[{ property: 'disabled', value: node.disabled }]
-		);
+		if (node && oldValue != node.disabled) {
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				VariantSentenceActions.SEE,
+				[{ property: 'disabled', value: node.disabled }]
+			);
+		}
 
 		return sentences;
 	}
@@ -197,16 +199,16 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		if (!node || !node.readOnly) {
-			return sentences;
-		}
+		const oldValue = mutation.oldValue == 'true' || mutation.oldValue ? true : false;
 
-		sentences = this.createSentencesForMutations(
-			node,
-			VariantSentenceType.AND,
-			VariantSentenceActions.SEE,
-			[{ property: 'readonly', value: node.readOnly }]
-		);
+		if (node && oldValue != node.disabled) {
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				VariantSentenceActions.SEE,
+				[{ property: 'readonly', value: node.readOnly }]
+			);
+		}
 
 		return sentences;
 	}

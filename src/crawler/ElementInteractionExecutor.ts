@@ -7,6 +7,7 @@ import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { TableRowInteractor } from './TableRowInteractor';
+import { TableColumnInteractor } from './TableColumnInteractor';
 
 // TODO: Refatorar essa classe
 export class ElementInteractionExecutor {
@@ -14,12 +15,9 @@ export class ElementInteractionExecutor {
 		private inputInteractor: InputInteractor,
 		private buttonInteractor: ButtonInteractor,
 		private tableRowInteractor: TableRowInteractor,
+		private tableColumnInteractor: TableColumnInteractor,
 		private elementInteractionGraph: ElementInteractionGraph
-	) {
-		this.inputInteractor = inputInteractor;
-		this.buttonInteractor = buttonInteractor;
-		this.elementInteractionGraph = elementInteractionGraph;
-	}
+	) {}
 
 	public async execute(
 		interaction: ElementInteraction<HTMLElement>,
@@ -29,7 +27,9 @@ export class ElementInteractionExecutor {
 		await sleep(400);
 		const element = interaction.getElement();
 		const type = element.tagName;
+
 		let result: InteractionResult | null = null;
+
 		if (type == HTMLElementType.INPUT) {
 			const inputType = element.getAttribute('type');
 			if (inputType == HTMLInputType.Submit) {
@@ -51,6 +51,10 @@ export class ElementInteractionExecutor {
 		} else if (type == HTMLElementType.TR) {
 			result = await this.tableRowInteractor.execute(
 				<ElementInteraction<HTMLTableRowElement>>interaction
+			);
+		} else if (type == HTMLElementType.TH) {
+			result = await this.tableColumnInteractor.execute(
+				<ElementInteraction<HTMLTableColElement>>interaction
 			);
 		}
 

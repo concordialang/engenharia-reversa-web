@@ -21,6 +21,8 @@ export class ElementInteractionGenerator {
 			interaction = this.generateInputInteraction(element);
 		} else if (element instanceof HTMLTableRowElement) {
 			interaction = this.generateTableRowInteraction(element);
+		} else if (element instanceof HTMLTableCellElement) {
+			interaction = this.generateTableCellInteraction(element);
 		} else if (element instanceof HTMLButtonElement) {
 			interaction = new ElementInteraction(
 				element,
@@ -62,6 +64,14 @@ export class ElementInteractionGenerator {
 		row: HTMLTableRowElement
 	): ElementInteraction<HTMLTableRowElement> | null {
 		return new ElementInteraction(row, HTMLEventType.Click, this.browserContext.getUrl());
+	}
+
+	// TABLE COLUMN
+
+	private generateTableCellInteraction(
+		column: HTMLTableCellElement
+	): ElementInteraction<HTMLTableCellElement> | null {
+		return new ElementInteraction(column, HTMLEventType.Click, this.browserContext.getUrl());
 	}
 
 	//RADIO

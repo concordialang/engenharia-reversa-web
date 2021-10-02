@@ -10,8 +10,8 @@ import { getPathTo } from '../util';
 
 export class VariantGenerator {
 	constructor(
-		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGenerator: ElementInteractionGenerator,
+		private elementInteractionExecutor: ElementInteractionExecutor,
 		private featureUtil: FeatureUtil
 	) {}
 
@@ -29,10 +29,15 @@ export class VariantGenerator {
 		let firstAnalyzeSentence = true;
 
 		const analyse = async (elm) => {
+			let checkRowChilds = false;
+			if (elm instanceof HTMLTableRowElement) {
+				checkRowChilds = await this.treatTableRow(elm, variant, observer);
+			}
+
 			const validFirstChild = await this.checkValidFirstChild(
 				elm,
 				ignoreFormElements,
-				variant
+				checkRowChilds
 			);
 			if (validFirstChild) {
 				await analyse(elm.firstElementChild);
@@ -84,8 +89,6 @@ export class VariantGenerator {
 				variant.setVariantsSentences(mutationVariantSentences);
 			}
 
-			observer.resetMutations();
-
 			if (elm.nextElementSibling) {
 				await analyse(elm.nextElementSibling);
 			}
@@ -109,13 +112,13 @@ export class VariantGenerator {
 		return variant;
 	}
 
-	private async checkValidFirstChild(elm, ignoreFormElements, variant): Promise<boolean> {
+	private async checkValidFirstChild(elm, ignoreFormElements, checkRowChilds): Promise<boolean> {
 		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
 			if (elm instanceof HTMLTableRowElement) {
-				if (await this.checkValidRowTable(elm, variant)) {
-					return true;
-				}
-			} else if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
+				return checkRowChilds;
+			}
+
+			if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
 				return true;
 			}
 		}
@@ -123,41 +126,129 @@ export class VariantGenerator {
 		return false;
 	}
 
-	// check if element is the first content row or the first header row of the table and interact with it
-	private async checkValidRowTable(elm, variant: Variant): Promise<boolean> {
-		const xpathRowElement = getPathTo(elm as HTMLElement);
+	private async treatTableRow(elm, variant: Variant, observer: MutationObserverManager) {
+		let checkRowChilds = false;
+
+		const row = await this.checkValidRowTable(elm);
+		if (row.isValid) {
+			let tableRowMutationSentences: VariantSentence[] | null = [];
+			if (row.type == 'header') {
+				tableRowMutationSentences = await this.interactWithTableColumn(
+					elm,
+					variant,
+					observer
+				);
+			} else if (row.type == 'content') {
+				checkRowChilds = true;
+				tableRowMutationSentences = await this.interactWithTableContentRow(
+					elm,
+					variant,
+					observer
+				);
+			}
+
+			if (tableRowMutationSentences && tableRowMutationSentences.length > 0) {
+				variant.setVariantsSentences(tableRowMutationSentences);
+			}
+		}
+
+		return checkRowChilds;
+	}
+
+	// check if element is the first content row or the first header row of the table
+	private async checkValidRowTable(elm: HTMLElement) {
+		const xpathRowElement = getPathTo(elm);
+
+		let row = {
+			isValid: false,
+			type: '',
+		};
+
 		if (elm.offsetParent && elm.offsetParent instanceof HTMLTableElement) {
-			const xpathTableFirstRowContent = getPathTo(
-				elm.offsetParent.getElementsByTagName('td')[0].parentElement as HTMLElement
-			);
 			const xpathTableFirstRowHeader = getPathTo(
 				elm.offsetParent.getElementsByTagName('th')[0].parentElement as HTMLElement
 			);
 
-			if (
-				xpathRowElement == xpathTableFirstRowContent ||
-				xpathRowElement == xpathTableFirstRowHeader
-			) {
-				// interactable row
-				if (xpathRowElement == xpathTableFirstRowContent) {
-					const interaction = await this.elementInteractionGenerator.generate(
-						elm,
-						variant
-					);
-					if (interaction) {
-						await this.elementInteractionExecutor.execute(
-							interaction,
-							undefined,
-							false
-						);
-					}
-				}
+			const xpathTableFirstRowContent = getPathTo(
+				elm.offsetParent.getElementsByTagName('td')[0].parentElement as HTMLElement
+			);
 
-				return true;
+			if (xpathRowElement == xpathTableFirstRowHeader) {
+				row.isValid = true;
+				row.type = 'header';
+			}
+
+			if (xpathRowElement == xpathTableFirstRowContent) {
+				row.isValid = true;
+				row.type = 'content';
 			}
 		}
 
-		return false;
+		return row;
+	}
+
+	// interacts and get mutation sentences (if exists) of the first content table row
+	private async interactWithTableContentRow(
+		row,
+		variant: Variant,
+		observer: MutationObserverManager
+	) {
+		const interaction = await this.elementInteractionGenerator.generate(row, variant);
+
+		if (!interaction) {
+			return null;
+		}
+
+		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
+
+		if (!result) {
+			return null;
+		}
+
+		const mutationVariantSentences = this.treatMutationsSentences(observer);
+
+		if (!mutationVariantSentences) {
+			return null;
+		}
+
+		return mutationVariantSentences;
+	}
+
+	// interacts and get mutation sentences (if exists) of the second column of table
+	private async interactWithTableColumn(
+		row,
+		variant: Variant,
+		observer: MutationObserverManager
+	) {
+		let column: HTMLElement | null = null;
+
+		if (row.childElementCount > 0) {
+			column = row.childElementCount >= 2 ? row.cells[1] : row.cells[0];
+		}
+
+		if (!column) {
+			return null;
+		}
+
+		const interaction = await this.elementInteractionGenerator.generate(column, variant);
+
+		if (!interaction) {
+			return null;
+		}
+
+		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
+
+		if (!result) {
+			return null;
+		}
+
+		const mutationVariantSentences = this.treatMutationsSentences(observer);
+
+		if (!mutationVariantSentences) {
+			return null;
+		}
+
+		return mutationVariantSentences;
 	}
 
 	private checkValidInteractableElement(elm) {
@@ -211,6 +302,8 @@ export class VariantGenerator {
 				mutationSentences = mutationSentences.concat(mutationSentence);
 			}
 		}
+
+		observer.resetMutations();
 
 		return mutationSentences;
 	}
