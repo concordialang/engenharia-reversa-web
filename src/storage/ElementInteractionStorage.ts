@@ -1,4 +1,4 @@
-import { HTMLEventType } from '../types/HTMLEventType';
+import { HTMLEventType } from '../enums/HTMLEventType';
 import { getElementByXpath, getEnumKeyByEnumValue, getPathTo } from '../util';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { LocalObjectStorage } from './LocalObjectStorage';

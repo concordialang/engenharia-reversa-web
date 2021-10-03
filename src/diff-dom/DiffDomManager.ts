@@ -1,5 +1,5 @@
 import { DiffDOM } from 'diff-dom';
-import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { getPathTo } from '../util';
 
 export class DiffDomManager {

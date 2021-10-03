@@ -3,7 +3,7 @@ import { Feature } from './Feature';
 import { Scenario } from './Scenario';
 import { Variant } from './Variant';
 import { VariantSentence } from './VariantSentence';
-import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {

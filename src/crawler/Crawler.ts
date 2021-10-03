@@ -1,4 +1,4 @@
-import { HTMLEventType } from '../types/HTMLEventType';
+import { HTMLEventType } from '../enums/HTMLEventType';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -10,7 +10,7 @@ import { Message } from '../comm/Message';
 import { Command } from '../comm/Command';
 import { commonAncestorElement, getDiff, getFormElements, getPathTo } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 export class Crawler {
 	private lastPageKey: string;

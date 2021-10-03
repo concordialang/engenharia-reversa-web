@@ -1,10 +1,10 @@
 import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
-import { EditableTypes } from '../types/EditableTypes';
-import { VariantSentenceActions } from '../types/VariantSentenceActions';
-import { VariantSentenceType } from '../types/VariantSentenceType';
+import { VariantSentenceActions } from '../enums/VariantSentenceActions';
+import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { getInteractableElements } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
+import { UiElementsTypes } from '../enums/UiElementsTypes';
 
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
@@ -17,23 +17,26 @@ export class VariantSentencesGenerator {
 
 		let action: string = '';
 		switch (uiElement.getType()) {
-			case EditableTypes.TEXTBOX:
+			case UiElementsTypes.TEXTBOX:
 				action = VariantSentenceActions.FILL;
 				break;
-			case EditableTypes.BUTTON:
-				action = VariantSentenceActions.CLICK;
-				break;
-			case EditableTypes.TEXTAREA:
+			case UiElementsTypes.TEXTAREA:
 				action = VariantSentenceActions.FILL;
 				break;
-			case EditableTypes.CHECKBOX:
+			case UiElementsTypes.CHECKBOX:
 				action = VariantSentenceActions.CHECK;
 				break;
-			case EditableTypes.SELECT:
+			case UiElementsTypes.SELECT:
 				action = VariantSentenceActions.SELECT;
 				break;
+			case UiElementsTypes.RADIO:
+				action = VariantSentenceActions.SELECT;
+				break;
+			case UiElementsTypes.BUTTON:
+				action = VariantSentenceActions.CLICK;
+				break;
 			default:
-				action = VariantSentenceActions.FILL;
+				action = VariantSentenceActions.SEE;
 				break;
 		}
 
@@ -96,7 +99,7 @@ export class VariantSentencesGenerator {
 				? mutation.target.style.display
 				: mutation.target.style.visibility;
 
-			if (value != mutation.oldValue) {
+			if (value !== mutation.oldValue) {
 				if (
 					(value === 'none' && property == 'display') ||
 					(value === 'hidden' && property == 'visibility')
@@ -180,10 +183,15 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		// TODO - analisar
-		const oldValue = mutation.oldValue == 'true' || mutation.oldValue === true ? true : false;
 
-		if (node && oldValue != node.disabled) {
+		let oldValue = mutation.oldValue;
+		if (mutation.oldValue === 'true') {
+			oldValue = true;
+		} else if (mutation.oldValue === 'false') {
+			oldValue = false;
+		}
+
+		if (node && oldValue !== node.disabled) {
 			sentences = this.createSentencesForMutations(
 				node,
 				VariantSentenceType.AND,
@@ -199,9 +207,15 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		const oldValue = mutation.oldValue == 'true' || mutation.oldValue ? true : false;
 
-		if (node && oldValue != node.disabled) {
+		let oldValue = mutation.oldValue;
+		if (mutation.oldValue === 'true') {
+			oldValue = true;
+		} else if (mutation.oldValue === 'false') {
+			oldValue = false;
+		}
+
+		if (node && oldValue !== node.disabled) {
 			sentences = this.createSentencesForMutations(
 				node,
 				VariantSentenceType.AND,

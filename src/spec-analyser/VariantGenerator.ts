@@ -1,4 +1,4 @@
-import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementInteractionExecutor } from '../crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenerator';
@@ -126,7 +126,11 @@ export class VariantGenerator {
 		return false;
 	}
 
-	private async treatTableRow(elm, variant: Variant, observer: MutationObserverManager) {
+	private async treatTableRow(
+		elm: HTMLElement,
+		variant: Variant,
+		observer: MutationObserverManager
+	) {
 		let checkRowChilds = false;
 
 		const row = await this.checkValidRowTable(elm);

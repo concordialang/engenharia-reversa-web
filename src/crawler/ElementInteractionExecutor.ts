@@ -1,5 +1,5 @@
-import { HTMLElementType } from '../types/HTMLElementType';
-import { HTMLInputType } from '../types/HTMLInputType';
+import { HTMLElementType } from '../enums/HTMLElementType';
+import { HTMLInputType } from '../enums/HTMLInputType';
 import { sleep } from '../util';
 import { ButtonInteractor } from './ButtonInteractor';
 import { ElementInteraction } from './ElementInteraction';

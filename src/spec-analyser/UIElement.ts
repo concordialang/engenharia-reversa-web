@@ -1,8 +1,8 @@
 import { UIProperty } from './UIProperty';
 
 export class UIElement {
-	private name!: string;
-	private properties!: Array<UIProperty>;
+	private name: string;
+	private properties: Array<UIProperty>;
 
 	constructor(private sourceElement?: Element) {
 		this.name = '';

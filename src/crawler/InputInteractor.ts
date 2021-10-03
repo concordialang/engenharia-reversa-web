@@ -1,6 +1,6 @@
-import { HTMLElementType } from '../types/HTMLElementType';
-import { HTMLEventType } from '../types/HTMLEventType';
-import { HTMLInputType } from '../types/HTMLInputType';
+import { HTMLElementType } from '../enums/HTMLElementType';
+import { HTMLEventType } from '../enums/HTMLEventType';
+import { HTMLInputType } from '../enums/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractor } from './ElementInteractor';
 import { InteractionResult } from './InteractionResult';
