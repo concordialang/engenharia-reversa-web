@@ -1,9 +1,11 @@
+import { stringify } from 'uuid';
 import { AppEvent } from '../comm/AppEvent';
 import { Command } from '../comm/Command';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { Extension } from './Extension';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
+import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from './Tab';
 
 export class ExtensionManager {
@@ -14,10 +16,12 @@ export class ExtensionManager {
 	private urlQueue: Array<URL>;
 	private openedTabsLimit: number;
 	private extensionIsEnabled: boolean;
+	private inMemoryDatabase: InMemoryDatabase;
 
 	constructor(
 		extension: Extension,
 		communicationChannel: CommunicationChannel,
+		inMemoryDatabase: InMemoryDatabase,
 		openedTabsLimit: number
 	) {
 		this.openedTabs = [];
@@ -27,6 +31,7 @@ export class ExtensionManager {
 		this.urlQueue = [];
 		this.openedTabsLimit = openedTabsLimit;
 		this.extensionIsEnabled = false;
+		this.inMemoryDatabase = inMemoryDatabase;
 	}
 
 	public setup(): void {
@@ -56,6 +61,33 @@ export class ExtensionManager {
 				message.includesAction(Command.GetTabId)
 			) {
 				if (responseCallback) responseCallback(new Message([], sender.getId()));
+			}
+
+			if (message.includesAction(Command.SetValueInMemoryDatabase)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const value = data.value;
+					_this.inMemoryDatabase.set(key, value);
+				}
+			} else if (message.includesAction(Command.GetValueFromMemoryDatabase)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const value = _this.inMemoryDatabase.get(key);
+					if (responseCallback) {
+						responseCallback(new Message([], value));
+					}
+				}
+			} else if (message.includesAction(Command.RemoveValueFromMemoryDatabase)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					_this.inMemoryDatabase.remove(key);
+					if (responseCallback) {
+						responseCallback(new Message([], true));
+					}
+				}
 			}
 
 			if (_this.extensionIsEnabled) {

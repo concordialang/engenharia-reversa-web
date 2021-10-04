@@ -6,6 +6,7 @@ import { Extension } from './extension/Extension';
 import { CommunicationChannel } from './comm/CommunicationChannel';
 import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
+import { InMemoryDatabase } from './extension/InMemoryDatabase';
 
 const extension: Extension = new ChromeExtension();
 
@@ -20,6 +21,12 @@ extension.searchTab({ url: 'http://localhost/*' }).then((tabs) => {
 	}
 });
 
-const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
-const manager: ExtensionManager = new ExtensionManager(extension, communicationChannel, 4);
+const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
+const inMemoryDatabase = new InMemoryDatabase();
+const manager: ExtensionManager = new ExtensionManager(
+	extension,
+	communicationChannel,
+	inMemoryDatabase,
+	4
+);
 manager.setup();

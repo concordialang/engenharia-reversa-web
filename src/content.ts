@@ -23,8 +23,9 @@ import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
 import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
+import { InMemoryStorage } from './storage/InMemoryStorage';
 
-const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel();
+const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
 getTabId(communicationChannel).then((tabId) => {
 	tabId = 'tab-' + tabId;

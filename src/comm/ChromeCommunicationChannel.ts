@@ -6,10 +6,13 @@ import { CommunicationChannel } from './CommunicationChannel';
 import { Message } from './Message';
 
 export class ChromeCommunicationChannel implements CommunicationChannel {
+	constructor(private chrome) {}
+
 	public sendMessageToAll(message: Message): Promise<any> {
+		const _this = this;
 		return new Promise(async function (resolve, reject) {
 			let resolved = false;
-			chrome.runtime.sendMessage(message, (response?) => {
+			_this.chrome.runtime.sendMessage(message, (response?) => {
 				resolved = true;
 				if (response) {
 					const responseMessage = new Message(response.actions, response.extra);
@@ -54,7 +57,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 				callback(messageObj);
 			}
 		};
-		chrome.runtime.onMessage.addListener(cb);
+		this.chrome.runtime.onMessage.addListener(cb);
 	}
 
 	private mapToActionEnum(action: string) {
