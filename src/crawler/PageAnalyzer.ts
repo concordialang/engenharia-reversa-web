@@ -1,4 +1,4 @@
-import { HTMLElementType } from '../types/HTMLElementType';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { FeatureManager } from '../spec-analyser/FeatureManager';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';

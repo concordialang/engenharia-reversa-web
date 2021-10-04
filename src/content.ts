@@ -23,7 +23,8 @@ import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
 import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
-import { InMemoryStorage } from './storage/InMemoryStorage';
+import { TableRowInteractor } from './crawler/TableRowInteractor';
+import { TableColumnInteractor } from './crawler/TableColumnInteractor';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -39,6 +40,8 @@ getTabId(communicationChannel).then((tabId) => {
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 	const inputInteractor = new InputInteractor();
+	const tableRowInteractor = new TableRowInteractor();
+	const tableColumnInteractor = new TableColumnInteractor();
 	const buttonInteractor = new ButtonInteractor(window);
 	const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
 	const spec: Spec = new Spec('pt-br');
@@ -57,6 +60,8 @@ getTabId(communicationChannel).then((tabId) => {
 	const elementInteractionExecutor = new ElementInteractionExecutor(
 		inputInteractor,
 		buttonInteractor,
+		tableRowInteractor,
+		tableColumnInteractor,
 		elementInteractionGraph
 	);
 
@@ -72,8 +77,8 @@ getTabId(communicationChannel).then((tabId) => {
 	const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 	const variantGenerator: VariantGenerator = new VariantGenerator(
-		elementInteractionExecutor,
 		elementInteractionGenerator,
+		elementInteractionExecutor,
 		featureUtil
 	);
 

@@ -5,6 +5,4 @@ export enum DataTypes {
 	DATE = 'date',
 	TIME = 'time',
 	DATETIME = 'datetime',
-	CHECKBOX = 'boolean',
-	NUMBER = 'number',
 }

@@ -1,10 +1,10 @@
 import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
-import { EditableTypes } from '../types/EditableTypes';
-import { VariantSentenceActions } from '../types/VariantSentenceActions';
-import { VariantSentenceType } from '../types/VariantSentenceType';
+import { VariantSentenceActions } from '../enums/VariantSentenceActions';
+import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { getInteractableElements } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
+import { UiElementsTypes } from '../enums/UiElementsTypes';
 
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
@@ -17,23 +17,26 @@ export class VariantSentencesGenerator {
 
 		let action: string = '';
 		switch (uiElement.getType()) {
-			case EditableTypes.TEXTBOX:
+			case UiElementsTypes.TEXTBOX:
 				action = VariantSentenceActions.FILL;
 				break;
-			case EditableTypes.BUTTON:
-				action = VariantSentenceActions.CLICK;
-				break;
-			case EditableTypes.TEXTAREA:
+			case UiElementsTypes.TEXTAREA:
 				action = VariantSentenceActions.FILL;
 				break;
-			case EditableTypes.CHECKBOX:
+			case UiElementsTypes.CHECKBOX:
 				action = VariantSentenceActions.CHECK;
 				break;
-			case EditableTypes.SELECT:
+			case UiElementsTypes.SELECT:
 				action = VariantSentenceActions.SELECT;
 				break;
+			case UiElementsTypes.RADIO:
+				action = VariantSentenceActions.SELECT;
+				break;
+			case UiElementsTypes.BUTTON:
+				action = VariantSentenceActions.CLICK;
+				break;
 			default:
-				action = VariantSentenceActions.FILL;
+				action = VariantSentenceActions.SEE;
 				break;
 		}
 
@@ -91,28 +94,30 @@ export class VariantSentencesGenerator {
 		let property = mutation.target.style[0];
 		const node = mutation.target;
 
-		if (property === 'display' || property === 'visibility') {
+		if (property && node && (property === 'display' || property === 'visibility')) {
 			let value = mutation.target.style.display
 				? mutation.target.style.display
 				: mutation.target.style.visibility;
 
-			if (
-				(value === 'none' && property == 'display') ||
-				(value === 'hidden' && property == 'visibility')
-			) {
-				sentences = this.createSentencesForMutations(
-					node,
-					VariantSentenceType.AND,
-					VariantSentenceActions.NOTSEE,
-					[{ property: property, value: value }]
-				);
-			} else {
-				sentences = this.createSentencesForMutations(
-					node,
-					VariantSentenceType.AND,
-					VariantSentenceActions.SEE,
-					[{ property: property, value: value }]
-				);
+			if (value !== mutation.oldValue) {
+				if (
+					(value === 'none' && property == 'display') ||
+					(value === 'hidden' && property == 'visibility')
+				) {
+					sentences = this.createSentencesForMutations(
+						node,
+						VariantSentenceType.AND,
+						VariantSentenceActions.NOTSEE,
+						[{ property: property, value: value }]
+					);
+				} else {
+					sentences = this.createSentencesForMutations(
+						node,
+						VariantSentenceType.AND,
+						VariantSentenceActions.SEE,
+						[{ property: property, value: value }]
+					);
+				}
 			}
 		}
 
@@ -125,7 +130,7 @@ export class VariantSentencesGenerator {
 		let addedNodes = Object.values(mutation.addedNodes);
 		let removedNodes = Object.values(mutation.removedNodes);
 
-		if (addedNodes.length > 0) {
+		if (addedNodes && addedNodes.length > 0) {
 			const node: any = addedNodes[0];
 
 			sentences = this.createSentencesForMutations(
@@ -133,7 +138,7 @@ export class VariantSentencesGenerator {
 				VariantSentenceType.AND,
 				VariantSentenceActions.APPEND
 			);
-		} else if (removedNodes.length > 0) {
+		} else if (removedNodes && removedNodes.length > 0) {
 			const node: any = removedNodes[0];
 
 			sentences = this.createSentencesForMutations(
@@ -150,26 +155,25 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		let node = mutation.target;
-		if (!node || !node.value) {
-			return sentences;
-		}
 
-		if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.FILL,
-				[{ property: 'value', value: node.value }]
-			);
-		}
+		if (node && node.value !== mutation.oldValue) {
+			if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+				sentences = this.createSentencesForMutations(
+					node,
+					VariantSentenceType.AND,
+					VariantSentenceActions.FILL,
+					[{ property: 'value', value: node.value }]
+				);
+			}
 
-		if (node instanceof HTMLSelectElement) {
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.SELECT,
-				[{ property: 'value', value: node.value }]
-			);
+			if (node instanceof HTMLSelectElement) {
+				sentences = this.createSentencesForMutations(
+					node,
+					VariantSentenceType.AND,
+					VariantSentenceActions.SELECT,
+					[{ property: 'value', value: node.value }]
+				);
+			}
 		}
 
 		return sentences;
@@ -179,16 +183,22 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		if (!node || !node.disabled) {
-			return sentences;
+
+		let oldValue = mutation.oldValue;
+		if (mutation.oldValue === 'true') {
+			oldValue = true;
+		} else if (mutation.oldValue === 'false') {
+			oldValue = false;
 		}
 
-		sentences = this.createSentencesForMutations(
-			node,
-			VariantSentenceType.AND,
-			VariantSentenceActions.SEE,
-			[{ property: 'disabled', value: node.disabled }]
-		);
+		if (node && oldValue !== node.disabled) {
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				VariantSentenceActions.SEE,
+				[{ property: 'disabled', value: node.disabled }]
+			);
+		}
 
 		return sentences;
 	}
@@ -197,16 +207,22 @@ export class VariantSentencesGenerator {
 		let sentences: VariantSentence[] = [];
 
 		const node = mutation.target;
-		if (!node || !node.readOnly) {
-			return sentences;
+
+		let oldValue = mutation.oldValue;
+		if (mutation.oldValue === 'true') {
+			oldValue = true;
+		} else if (mutation.oldValue === 'false') {
+			oldValue = false;
 		}
 
-		sentences = this.createSentencesForMutations(
-			node,
-			VariantSentenceType.AND,
-			VariantSentenceActions.SEE,
-			[{ property: 'readonly', value: node.readOnly }]
-		);
+		if (node && oldValue !== node.disabled) {
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				VariantSentenceActions.SEE,
+				[{ property: 'readonly', value: node.readOnly }]
+			);
+		}
 
 		return sentences;
 	}

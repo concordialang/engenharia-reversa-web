@@ -4,4 +4,5 @@ export enum HTMLEventType {
 	Unload = 'unload',
 	BeforeUnload = 'beforeunload',
 	Submit = 'submit',
+	Focus = 'focus',
 }

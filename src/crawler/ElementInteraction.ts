@@ -1,4 +1,4 @@
-import { HTMLEventType } from '../types/HTMLEventType';
+import { HTMLEventType } from '../enums/HTMLEventType';
 import { Variant } from '../spec-analyser/Variant';
 
 export class ElementInteraction<T extends HTMLElement> {

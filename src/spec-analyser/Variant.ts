@@ -1,4 +1,4 @@
-import { VariantSentenceType } from '../types/VariantSentenceType';
+import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { VariantSentence } from './VariantSentence';
 
 export class Variant {

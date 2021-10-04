@@ -2,7 +2,7 @@ import { Feature } from '../spec-analyser/Feature';
 import { Scenario } from '../spec-analyser/Scenario';
 import { Variant } from '../spec-analyser/Variant';
 import { VariantSentence } from '../spec-analyser/VariantSentence';
-import { VariantSentenceType } from '../types/VariantSentenceType';
+import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { UIElement } from '../spec-analyser/UIElement';
 import { UIProperty } from '../spec-analyser/UIProperty';
 import { getEnumKeyByEnumValue } from '../util';
