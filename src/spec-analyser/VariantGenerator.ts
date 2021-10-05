@@ -135,24 +135,11 @@ export class VariantGenerator {
 
 		const row = await this.checkValidRowTable(elm);
 		if (row.isValid) {
-			let tableRowMutationSentences: VariantSentence[] | null = [];
 			if (row.type == 'header') {
-				tableRowMutationSentences = await this.interactWithTableColumn(
-					elm,
-					variant,
-					observer
-				);
+				await this.interactWithTableColumn(elm, variant, observer);
 			} else if (row.type == 'content') {
 				checkRowChilds = true;
-				tableRowMutationSentences = await this.interactWithTableContentRow(
-					elm,
-					variant,
-					observer
-				);
-			}
-
-			if (tableRowMutationSentences && tableRowMutationSentences.length > 0) {
-				variant.setVariantsSentences(tableRowMutationSentences);
+				await this.interactWithTableContentRow(elm, variant, observer);
 			}
 		}
 
@@ -196,18 +183,23 @@ export class VariantGenerator {
 		row,
 		variant: Variant,
 		observer: MutationObserverManager
-	) {
+	): Promise<boolean | null> {
 		const interaction = await this.elementInteractionGenerator.generate(row, variant);
-
 		if (!interaction) {
 			return null;
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
-
 		if (!result) {
 			return null;
 		}
+
+		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(row);
+		if (!variantSentence) {
+			return null;
+		}
+
+		variant.setVariantSentence(variantSentence);
 
 		const mutationVariantSentences = this.treatMutationsSentences(observer);
 
@@ -215,7 +207,9 @@ export class VariantGenerator {
 			return null;
 		}
 
-		return mutationVariantSentences;
+		variant.setVariantsSentences(mutationVariantSentences);
+
+		return true;
 	}
 
 	// interacts and get mutation sentences (if exists) of the second column of table
@@ -235,24 +229,30 @@ export class VariantGenerator {
 		}
 
 		const interaction = await this.elementInteractionGenerator.generate(column, variant);
-
 		if (!interaction) {
 			return null;
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
-
 		if (!result) {
 			return null;
 		}
 
-		const mutationVariantSentences = this.treatMutationsSentences(observer);
+		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(row);
+		if (!variantSentence) {
+			return null;
+		}
 
+		variant.setVariantSentence(variantSentence);
+
+		const mutationVariantSentences = this.treatMutationsSentences(observer);
 		if (!mutationVariantSentences) {
 			return null;
 		}
 
-		return mutationVariantSentences;
+		variant.setVariantsSentences(mutationVariantSentences);
+
+		return true;
 	}
 
 	private checkValidInteractableElement(elm) {

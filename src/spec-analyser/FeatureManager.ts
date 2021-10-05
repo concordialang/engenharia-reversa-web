@@ -91,11 +91,24 @@ export class FeatureManager {
 		let uniqueUIElements: Array<UIElement> = [];
 
 		for (let nameUI of uniqueUIElementsNames) {
-			let uniqueUIElm = allUIElements.find((uiElm) => uiElm.getName() === nameUI);
+			let UiElementsOfName = allUIElements.filter((uiElm) => uiElm.getName() === nameUI);
 
-			if (uniqueUIElm) {
-				uniqueUIElements.push(uniqueUIElm);
+			if (UiElementsOfName.length == 0) {
+				continue;
 			}
+
+			let uniqueUIElm: UIElement = UiElementsOfName[0];
+
+			if (UiElementsOfName.length > 1) {
+				uniqueUIElm = UiElementsOfName.reduce((uiElmWithMoreProperties, uiElm) => {
+					return uiElm.getProperties().length >
+						uiElmWithMoreProperties.getProperties().length
+						? uiElm
+						: uiElmWithMoreProperties;
+				}, uniqueUIElm);
+			}
+
+			uniqueUIElements.push(uniqueUIElm);
 		}
 
 		return uniqueUIElements;
