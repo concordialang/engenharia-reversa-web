@@ -11,7 +11,7 @@ export class VariantSentencesGenerator {
 
 	public gerate(element: HTMLElement, firstAnalyzedSentence: boolean): VariantSentence | null {
 		const uiElement: UIElement | null = this.uiElementGenerator.createFromElement(element);
-		if (!uiElement || !uiElement.getType()) {
+		if (!uiElement) {
 			return null;
 		}
 
@@ -36,7 +36,7 @@ export class VariantSentencesGenerator {
 				action = VariantSentenceActions.CLICK;
 				break;
 			default:
-				action = VariantSentenceActions.SEE;
+				action = VariantSentenceActions.CLICK;
 				break;
 		}
 
