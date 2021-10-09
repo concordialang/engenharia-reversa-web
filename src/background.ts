@@ -8,7 +8,7 @@ import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
 import { InMemoryDatabase } from './extension/InMemoryDatabase';
 
-const extension: Extension = new ChromeExtension();
+const extension: Extension = new ChromeExtension(chrome);
 
 const codeChangeMonitor = new CodeChangeMonitor(extension);
 

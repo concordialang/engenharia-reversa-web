@@ -10,8 +10,8 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 		classe no construtor também 
 	*/
 	constructor(
-		private typeConstructor: ClassConstructor<unknown>,
-		private communicationChannel: CommunicationChannel
+		private communicationChannel: CommunicationChannel,
+		private typeConstructor?: ClassConstructor<unknown>
 	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
@@ -29,7 +29,10 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 		});
 		const response = await this.communicationChannel.sendMessageToAll(message);
 		const json = response.getExtra();
-		return <Type>plainToClass(this.typeConstructor, json);
+		if (this.typeConstructor) {
+			return <Type>plainToClass(this.typeConstructor, json);
+		}
+		return json;
 	}
 
 	async remove(key: string): Promise<void> {
