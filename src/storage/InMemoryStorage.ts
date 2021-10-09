@@ -1,15 +1,24 @@
+import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { Command } from '../comm/Command';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
 import { Message } from '../comm/Message';
 import { ObjectStorage } from './ObjectStorage';
 
 export class InMemoryStorage<Type> implements ObjectStorage<Type> {
-	constructor(private communicationChannel: CommunicationChannel) {}
+	/*
+		Por conta da reflexão do Typescript ser ruim é necessário informar a 
+		classe no construtor também 
+	*/
+	constructor(
+		private typeConstructor: ClassConstructor<unknown>,
+		private communicationChannel: CommunicationChannel
+	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
+		const json = classToPlain(obj);
 		const message = new Message([Command.SetValueInMemoryDatabase], {
 			key: key,
-			value: obj,
+			value: json,
 		});
 		this.communicationChannel.sendMessageToAll(message);
 	}
@@ -19,7 +28,8 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 			key: key,
 		});
 		const response = await this.communicationChannel.sendMessageToAll(message);
-		return response.getExtra();
+		const json = response.getExtra();
+		return <Type>plainToClass(this.typeConstructor, json);
 	}
 
 	async remove(key: string): Promise<void> {
