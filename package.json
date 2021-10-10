@@ -66,6 +66,7 @@
 		"webpack-merge": "~4.2.2"
 	},
 	"dependencies": {
+		"class-transformer": "^0.4.0",
 		"cytoscape": "^3.18.2",
 		"diff-dom": "^4.2.2",
 		"get-xpath": "^3.0.0",
@@ -79,6 +80,7 @@
 		"mustache": "^4.0.1",
 		"mutation-observer": "^1.0.3",
 		"one-wise": "^2.0.0",
+		"reflect-metadata": "^0.1.13",
 		"watch": "^1.0.2"
 	}
 }

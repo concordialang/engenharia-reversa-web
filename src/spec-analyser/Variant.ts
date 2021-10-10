@@ -1,9 +1,14 @@
+import { Type } from 'class-transformer';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { VariantSentence } from './VariantSentence';
+import 'reflect-metadata';
 
 export class Variant {
 	private name!: string;
+
+	@Type(() => VariantSentence)
 	private sentences!: Array<VariantSentence>;
+
 	public last!: boolean;
 
 	constructor() {
