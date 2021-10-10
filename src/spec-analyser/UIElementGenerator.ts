@@ -61,11 +61,6 @@ export class UIElementGenerator {
 			uiElm.setProperty(new UIProperty(PropertyTypes.DATATYPE, dataType));
 		}
 
-		// value
-		// if (elm.value) {
-		// 	uiElm.setProperty(new UIProperty(PropertyTypes.VALUE, elm.value));
-		// }
-
 		// required
 		if (elm.required) {
 			uiElm.setProperty(new UIProperty(PropertyTypes.REQUIRED, elm.required));
@@ -250,7 +245,7 @@ export class UIElementGenerator {
 			} else if (inputType == 'time') {
 				uiElmDataType = DataTypes.TIME;
 			} else if (inputType == 'datetime-local') {
-				uiElmDataType = DataTypes.TIME;
+				uiElmDataType = DataTypes.DATETIME;
 			} else {
 				uiElmDataType = DataTypes.STRING;
 			}
