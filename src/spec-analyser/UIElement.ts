@@ -2,6 +2,7 @@ import { UIProperty } from './UIProperty';
 import { Transform, Type } from 'class-transformer';
 import { getElementByXpath, getPathTo } from '../util';
 import 'reflect-metadata';
+import { TransformHTMLElement } from '../decorators';
 
 export class UIElement {
 	private name: string;
@@ -9,8 +10,7 @@ export class UIElement {
 	@Type(() => UIProperty)
 	private properties: Array<UIProperty>;
 
-	@Transform(({ value }) => getPathTo(value), { toPlainOnly: true })
-	@Transform(({ value }) => <Element>getElementByXpath(value, document), { toClassOnly: true })
+	@TransformHTMLElement()
 	private sourceElement?: Element;
 
 	constructor(sourceElement?: Element) {
