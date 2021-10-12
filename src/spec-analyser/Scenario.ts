@@ -1,7 +1,10 @@
+import { Type } from 'class-transformer';
 import { Variant } from './Variant';
 
 export class Scenario {
 	private name!: string;
+
+	@Type(() => Variant)
 	private variants!: Array<Variant>;
 
 	constructor() {
@@ -13,7 +16,7 @@ export class Scenario {
 		this.name = name;
 	}
 
-	public getName() {
+	public getName(): string {
 		return this.name;
 	}
 
