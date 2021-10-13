@@ -1,18 +1,25 @@
+import { Type } from 'class-transformer';
 import { Import } from './Import';
 import { Scenario } from './Scenario';
 import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string;
-	private imports: Import[];
-	private scenarios: Scenario[];
-	private uiElements: UIElement[];
 	public InteractedElements: Array<{
 		xpath: string;
 		count: number;
 		variantName: string;
 		radioGroupName: string | null;
 	}>;
+
+	@Type(() => Import)
+	private imports: Array<Import>;
+
+	@Type(() => Scenario)
+	private scenarios: Array<Scenario>;
+
+	@Type(() => UIElement)
+	private uiElements: Array<UIElement>;
 
 	constructor() {
 		this.name = '';
@@ -38,11 +45,23 @@ export class Feature {
 		this.uiElements = uiElements;
 	}
 
+	public getUiElements(): Array<UIElement> {
+		return this.uiElements;
+	}
+
 	public addScenario(scenario: Scenario): void {
 		this.scenarios.push(scenario);
 	}
 
 	public getScenarios(): Array<Scenario> {
 		return this.scenarios;
+	}
+
+	public setImports(imports: Import[]): void {
+		this.imports = imports;
+	}
+
+	public getImports(): Import[] {
+		return this.imports;
 	}
 }
