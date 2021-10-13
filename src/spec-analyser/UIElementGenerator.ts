@@ -127,20 +127,29 @@ export class UIElementGenerator {
 	): string {
 		let name: string = '';
 
-		if (elm.name) {
+		if (elm.name && !(elm instanceof HTMLInputElement && elm.type === 'radio')) {
 			name = formatToFirstCapitalLetter(elm.name);
-		} else if (elm.previousElementSibling?.nodeName === HTMLElementType.LABEL) {
-			name = this.generateNameFromPreviousLabel(elm);
 		} else if (
-			elm.previousElementSibling?.nodeName === HTMLElementType.BR &&
-			elm.previousElementSibling?.previousElementSibling?.nodeName === HTMLElementType.LABEL
+			elm instanceof HTMLInputElement &&
+			(elm.type === 'radio' || elm.type === 'checkbox') &&
+			elm.nextElementSibling instanceof HTMLLabelElement
 		) {
-			name = this.generateNameFromPreviousLabel(elm.previousElementSibling as HTMLElement);
+			name = this.generateNameFromLabel(elm.nextElementSibling, elm, false);
+		} else if (elm.previousElementSibling instanceof HTMLLabelElement) {
+			name = this.generateNameFromLabel(elm.previousElementSibling, elm);
 		} else if (
-			elm.parentElement?.nodeName === HTMLElementType.DIV &&
-			elm.parentElement?.previousElementSibling?.nodeName === HTMLElementType.LABEL
+			elm.previousElementSibling instanceof HTMLBRElement &&
+			elm.previousElementSibling.previousElementSibling instanceof HTMLLabelElement
 		) {
-			name = this.generateNameFromPreviousLabel(elm.parentElement);
+			name = this.generateNameFromLabel(
+				elm.previousElementSibling.previousElementSibling,
+				elm
+			);
+		} else if (
+			elm.parentElement instanceof HTMLDivElement &&
+			elm.parentElement.previousElementSibling instanceof HTMLLabelElement
+		) {
+			name = this.generateNameFromLabel(elm.parentElement.previousElementSibling, elm);
 		}
 
 		name = name ? name : idUiElm;
@@ -148,16 +157,21 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	private generateNameFromPreviousLabel(elm: HTMLElement): string {
-		let label: HTMLLabelElement = elm.previousElementSibling as HTMLLabelElement;
+	private generateNameFromLabel(
+		label: HTMLLabelElement,
+		elm: HTMLElement,
+		assumeInnerText = true
+	): string {
 		let name: string = '';
 
-		if (!label.innerHTML) {
-			name = formatToFirstCapitalLetter(label.innerHTML);
-		} else if (label.htmlFor !== undefined) {
-			if ((elm.id && elm.id === label.htmlFor) || elm.nodeName === HTMLElementType.BR) {
+		if (label.htmlFor && elm.id && elm.id == label.htmlFor) {
+			if (label.innerText) {
+				name = formatToFirstCapitalLetter(label.innerText);
+			} else {
 				name = formatToFirstCapitalLetter(label.htmlFor);
 			}
+		} else if (!label.htmlFor && label.innerText && assumeInnerText) {
+			name = formatToFirstCapitalLetter(label.innerText);
 		}
 
 		return name;

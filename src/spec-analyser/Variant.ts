@@ -42,6 +42,11 @@ export class Variant {
 	}
 
 	public isValid() {
-		return this.sentences.some((sentence) => sentence.type !== VariantSentenceType.GIVEN);
+		return this.sentences.some((sentence) => {
+			return (
+				sentence.type !== VariantSentenceType.GIVEN &&
+				sentence.type !== VariantSentenceType.THEN
+			);
+		});
 	}
 }

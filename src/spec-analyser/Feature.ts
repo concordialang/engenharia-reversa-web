@@ -4,15 +4,22 @@ import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string;
-	private imports: Array<Import>;
-	private scenarios: Array<Scenario>;
-	private uiElements: Array<UIElement>;
+	private imports: Import[];
+	private scenarios: Scenario[];
+	private uiElements: UIElement[];
+	public InteractedElements: Array<{
+		xpath: string;
+		count: number;
+		variantName: string;
+		radioGroupName: string | null;
+	}>;
 
 	constructor() {
 		this.name = '';
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
+		this.InteractedElements = [];
 	}
 
 	public setName(name: string): void {

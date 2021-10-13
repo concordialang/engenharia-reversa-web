@@ -50,7 +50,7 @@ export class FeatureManager {
 				url,
 				observer,
 				ignoreFormElements,
-				feature.getName(),
+				feature,
 				variants.length,
 				this.redirectionCallback
 			);
