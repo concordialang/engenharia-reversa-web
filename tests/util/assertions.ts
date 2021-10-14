@@ -3,6 +3,32 @@ import { Scenario } from '../../src/spec-analyser/Scenario';
 import { UIElement } from '../../src/spec-analyser/UIElement';
 import { Variant } from '../../src/spec-analyser/Variant';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
+import { ElementInteraction } from '../../src/crawler/ElementInteraction';
+import { ElementAnalysis } from '../../src/crawler/ElementAnalysis';
+
+export function assertElementAnalysisAreEqual(expected: ElementAnalysis, actual: ElementAnalysis) {
+	expect(actual.getElement()).toBe(expected.getElement());
+	expect(actual.getPageUrl().href).toBe(expected.getPageUrl().href);
+	expect(actual.getStatus()).toBe(expected.getStatus());
+}
+
+export function assertElementInteractionsAreEqual(
+	expected: ElementInteraction<HTMLElement>,
+	actual: ElementInteraction<HTMLElement>
+) {
+	expect(actual.getElement()).toBe(expected.getElement());
+	expect(actual.getEventType()).toBe(expected.getEventType());
+	expect(actual.getPageUrl().href).toBe(expected.getPageUrl().href);
+	expect(actual.getValue()).toBe(expected.getValue());
+	expect(actual.getId()).toBe(expected.getId());
+	expect(actual.getElementSelector()).toBe(expected.getElementSelector());
+	const expectedVariant = expected.getVariant();
+	const actualVariant = actual.getVariant();
+	expect(actualVariant).not.toBeNull();
+	if (actualVariant && expectedVariant) {
+		assertVariantsAreEqual(expectedVariant, actualVariant);
+	}
+}
 
 export function assertFeaturesAreEqual(expected: Feature, actual: Feature) {
 	expect(actual.getName()).toBe(expected.getName());

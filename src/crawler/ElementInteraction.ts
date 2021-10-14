@@ -1,13 +1,25 @@
+import { Transform, Type } from 'class-transformer';
+import { TransformHTMLElement, TransformURL } from '../decorators';
 import { HTMLEventType } from '../enums/HTMLEventType';
 import { Variant } from '../spec-analyser/Variant';
 
 export class ElementInteraction<T extends HTMLElement> {
+	@TransformHTMLElement()
 	private element: T;
 	private eventType: HTMLEventType;
+	@TransformURL()
 	private pageUrl: URL;
 	private value: string | boolean | null;
 	private id: string;
+
+	@Transform(
+		(params) => (params.obj.elementSelector ? params.obj.elementSelector : params.obj.element),
+		{ toClassOnly: true }
+	)
 	private elementSelector: string | null;
+
+	@Type(() => Variant)
+	private variant?: Variant | null;
 
 	constructor(
 		element: T,
@@ -17,7 +29,7 @@ export class ElementInteraction<T extends HTMLElement> {
 		//FIXME Remover esse argumento, pois id é gerado internamente
 		id: string | null = null,
 		elementSelector?: string | null,
-		private variant?: Variant | null
+		variant?: Variant | null
 	) {
 		this.element = element;
 		this.eventType = eventType;
