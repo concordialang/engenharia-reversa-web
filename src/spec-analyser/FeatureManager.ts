@@ -42,6 +42,7 @@ export class FeatureManager {
 
 		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;
+		// let interactionCount: Array<{ xpath: string; count: number }> = [];
 
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
@@ -49,7 +50,7 @@ export class FeatureManager {
 				url,
 				observer,
 				ignoreFormElements,
-				feature.getName(),
+				feature,
 				variants.length,
 				this.redirectionCallback
 			);

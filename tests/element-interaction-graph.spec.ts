@@ -6,8 +6,8 @@ import { GraphStorage } from '../src/storage/GraphStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
 import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
-import { HTMLEventType } from '../src/types/HTMLEventType';
-import { HTMLElementType } from '../src/types/HTMLElementType';
+import { HTMLEventType } from '../src/enums/HTMLEventType';
+import { HTMLElementType } from '../src/enums/HTMLElementType';
 import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
 
 describe('ElementInteractionGraph', () => {

@@ -5,6 +5,12 @@ import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string;
+	public InteractedElements: Array<{
+		xpath: string;
+		count: number;
+		variantName: string;
+		radioGroupName: string | null;
+	}>;
 
 	@Type(() => Import)
 	private imports: Array<Import>;
@@ -20,6 +26,7 @@ export class Feature {
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
+		this.InteractedElements = [];
 	}
 
 	public setName(name: string): void {

@@ -7,6 +7,7 @@ import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
 import { getPathTo } from '../util';
+import { Feature } from './Feature';
 
 export class VariantGenerator {
 	constructor(
@@ -20,13 +21,14 @@ export class VariantGenerator {
 		url: URL,
 		observer: MutationObserverManager,
 		ignoreFormElements: boolean,
-		featureName: string,
+		feature: Feature,
 		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		let variant = this.featureUtil.createVariant(featureName, variantsCount);
+		let variant = this.featureUtil.createVariant(feature.getName(), variantsCount);
 
 		let firstAnalyzeSentence = true;
+		variant.last = true;
 
 		const analyse = async (elm) => {
 			let checkRowChilds = false;
@@ -43,7 +45,7 @@ export class VariantGenerator {
 				await analyse(elm.firstElementChild);
 			}
 
-			if (!this.checkValidInteractableElement(elm)) {
+			if (!this.checkValidInteractableElement(elm, variant.getName(), feature)) {
 				if (elm.nextElementSibling) {
 					await analyse(elm.nextElementSibling);
 				}
@@ -63,7 +65,20 @@ export class VariantGenerator {
 				redirectionCallback,
 				true
 			);
-			if (result && result.getTriggeredRedirection()) {
+
+			if (!result) {
+				if (elm.nextElementSibling) {
+					await analyse(elm.nextElementSibling);
+				}
+				return;
+			}
+
+			this.saveInteractedElement(elm, variant.getName(), feature);
+			if (this.checkNeedNewVariant(elm)) {
+				variant.last = false;
+			}
+
+			if (result.getTriggeredRedirection()) {
 				return variant;
 			}
 
@@ -71,15 +86,16 @@ export class VariantGenerator {
 				elm,
 				firstAnalyzeSentence
 			);
-			if (firstAnalyzeSentence) {
-				firstAnalyzeSentence = false;
-			}
 
 			if (!variantSentence) {
 				if (elm.nextElementSibling) {
 					await analyse(elm.nextElementSibling);
 				}
 				return;
+			}
+
+			if (firstAnalyzeSentence) {
+				firstAnalyzeSentence = false;
 			}
 
 			variant.setVariantSentence(variantSentence);
@@ -107,8 +123,9 @@ export class VariantGenerator {
 
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
-		variant.setVariantSentence(this.featureUtil.createThenTypeVariantSentence(featureName));
-		variant.last = true;
+		variant.setVariantSentence(
+			this.featureUtil.createThenTypeVariantSentence(feature.getName())
+		);
 		return variant;
 	}
 
@@ -255,7 +272,12 @@ export class VariantGenerator {
 		return true;
 	}
 
-	private checkValidInteractableElement(elm) {
+	// check if the element is ready to receive interaction
+	private checkValidInteractableElement(
+		elm: HTMLElement,
+		currentVariantName: string,
+		feature: Feature
+	) {
 		if (
 			!(elm instanceof HTMLInputElement) &&
 			!(elm instanceof HTMLSelectElement) &&
@@ -284,7 +306,85 @@ export class VariantGenerator {
 			}
 		}
 
+		return this.checkPreviousInteractions(elm, currentVariantName, feature);
+	}
+
+	/*
+		Checks previous interactions throughout feature
+		Some elements force creations of new variants and cannot have repeated interactions (checkbox, radio, button)
+	*/
+	private checkPreviousInteractions(
+		elm: HTMLElement,
+		currentVariantName: string,
+		feature: Feature
+	): boolean {
+		if (
+			(elm instanceof HTMLInputElement && (elm.type == 'checkbox' || elm.type == 'radio')) ||
+			elm instanceof HTMLButtonElement
+		) {
+			const xpathElement = getPathTo(elm);
+
+			const alreadyInteracted = feature.InteractedElements.some(
+				(interactedElm) => interactedElm.xpath === xpathElement
+			);
+
+			if (alreadyInteracted) {
+				return false;
+			}
+
+			if (elm instanceof HTMLInputElement && elm.type == 'radio') {
+				// check if some group radio button received interaction in this variant
+				const someAlreadyInteracted = feature.InteractedElements.some((radio) => {
+					return (
+						radio.variantName === currentVariantName && radio.radioGroupName == elm.name
+					);
+				});
+
+				if (someAlreadyInteracted) {
+					return false;
+				}
+			}
+		}
+
 		return true;
+	}
+
+	private saveInteractedElement(
+		elm: HTMLElement,
+		currentVariantName: string,
+		feature: Feature
+	): void {
+		const xpathElement = getPathTo(elm);
+		const indexAnalyzedElm = feature.InteractedElements.findIndex(
+			(analyzedElms) => analyzedElms.xpath === xpathElement
+		);
+
+		if (indexAnalyzedElm !== -1) {
+			feature.InteractedElements[indexAnalyzedElm].count++;
+		} else {
+			let interactedElm: any = {
+				xpath: xpathElement,
+				count: 1,
+				variantName: currentVariantName,
+			};
+
+			if (elm instanceof HTMLInputElement && elm.type == 'radio' && elm.name) {
+				interactedElm.radioGroupName = elm.name;
+			}
+
+			feature.InteractedElements.push(interactedElm);
+		}
+	}
+
+	private checkNeedNewVariant(elm: HTMLElement): boolean {
+		if (
+			(elm instanceof HTMLInputElement && (elm.type == 'checkbox' || elm.type == 'radio')) ||
+			elm instanceof HTMLButtonElement
+		) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private treatMutationsSentences(observer: MutationObserverManager): VariantSentence[] {

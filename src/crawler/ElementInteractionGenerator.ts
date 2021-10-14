@@ -76,29 +76,46 @@ export class ElementInteractionGenerator {
 
 	//RADIO
 
+	// private generateRadioInputInteraction(
+	// 	element: HTMLInputElement
+	// ): ElementInteraction<HTMLInputElement> | null {
+	// 	const name = element.getAttribute('name');
+	// 	const form = element.form;
+	// 	if (name && form) {
+	// 		if (!this.radioGroupsAlreadyFilled.includes(name)) {
+	// 			const radioGroup = this.getFormInputElementsByNameAttribute(form, name);
+	// 			if (radioGroup && radioGroup.length) {
+	// 				const chosenRadio = this.chooseRadioButton(radioGroup);
+	// 				if (chosenRadio) {
+	// 					const interaction = new ElementInteraction<HTMLInputElement>(
+	// 						chosenRadio,
+	// 						HTMLEventType.Change,
+	// 						this.browserContext.getUrl(),
+	// 						chosenRadio.value
+	// 					);
+	// 					this.radioGroupsAlreadyFilled.push(name);
+	// 					return interaction;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	return null;
+	// }
+
 	private generateRadioInputInteraction(
 		element: HTMLInputElement
 	): ElementInteraction<HTMLInputElement> | null {
-		const name = element.getAttribute('name');
-		const form = element.form;
-		if (name && form) {
-			if (!this.radioGroupsAlreadyFilled.includes(name)) {
-				const radioGroup = this.getFormInputElementsByNameAttribute(form, name);
-				if (radioGroup && radioGroup.length) {
-					const chosenRadio = this.chooseRadioButton(radioGroup);
-					if (chosenRadio) {
-						const interaction = new ElementInteraction<HTMLInputElement>(
-							chosenRadio,
-							HTMLEventType.Change,
-							this.browserContext.getUrl(),
-							chosenRadio.value
-						);
-						this.radioGroupsAlreadyFilled.push(name);
-						return interaction;
-					}
-				}
-			}
+		if (element.value) {
+			const interaction = new ElementInteraction<HTMLInputElement>(
+				element,
+				HTMLEventType.Change,
+				this.browserContext.getUrl(),
+				element.value
+			);
+
+			return interaction;
 		}
+
 		return null;
 	}
 

@@ -59,9 +59,7 @@ export class FeatureUtil {
 	}
 
 	createThenTypeVariantSentence(featureName: string): VariantSentence {
-		const thenSentence = this.variantSentencesGenerator.gerateThenTypeSentence(featureName);
-
-		return thenSentence;
+		return this.variantSentencesGenerator.gerateThenTypeSentence(featureName);
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {
