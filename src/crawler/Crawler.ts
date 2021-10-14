@@ -2,7 +2,6 @@ import { HTMLEventType } from '../enums/HTMLEventType';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
-import { PageStorage } from '../storage/PageStorage';
 import { VisitedURLGraph } from './VisitedURLGraph';
 import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../comm/CommunicationChannel';
@@ -12,12 +11,13 @@ import { commonAncestorElement, getDiff, getFormElements, getPathTo } from '../u
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
+import { ObjectStorage } from '../storage/ObjectStorage';
 export class Crawler {
 	private lastPageKey: string;
 
 	constructor(
 		private browserContext: BrowserContext,
-		private pageStorage: PageStorage,
+		private pageStorage: ObjectStorage<string>,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private visitedURLGraph: VisitedURLGraph,
 		private pageAnalyzer: PageAnalyzer,

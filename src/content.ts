@@ -12,7 +12,6 @@ import { Crawler } from './crawler/Crawler';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
 import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
-import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
 import Mutex from './mutex/Mutex';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
@@ -26,6 +25,7 @@ import { TableRowInteractor } from './crawler/TableRowInteractor';
 import { TableColumnInteractor } from './crawler/TableColumnInteractor';
 import { LocalObjectStorage } from './storage/LocalObjectStorage';
 import { ElementInteraction } from './crawler/ElementInteraction';
+import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -36,7 +36,7 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
 
-	const pageStorage = new PageStorage('engenharia-reversa-web');
+	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
