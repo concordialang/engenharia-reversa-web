@@ -1,20 +1,26 @@
+import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { ObjectStorage } from './ObjectStorage';
 
-export abstract class LocalObjectStorage<Type> implements ObjectStorage<Type> {
-	constructor(private localStorage: Storage) {
-		this.localStorage = localStorage;
-	}
+export class LocalObjectStorage<Type> implements ObjectStorage<Type> {
+	/*
+		Por conta da reflexão do Typescript ser ruim é necessário informar a 
+		classe no construtor também 
+	*/
+	constructor(
+		private localStorage: Storage,
+		private typeConstructor?: ClassConstructor<unknown>
+	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
-		const stringifiedObject = this.stringifyObject(obj);
-		this.localStorage.setItem(key, stringifiedObject);
+		const json = this.serialize(obj);
+		this.localStorage.setItem(key, JSON.stringify(json));
 	}
 
 	async get(key: string): Promise<Type | null> {
 		const jsonString = this.localStorage.getItem(key);
 		if (jsonString) {
 			const json = JSON.parse(jsonString);
-			return this.mapJsonToObject(json);
+			return this.deserialize(json);
 		}
 		return null;
 	}
@@ -23,7 +29,14 @@ export abstract class LocalObjectStorage<Type> implements ObjectStorage<Type> {
 		this.localStorage.removeItem(key);
 	}
 
-	protected abstract stringifyObject(obj: Type): string;
+	protected serialize(obj: Type): {} {
+		return classToPlain(obj);
+	}
 
-	protected abstract mapJsonToObject(json: {}): Type;
+	protected deserialize(json: any): Type {
+		if (this.typeConstructor) {
+			return <Type>plainToClass(this.typeConstructor, json);
+		}
+		return json;
+	}
 }

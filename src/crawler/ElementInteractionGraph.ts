@@ -1,10 +1,10 @@
 import { Graph } from '../graph/Graph';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ElementInteraction } from './ElementInteraction';
-import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import Mutex from '../mutex/Mutex';
 import { GraphStorage } from '../storage/GraphStorage';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
+import { ObjectStorage } from '../storage/ObjectStorage';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -12,7 +12,7 @@ export class ElementInteractionGraph {
 
 	constructor(
 		private id: string,
-		private elementInteractionStorage: ElementInteractionStorage,
+		private elementInteractionStorage: ObjectStorage<ElementInteraction<HTMLElement>>,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private graphStorage: GraphStorage,
 		private mutex: Mutex
