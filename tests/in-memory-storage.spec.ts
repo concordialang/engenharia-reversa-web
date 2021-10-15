@@ -80,7 +80,7 @@ describe('InMemoryStorage', () => {
 		}
 	});
 
-	it('removes value correctly', () => {
+	it('removes value correctly', async () => {
 		const database = new InMemoryDatabase();
 
 		const value = {
@@ -89,8 +89,8 @@ describe('InMemoryStorage', () => {
 		};
 		const key = 'key';
 
-		database.set(key, value);
-		database.remove(key);
+		await database.set(key, value);
+		await database.remove(key);
 
 		const retrievedValue = database.get(key);
 
