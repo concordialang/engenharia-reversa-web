@@ -27,8 +27,6 @@ import { LocalObjectStorage } from './storage/LocalObjectStorage';
 import { ElementInteraction } from './crawler/ElementInteraction';
 import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
 
-//TEST
-
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
 getTabId(communicationChannel).then((tabId) => {
