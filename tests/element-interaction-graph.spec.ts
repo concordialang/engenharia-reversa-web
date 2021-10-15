@@ -1,7 +1,6 @@
 import { ElementInteractionGraph } from '../src/crawler/ElementInteractionGraph';
 import { ElementInteraction } from '../src/crawler/ElementInteraction';
 import Mutex from '../src/mutex/Mutex';
-import { ElementInteractionStorage } from '../src/storage/ElementInteractionStorage';
 import { GraphStorage } from '../src/storage/GraphStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
@@ -9,6 +8,7 @@ import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
 import { HTMLEventType } from '../src/enums/HTMLEventType';
 import { HTMLElementType } from '../src/enums/HTMLElementType';
 import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
+import { LocalObjectStorage } from '../src/storage/LocalObjectStorage';
 
 describe('ElementInteractionGraph', () => {
 	const url1: URL = new URL('https://www.google.com');
@@ -69,8 +69,11 @@ describe('ElementInteractionGraph', () => {
 
 	beforeAll(async () => {
 		const storage = new LocalStorageMock();
-		elementAnalysisStorage = new ElementAnalysisStorage(storage, document);
-		const elementInteractionStorage = new ElementInteractionStorage(storage, document);
+		elementAnalysisStorage = new ElementAnalysisStorage(storage);
+		const elementInteractionStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+			storage,
+			ElementInteraction
+		);
 		const graphStorage = new GraphStorage(storage);
 
 		const mutex = new Mutex('test-graph');
