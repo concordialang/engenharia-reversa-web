@@ -75,7 +75,7 @@ describe('IndexedDBStorage', () => {
 		await storage.set(key, value);
 		await storage.remove(key);
 
-		const retrievedValue = storage.get(key);
+		const retrievedValue = await storage.get(key);
 
 		expect(retrievedValue).toBeUndefined();
 	});
