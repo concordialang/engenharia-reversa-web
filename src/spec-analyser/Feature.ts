@@ -10,6 +10,7 @@ export class Feature {
 		count: number;
 		variantName: string;
 		radioGroupName: string | null;
+		elmType: string;
 	}>;
 
 	@Type(() => Import)
@@ -63,5 +64,9 @@ export class Feature {
 
 	public getImports(): Import[] {
 		return this.imports;
+	}
+
+	public getGeneralScenario(): Scenario {
+		return this.scenarios[0];
 	}
 }

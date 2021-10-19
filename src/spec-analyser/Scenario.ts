@@ -2,12 +2,10 @@ import { Type } from 'class-transformer';
 import { Variant } from './Variant';
 
 export class Scenario {
-	private name!: string;
-
 	@Type(() => Variant)
 	private variants!: Array<Variant>;
 
-	constructor() {
+	constructor(private name: string, private maxVariantCount: number = 1) {
 		this.variants = [];
 	}
 
@@ -20,7 +18,6 @@ export class Scenario {
 		return this.name;
 	}
 
-	//variants
 	public addVariant(variant: Variant) {
 		this.variants.push(variant);
 	}
@@ -31,5 +28,19 @@ export class Scenario {
 
 	public getVariants() {
 		return this.variants;
+	}
+
+	public getVariantsCount() {
+		return this.variants.length;
+	}
+
+	public getMaxVariantsCount() {
+		return this.maxVariantCount;
+	}
+
+	public setMaxVariantCount(maxVariantCount: number) {
+		if (Number.isInteger(maxVariantCount) && maxVariantCount > 0) {
+			this.maxVariantCount = maxVariantCount;
+		}
 	}
 }

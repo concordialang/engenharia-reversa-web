@@ -9,6 +9,8 @@ import { VariantSentence } from './VariantSentence';
 import { getPathTo } from '../util';
 import { Feature } from './Feature';
 
+let needNewVariant = false;
+
 export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
@@ -22,24 +24,28 @@ export class VariantGenerator {
 		observer: MutationObserverManager,
 		ignoreFormElements: boolean,
 		feature: Feature,
-		variantsCount: number,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		let variant = this.featureUtil.createVariant(feature.getName(), variantsCount);
+		const scenario = feature.getGeneralScenario();
+		let variant = this.featureUtil.createVariant(
+			feature.getName(),
+			scenario.getVariantsCount()
+		);
 
+		needNewVariant = false;
 		let firstAnalyzeSentence = true;
 		variant.last = true;
 
 		const analyse = async (elm) => {
-			let checkRowChilds = false;
+			let checksRowChilds = false;
 			if (elm instanceof HTMLTableRowElement) {
-				checkRowChilds = await this.treatTableRow(elm, variant, observer);
+				checksRowChilds = await this.treatTableRow(elm, variant, observer);
 			}
 
-			const validFirstChild = await this.checkValidFirstChild(
+			const validFirstChild = await this.checksValidFirstChild(
 				elm,
 				ignoreFormElements,
-				checkRowChilds
+				checksRowChilds
 			);
 			if (validFirstChild) {
 				await analyse(elm.firstElementChild);
@@ -74,9 +80,6 @@ export class VariantGenerator {
 			}
 
 			this.saveInteractedElement(elm, variant.getName(), feature);
-			if (this.checkNeedNewVariant(elm)) {
-				variant.last = false;
-			}
 
 			if (result.getTriggeredRedirection()) {
 				return variant;
@@ -121,6 +124,8 @@ export class VariantGenerator {
 			await analyse(startElement);
 		}
 
+		variant.last = !needNewVariant;
+
 		this.elementInteractionGenerator.resetFilledRadioGroups();
 
 		variant.setVariantSentence(
@@ -129,10 +134,14 @@ export class VariantGenerator {
 		return variant;
 	}
 
-	private async checkValidFirstChild(elm, ignoreFormElements, checkRowChilds): Promise<boolean> {
+	private async checksValidFirstChild(
+		elm,
+		ignoreFormElements,
+		checksRowChilds
+	): Promise<boolean> {
 		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
 			if (elm instanceof HTMLTableRowElement) {
-				return checkRowChilds;
+				return checksRowChilds;
 			}
 
 			if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
@@ -306,45 +315,64 @@ export class VariantGenerator {
 			}
 		}
 
-		return this.checkPreviousInteractions(elm, currentVariantName, feature);
+		return this.checksPreviousValidInteractions(elm, currentVariantName, feature);
 	}
 
 	/*
 		Checks previous interactions throughout feature
 		Some elements force creations of new variants and cannot have repeated interactions (checkbox, radio, button)
 	*/
-	private checkPreviousInteractions(
+	private checksPreviousValidInteractions(
 		elm: HTMLElement,
 		currentVariantName: string,
 		feature: Feature
 	): boolean {
 		if (
-			(elm instanceof HTMLInputElement && (elm.type == 'checkbox' || elm.type == 'radio')) ||
-			elm instanceof HTMLButtonElement
+			!(elm instanceof HTMLInputElement && (elm.type == 'checkbox' || elm.type == 'radio')) &&
+			!(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) &&
+			!(elm instanceof HTMLButtonElement)
 		) {
-			const xpathElement = getPathTo(elm);
+			return true;
+		}
 
-			const alreadyInteracted = feature.InteractedElements.some(
-				(interactedElm) => interactedElm.xpath === xpathElement
-			);
+		const xpathElement = getPathTo(elm);
 
-			if (alreadyInteracted) {
+		const alreadyInteracted = feature.InteractedElements.some(
+			(interactedElm) => interactedElm.xpath === xpathElement
+		);
+
+		if (alreadyInteracted) {
+			return false;
+		}
+
+		if (elm instanceof HTMLInputElement && elm.type == 'radio') {
+			// checks if some group radio button received interaction in this variant
+			const anyOfGroupHasInteracted = feature.InteractedElements.some((radio) => {
+				return radio.variantName === currentVariantName && radio.radioGroupName == elm.name;
+			});
+
+			if (anyOfGroupHasInteracted) {
 				return false;
 			}
+		}
 
-			if (elm instanceof HTMLInputElement && elm.type == 'radio') {
-				// check if some group radio button received interaction in this variant
-				const someAlreadyInteracted = feature.InteractedElements.some((radio) => {
-					return (
-						radio.variantName === currentVariantName && radio.radioGroupName == elm.name
-					);
-				});
+		if (
+			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) ||
+			elm instanceof HTMLButtonElement
+		) {
+			const anyButtonHasInteracted = feature.InteractedElements.some((radio) => {
+				return radio.variantName === currentVariantName && radio.elmType === 'button';
+			});
 
-				if (someAlreadyInteracted) {
-					return false;
-				}
+			if (anyButtonHasInteracted) {
+				return false;
 			}
 		}
+
+		const scenario = feature.getGeneralScenario();
+
+		needNewVariant =
+			scenario.getVariantsCount() < scenario.getMaxVariantsCount() - 1 ? true : false;
 
 		return true;
 	}
@@ -366,25 +394,22 @@ export class VariantGenerator {
 				xpath: xpathElement,
 				count: 1,
 				variantName: currentVariantName,
+				elmType: elm.nodeName.toLowerCase(),
 			};
 
 			if (elm instanceof HTMLInputElement && elm.type == 'radio' && elm.name) {
 				interactedElm.radioGroupName = elm.name;
+				interactedElm.elmType = 'radio';
+			} else if (
+				(elm instanceof HTMLInputElement &&
+					(elm.type == 'button' || elm.type == 'submit')) ||
+				elm instanceof HTMLButtonElement
+			) {
+				interactedElm.elmType = 'button';
 			}
 
 			feature.InteractedElements.push(interactedElm);
 		}
-	}
-
-	private checkNeedNewVariant(elm: HTMLElement): boolean {
-		if (
-			(elm instanceof HTMLInputElement && (elm.type == 'checkbox' || elm.type == 'radio')) ||
-			elm instanceof HTMLButtonElement
-		) {
-			return true;
-		}
-
-		return false;
 	}
 
 	private treatMutationsSentences(observer: MutationObserverManager): VariantSentence[] {

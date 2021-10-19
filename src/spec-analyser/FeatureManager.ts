@@ -36,13 +36,17 @@ export class FeatureManager {
 			analysisElement,
 			this.spec.featureCount()
 		);
+
+		const scenario = feature.getGeneralScenario();
+		// const maxVariantCount: number = this.discoverElementMaxVariantCount(analysisElement);
+		const maxVariantCount: number = 5;
+		scenario.setMaxVariantCount(maxVariantCount);
+
 		let observer: MutationObserverManager = new MutationObserverManager(
 			analysisElement.ownerDocument.body
 		);
 
-		let variants: Variant[] = [];
 		let variantAnalyzed: Variant | null;
-		// let interactionCount: Array<{ xpath: string; count: number }> = [];
 
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
@@ -51,26 +55,21 @@ export class FeatureManager {
 				observer,
 				ignoreFormElements,
 				feature,
-				variants.length,
 				this.redirectionCallback
 			);
 
 			if (variantAnalyzed && variantAnalyzed.isValid()) {
-				variants.push(variantAnalyzed);
+				scenario.addVariant(variantAnalyzed);
 			}
 		} while (variantAnalyzed && !variantAnalyzed.last);
 
 		observer.disconnect();
 
-		if (variants.length == 0) {
+		if (scenario.getVariantsCount() == 0) {
 			return null;
 		}
 
-		const scenario = this.featureUtil.createScenario(feature.getName());
-		scenario.setVariants(variants);
-		feature.addScenario(scenario);
-
-		const uiElements: Array<UIElement> = this.getUniqueUIElements(variants);
+		const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
 		feature.setUiElements(uiElements);
 
 		return feature;
@@ -113,5 +112,16 @@ export class FeatureManager {
 		}
 
 		return uniqueUIElements;
+	}
+
+	private discoverElementMaxVariantCount(element: HTMLElement): number {
+		let variantsCount: number = 1;
+
+		const inputs = element.getElementsByTagName('input');
+		const buttons = element.getElementsByTagName('button');
+
+		// implementar
+
+		return variantsCount;
 	}
 }

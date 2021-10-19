@@ -25,8 +25,7 @@ export class FeatureStorage extends LocalObjectStorage<Feature> {
 	}
 
 	private createScenario(json: object): Scenario {
-		const scenario = new Scenario();
-		scenario.setName(json['name']);
+		const scenario = new Scenario(json['name']);
 		for (const variant of json['variants']) {
 			scenario.addVariant(this.createVariant(variant));
 		}

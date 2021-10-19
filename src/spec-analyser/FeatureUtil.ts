@@ -24,12 +24,14 @@ export class FeatureUtil {
 		const feature = new Feature();
 		feature.setName(featureName);
 
+		const scenario = this.createScenario(featureName);
+		feature.addScenario(scenario);
+
 		return feature;
 	}
 
 	createScenario(featureName: string): Scenario {
-		const scenario = new Scenario();
-		scenario.setName(featureName + ' - General Scenario');
+		const scenario = new Scenario(featureName + ' - General Scenario');
 
 		return scenario;
 	}
