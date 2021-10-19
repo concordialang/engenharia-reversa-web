@@ -1,5 +1,4 @@
 import Mutex from '../src/mutex/Mutex';
-import { ChromeCommunicationChannel } from '../src/comm/ChromeCommunicationChannel';
 import { BrowserContext } from '../src/crawler/BrowserContext';
 import { ButtonInteractor } from '../src/crawler/ButtonInteractor';
 import { ElementInteractionExecutor } from '../src/crawler/ElementInteractionExecutor';
@@ -7,7 +6,6 @@ import { ElementInteractionGenerator } from '../src/crawler/ElementInteractionGe
 import { ElementInteractionGraph } from '../src/crawler/ElementInteractionGraph';
 import { InputInteractor } from '../src/crawler/InputInteractor';
 import { PageAnalyzer } from '../src/crawler/PageAnalyzer';
-import { VisitedURLGraph } from '../src/crawler/VisitedURLGraph';
 import { FeatureManager } from '../src/spec-analyser/FeatureManager';
 import { FeatureUtil } from '../src/spec-analyser/FeatureUtil';
 import { Spec } from '../src/spec-analyser/Spec';
@@ -15,13 +13,14 @@ import { UIElementGenerator } from '../src/spec-analyser/UIElementGenerator';
 import { VariantGenerator } from '../src/spec-analyser/VariantGenerator';
 import { VariantSentencesGenerator } from '../src/spec-analyser/VariantSentencesGenerator';
 import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
-import { ElementInteractionStorage } from '../src/storage/ElementInteractionStorage';
 import { GraphStorage } from '../src/storage/GraphStorage';
-import { PageStorage } from '../src/storage/PageStorage';
-import { LocalStorageMock } from './util/LocalStorageMock';
 import { getPathTo } from '../src/util';
 import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
 import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
+import { LocalObjectStorage } from '../src/storage/LocalObjectStorage';
+import { ElementInteraction } from '../src/crawler/ElementInteraction';
+import { TableRowInteractor } from '../src/crawler/TableRowInteractor';
+import { TableColumnInteractor } from '../src/crawler/TableColumnInteractor';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -34,7 +33,7 @@ describe('Page Analyzer', () => {
 		body.appendChild(div);
 
 		const pageUrl: URL = new URL(window.location.href);
-		const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, document);
+		const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
 
 		const pageAnalyzer = buildPageAnalyzer({
 			document: document,
@@ -67,12 +66,9 @@ describe('Page Analyzer', () => {
 		body.appendChild(div);
 
 		const pageUrl: URL = new URL(window.location.href);
-		const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, document);
+		const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
 
-		const elementAnalysisStorageMock = new ElementAnalysisStorage(
-			window.localStorage,
-			document
-		);
+		const elementAnalysisStorageMock = new ElementAnalysisStorage(window.localStorage);
 
 		const set = jest.fn().mockImplementation((key: string, obj: ElementAnalysis) => {});
 		elementAnalysisStorageMock.set = set;
@@ -118,14 +114,17 @@ describe('Page Analyzer', () => {
 
 		const inputInteractor = new InputInteractor();
 		const buttonInteractor = new ButtonInteractor(window);
-		const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, dom);
+		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+			window.localStorage,
+			ElementInteraction
+		);
 		const spec: Spec = new Spec('pt-br');
 
 		let elementAnalysisStorage: ElementAnalysisStorage;
 		if (options.elementAnalysisStorage) {
 			elementAnalysisStorage = options.elementAnalysisStorage;
 		} else {
-			elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, dom);
+			elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
 		}
 
 		const elementInteractionGraph = new ElementInteractionGraph(
@@ -136,9 +135,14 @@ describe('Page Analyzer', () => {
 			interactionsGraphMutex
 		);
 
+		const tableRowInteractor = new TableRowInteractor();
+		const tableColumnInteractor = new TableColumnInteractor();
+
 		const elementInteractionExecutor = new ElementInteractionExecutor(
 			inputInteractor,
 			buttonInteractor,
+			tableRowInteractor,
+			tableColumnInteractor,
 			elementInteractionGraph
 		);
 
@@ -154,8 +158,8 @@ describe('Page Analyzer', () => {
 		const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 		const variantGenerator: VariantGenerator = new VariantGenerator(
-			elementInteractionExecutor,
 			elementInteractionGenerator,
+			elementInteractionExecutor,
 			featureUtil
 		);
 

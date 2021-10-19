@@ -12,9 +12,7 @@ import Mutex from '../src/mutex/Mutex';
 import { FeatureUtil } from '../src/spec-analyser/FeatureUtil';
 import { Spec } from '../src/spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
-import { ElementInteractionStorage } from '../src/storage/ElementInteractionStorage';
 import { GraphStorage } from '../src/storage/GraphStorage';
-import { PageStorage } from '../src/storage/PageStorage';
 import { ChromeCommunicationChannel } from '../src/comm/ChromeCommunicationChannel';
 import { Message } from '../src/comm/Message';
 import { Command } from '../src/comm/Command';
@@ -25,10 +23,18 @@ import { UIElementGenerator } from '../src/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../src/spec-analyser/VariantSentencesGenerator';
 import { VariantGenerator } from '../src/spec-analyser/VariantGenerator';
 import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
+import { IndexedDBObjectStorage } from '../src/storage/IndexedDBObjectStorage';
+import { LocalObjectStorage } from '../src/storage/LocalObjectStorage';
+import { ElementInteraction } from '../src/crawler/ElementInteraction';
+import { TableRowInteractor } from '../src/crawler/TableRowInteractor';
+import { TableColumnInteractor } from '../src/crawler/TableColumnInteractor';
+import { ChromeMock } from '../tests/util/ChromeMock';
+
+const chrome = new ChromeMock();
 
 describe('Crawler', () => {
 	it('opens link on new tab when its not analyzed', async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -58,7 +64,7 @@ describe('Crawler', () => {
 	});
 
 	it("doesn't open link on new tab when its analysis is in progress", async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -81,7 +87,7 @@ describe('Crawler', () => {
 
 		if (link1Element) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
@@ -103,7 +109,7 @@ describe('Crawler', () => {
 	});
 
 	it("doesn't open link on new tab when a link parent element its analysis is in progress", async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -126,7 +132,7 @@ describe('Crawler', () => {
 
 		if (link1ParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
@@ -148,7 +154,7 @@ describe('Crawler', () => {
 	});
 
 	it("doesn't open link on new tab when its analyzed", async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -171,7 +177,7 @@ describe('Crawler', () => {
 
 		if (link1Element) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
@@ -193,7 +199,7 @@ describe('Crawler', () => {
 	});
 
 	it("doesn't open link on new tab when a link parent element is analyzed", async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -216,7 +222,7 @@ describe('Crawler', () => {
 
 		if (link1ParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
@@ -238,7 +244,7 @@ describe('Crawler', () => {
 	});
 
 	it("doesn't open link on new tab when a element above link parent element is analyzed", async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 1);
@@ -266,7 +272,7 @@ describe('Crawler', () => {
 
 		if (link1ParentParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage, document);
+			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentParentElement,
 				new URL(window.location.href),
@@ -288,7 +294,7 @@ describe('Crawler', () => {
 	});
 
 	it('respects the number of available tabs when opening links in new tabs', async () => {
-		const communicationChannel = new ChromeCommunicationChannel();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const sendMessageToAll = jest.fn().mockImplementation((message: Message) => {
 			if (message.includesAction(Command.GetNumberOfAvailableTabs)) {
 				const message = new Message([], 2);
@@ -372,27 +378,31 @@ describe('Crawler', () => {
 
 		const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
 
-		const pageStorage = new PageStorage('engenharia-reversa-web');
+		const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 		const inputInteractor = new InputInteractor();
 		const buttonInteractor = new ButtonInteractor(window);
-		const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, dom);
+		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+			window.localStorage,
+			ElementInteraction
+		);
 		const spec: Spec = new Spec('pt-br');
 
 		let analyzedElementStorage: ElementAnalysisStorage;
 		if (options.analyzedElementStorage) {
 			analyzedElementStorage = options.analyzedElementStorage;
 		} else {
-			analyzedElementStorage = new ElementAnalysisStorage(new LocalStorageMock(), dom);
+			analyzedElementStorage = new ElementAnalysisStorage(new LocalStorageMock());
 		}
 
 		let communicationChannel: CommunicationChannel;
 		if (options.communicationChannel) {
-			communicationChannel = options.communicationChannel ?? new ChromeCommunicationChannel();
+			communicationChannel =
+				options.communicationChannel ?? new ChromeCommunicationChannel(chrome);
 		} else {
-			communicationChannel = new ChromeCommunicationChannel();
+			communicationChannel = new ChromeCommunicationChannel(chrome);
 		}
 
 		const elementInteractionGraph = new ElementInteractionGraph(
@@ -405,9 +415,14 @@ describe('Crawler', () => {
 
 		const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
+		const tableRowInteractor = new TableRowInteractor();
+		const tableColumnInteractor = new TableColumnInteractor();
+
 		const elementInteractionExecutor = new ElementInteractionExecutor(
 			inputInteractor,
 			buttonInteractor,
+			tableRowInteractor,
+			tableColumnInteractor,
 			elementInteractionGraph
 		);
 
@@ -423,8 +438,8 @@ describe('Crawler', () => {
 		const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 		const variantGenerator: VariantGenerator = new VariantGenerator(
-			elementInteractionExecutor,
 			elementInteractionGenerator,
+			elementInteractionExecutor,
 			featureUtil
 		);
 

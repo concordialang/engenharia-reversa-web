@@ -1,7 +1,7 @@
 import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { MutationObserverManager } from '../../src/mutation-observer/MutationObserverManager';
-import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
-import { VariantSentenceType } from '../../src/types/VariantSentenceType';
+import { VariantSentenceActions } from '../../src/enums/VariantSentenceActions';
+import { VariantSentenceType } from '../../src/enums/VariantSentenceType';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import clearElement from '../../src/util';
 import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
@@ -217,7 +217,7 @@ describe('MutationVariantSentencesGenerator', () => {
 		const data = {
 			action: VariantSentenceActions.APPEND,
 			type: VariantSentenceType.AND,
-			uiElmName: ['INPUTinputXptoTest', 'ButtonbtnXpto'],
+			uiElmName: ['inputXptoTest', 'btnXpto'],
 		};
 
 		checkMutationSentences(mutationSentences, data);

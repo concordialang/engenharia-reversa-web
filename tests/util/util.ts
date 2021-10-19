@@ -5,6 +5,42 @@ import { Scenario } from '../../src/spec-analyser/Scenario';
 import { Feature } from '../../src/spec-analyser/Feature';
 import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import { Import } from '../../src/spec-analyser/Import';
+import { ElementInteraction } from '../../src/crawler/ElementInteraction';
+import { HTMLEventType } from '../../src/enums/HTMLEventType';
+import { ElementAnalysis } from '../../src/crawler/ElementAnalysis';
+import { ElementAnalysisStatus } from '../../src/crawler/ElementAnalysisStatus';
+
+export function createValidElementAnalysis(element?: HTMLElement): ElementAnalysis {
+	if (!element) {
+		element = createElement(document, 'input');
+	}
+
+	return new ElementAnalysis(
+		element,
+		new URL('https://www.google.com'),
+		ElementAnalysisStatus.Done
+	);
+}
+
+export function createValidElementInteraction(
+	element?: HTMLElement
+): ElementInteraction<HTMLElement> {
+	if (!element) {
+		element = createElement(document, 'input');
+	}
+
+	const variant = createValidVariant(createValidUIElement(element));
+
+	return new ElementInteraction<HTMLElement>(
+		element,
+		HTMLEventType.Change,
+		new URL('https://www.google.com'),
+		'A Value',
+		null,
+		'selector',
+		variant
+	);
+}
 
 export function createValidFeature(): Feature {
 	const feature = new Feature();
@@ -32,8 +68,7 @@ export function createValidFeature(): Feature {
 }
 
 export function createValidScenario(variants: Variant[]): Scenario {
-	const scenario = new Scenario();
-	scenario.setName('A Scenario');
+	const scenario = new Scenario('A Scenario');
 	scenario.setVariants(variants);
 	return scenario;
 }

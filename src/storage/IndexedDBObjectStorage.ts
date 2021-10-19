@@ -1,15 +1,18 @@
+import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { IDBPDatabase, openDB } from 'idb';
 import { ObjectStorage } from './ObjectStorage';
 
-export abstract class IndexedDBObjectStorage<Type> implements ObjectStorage<Type> {
+export class IndexedDBObjectStorage<Type> implements ObjectStorage<Type> {
 	private db: IDBPDatabase | null;
 	private readonly dbName: string;
 	private readonly storeName: string;
+	private typeConstructor?: ClassConstructor<unknown>;
 
-	constructor(dbName: string) {
+	constructor(dbName: string, storeName: string, typeConstructor?: ClassConstructor<unknown>) {
 		this.dbName = dbName;
 		this.db = null;
-		this.storeName = this.getStoreName();
+		this.storeName = storeName;
+		this.typeConstructor = typeConstructor;
 	}
 
 	private async bootstrap(): Promise<boolean> {
@@ -19,9 +22,6 @@ export abstract class IndexedDBObjectStorage<Type> implements ObjectStorage<Type
 				upgrade(db: IDBPDatabase) {
 					if (!db.objectStoreNames.contains(_this.storeName)) {
 						db.createObjectStore(_this.storeName);
-						resolve(true);
-					} else {
-						resolve(false);
 					}
 				},
 				blocked() {
@@ -45,7 +45,8 @@ export abstract class IndexedDBObjectStorage<Type> implements ObjectStorage<Type
 		const transaction = this.db?.transaction(this.storeName, 'readwrite');
 		if (transaction) {
 			const store = transaction.objectStore(this.storeName);
-			await store.put(value, key);
+			const json = this.serialize(value);
+			await store.put(json, key);
 		}
 	}
 
@@ -68,10 +69,19 @@ export abstract class IndexedDBObjectStorage<Type> implements ObjectStorage<Type
 		if (transaction) {
 			const store = transaction.objectStore(this.storeName);
 			const result = await store.get(key);
-			return result;
+			return this.deserialize(result);
 		}
 		return null;
 	}
 
-	abstract getStoreName(): string;
+	protected serialize(obj: Type): {} {
+		return classToPlain(obj);
+	}
+
+	protected deserialize(json: any): Type {
+		if (this.typeConstructor) {
+			return <Type>plainToClass(this.typeConstructor, json);
+		}
+		return json;
+	}
 }

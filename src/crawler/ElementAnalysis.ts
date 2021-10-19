@@ -1,3 +1,4 @@
+import { TransformHTMLElement, TransformURL } from '../decorators';
 import { getPathTo } from '../util';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
@@ -5,11 +6,15 @@ export class ElementAnalysis {
 	private id?: string;
 	private pathToElement?: string;
 
-	constructor(
-		private element: HTMLElement,
-		private pageUrl: URL,
-		private status: ElementAnalysisStatus
-	) {
+	@TransformHTMLElement()
+	private element: HTMLElement;
+
+	@TransformURL()
+	private pageUrl: URL;
+
+	private status: ElementAnalysisStatus;
+
+	constructor(element: HTMLElement, pageUrl: URL, status: ElementAnalysisStatus) {
 		this.element = element;
 		this.pageUrl = pageUrl;
 		this.status = status;

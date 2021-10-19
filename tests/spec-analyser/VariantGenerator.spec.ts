@@ -2,11 +2,8 @@ import { MutationObserverManager } from '../../src/mutation-observer/MutationObs
 import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { VariantGenerator } from '../../src/spec-analyser/VariantGenerator';
 
-import { AnalyzedElementStorage } from '../../src/storage/AnalyzedElementStorage';
-import { ElementInteractionStorage } from '../../src/storage/ElementInteractionStorage';
 import { GraphStorage } from '../../src/storage/GraphStorage';
 
-import { AnalyzedElement } from '../../src/crawler/AnalyzedElement';
 import { ElementInteraction } from '../../src/crawler/ElementInteraction';
 import { ElementInteractionGraph } from '../../src/crawler/ElementInteractionGraph';
 import { InputInteractor } from '../../src/crawler/InputInteractor';
@@ -17,40 +14,50 @@ import { ElementInteractionGenerator } from '../../src/crawler/ElementInteractio
 
 import clearElement from '../../src/util';
 import Mutex from '../../src/mutex/Mutex';
+import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
+import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
+import { ElementAnalysisStorage } from '../../src/storage/ElementAnalysisStorage';
+import { LocalObjectStorage } from '../../src/storage/LocalObjectStorage';
+import { TableRowInteractor } from '../../src/crawler/TableRowInteractor';
+import { TableColumnInteractor } from '../../src/crawler/TableColumnInteractor';
+import { Feature } from '../../src/spec-analyser/Feature';
+import { Variant } from '../../src/spec-analyser/Variant';
 
 describe('VariantGenerator', () => {
-	const featureUtil = new FeatureUtil();
-	// let redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
-	// 	const analyzedElement = new AnalyzedElement(
-	// 		interaction.getElement(),
-	// 		interaction.getPageUrl()
-	// 	);
-	// 	await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
-	// };
+	const uiElementGenerator = new UIElementGenerator();
+	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
+	const featureUtil = new FeatureUtil(variantSentencesGenerator);
 
 	const url: URL = new URL('https://www.google.com');
 	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
 
-	const analyzedElementStorage: AnalyzedElementStorage = new AnalyzedElementStorage(
-		window.localStorage,
-		document
+	const elementAnalysisStorage: ElementAnalysisStorage = new ElementAnalysisStorage(
+		window.localStorage
 	);
-	const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
+	const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+		window.localStorage,
+		ElementInteraction
+	);
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
+		'graph',
 		elementInteracationStorage,
-		analyzedElementStorage,
+		elementAnalysisStorage,
 		graphStorage,
 		interactionsGraphMutex
 	);
 
 	const inputInteractor = new InputInteractor();
 	const buttonInteractor = new ButtonInteractor(window);
+	const tableRowInteractor = new TableRowInteractor();
+	const tableColumnInteractor = new TableColumnInteractor();
 
 	const elementInteractionExecutor = new ElementInteractionExecutor(
 		inputInteractor,
 		buttonInteractor,
+		tableRowInteractor,
+		tableColumnInteractor,
 		elementInteractionGraph
 	);
 
@@ -59,8 +66,8 @@ describe('VariantGenerator', () => {
 	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 	const variantGenerator = new VariantGenerator(
-		elementInteractionExecutor,
 		elementInteractionGenerator,
+		elementInteractionExecutor,
 		featureUtil
 	);
 
@@ -131,9 +138,17 @@ describe('VariantGenerator', () => {
             </footer>`;
 	});
 
-	it('generate variants', () => {
-		const variants = variantGenerator.generate(document.body, false);
-		expect(variants).toHaveLength(1);
-		expect(variants).toBeInstanceOf(Array);
+	it('generate variants', async () => {
+		const url = new URL('https://www.google.com');
+		const observer = new MutationObserverManager(document.body);
+		const feature = new Feature();
+		const variant = await variantGenerator.generate(
+			document.body,
+			url,
+			observer,
+			false,
+			feature
+		);
+		expect(variant).toBeInstanceOf(Variant);
 	});
 });

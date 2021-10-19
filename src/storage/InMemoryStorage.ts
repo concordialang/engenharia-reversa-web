@@ -15,7 +15,7 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
-		const json = classToPlain(obj);
+		const json = this.serialize(obj);
 		const message = new Message([Command.SetValueInMemoryDatabase], {
 			key: key,
 			value: json,
@@ -29,10 +29,7 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 		});
 		const response = await this.communicationChannel.sendMessageToAll(message);
 		const json = response.getExtra();
-		if (this.typeConstructor) {
-			return <Type>plainToClass(this.typeConstructor, json);
-		}
-		return json;
+		return this.deserialize(json);
 	}
 
 	async remove(key: string): Promise<void> {
@@ -40,5 +37,16 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 			key: key,
 		});
 		await this.communicationChannel.sendMessageToAll(message);
+	}
+
+	protected serialize(obj: Type): {} {
+		return classToPlain(obj);
+	}
+
+	protected deserialize(json: any): Type {
+		if (this.typeConstructor) {
+			return <Type>plainToClass(this.typeConstructor, json);
+		}
+		return json;
 	}
 }

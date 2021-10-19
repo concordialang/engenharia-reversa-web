@@ -13,7 +13,7 @@ describe('ElementAnalysisStorage', () => {
 		const body = document.getElementsByTagName('body')[0];
 		body.appendChild(div);
 
-		const storage = new ElementAnalysisStorage(localStorage, document);
+		const storage = new ElementAnalysisStorage(localStorage);
 
 		const element = document.getElementById('link1');
 

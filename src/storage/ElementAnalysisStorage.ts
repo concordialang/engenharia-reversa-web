@@ -6,34 +6,8 @@ import { BrowserContext } from '../crawler/BrowserContext';
 
 // TODO Trocar o nome da classe
 export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> {
-	private document: HTMLDocument;
-
-	constructor(localStorage: Storage, document: HTMLDocument) {
-		super(localStorage);
-		this.document = document;
-	}
-
-	protected stringifyObject(obj: ElementAnalysis): string {
-		const json: { element: string; pageUrl: string; status: ElementAnalysisStatus } = {
-			element: obj.getPathToElement(),
-			pageUrl: obj.getPageUrl().toString(),
-			status: obj.getStatus(),
-		};
-		return JSON.stringify(json);
-	}
-
-	protected mapJsonToObject(json: {
-		element: string;
-		pageUrl: string;
-		status: ElementAnalysisStatus;
-	}): ElementAnalysis {
-		let element: HTMLElement | null = getElementByXpath(json.element, this.document);
-		if (!element) {
-			//TODO GAMBIARRA, REFATORAR DEPOIS
-			element = document.body;
-		}
-		const pageUrl = json.pageUrl;
-		return new ElementAnalysis(element, new URL(pageUrl), json.status);
+	constructor(localStorage: Storage) {
+		super(localStorage, ElementAnalysis);
 	}
 
 	public async getElementAnalysisStatus(

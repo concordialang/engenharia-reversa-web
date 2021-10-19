@@ -1,9 +1,9 @@
+import { VariantSentenceActions } from '../../src/enums/VariantSentenceActions';
+import { VariantSentenceType } from '../../src/enums/VariantSentenceType';
 import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
 import { UIElement } from '../../src/spec-analyser/UIElement';
 import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
-import { VariantSentenceActions } from '../../src/types/VariantSentenceActions';
-import { VariantSentenceType } from '../../src/types/VariantSentenceType';
 import clearElement from '../../src/util';
 
 describe('VariantSentencesGenerator', () => {
@@ -26,13 +26,12 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('input is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(input);
+		const variantSentence: any = featureutil.createVariantSentence(input, true);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.FILL);
-		expect(variantSentence.targets).toHaveLength(1);
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
 		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
 		expect(variantSentence.uiElement.getName()).toBe('Input');
@@ -49,13 +48,12 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('text area is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(textArea);
+		const variantSentence: any = featureutil.createVariantSentence(textArea, true);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.FILL);
-		expect(variantSentence.targets).toHaveLength(1);
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
 		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
 		expect(variantSentence.uiElement.getName()).toBe('TextArea');
@@ -76,13 +74,12 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('select is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(select);
+		const variantSentence: any = featureutil.createVariantSentence(select, true);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
 
 		expect(variantSentence.action).toBe(VariantSentenceActions.SELECT);
-		expect(variantSentence.targets).toHaveLength(1);
 		expect(variantSentence.type).toBe(VariantSentenceType.WHEN);
 		expect(variantSentence.uiElement).toBeInstanceOf(UIElement);
 		expect(variantSentence.uiElement.getName()).toBe('Select');

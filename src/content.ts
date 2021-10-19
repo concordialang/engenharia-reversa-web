@@ -10,10 +10,8 @@ import { BrowserContext } from './crawler/BrowserContext';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { Crawler } from './crawler/Crawler';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
-import { ElementInteractionStorage } from './storage/ElementInteractionStorage';
 import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { InputInteractor } from './crawler/InputInteractor';
-import { PageStorage } from './storage/PageStorage';
 import { GraphStorage } from './storage/GraphStorage';
 import Mutex from './mutex/Mutex';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
@@ -25,6 +23,9 @@ import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 import { TableRowInteractor } from './crawler/TableRowInteractor';
 import { TableColumnInteractor } from './crawler/TableColumnInteractor';
+import { LocalObjectStorage } from './storage/LocalObjectStorage';
+import { ElementInteraction } from './crawler/ElementInteraction';
+import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -35,7 +36,7 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
 
-	const pageStorage = new PageStorage('engenharia-reversa-web');
+	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
@@ -43,13 +44,16 @@ getTabId(communicationChannel).then((tabId) => {
 	const tableRowInteractor = new TableRowInteractor();
 	const tableColumnInteractor = new TableColumnInteractor();
 	const buttonInteractor = new ButtonInteractor(window);
-	const elementInteracationStorage = new ElementInteractionStorage(window.localStorage, document);
+	const elementInteractionStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+		window.localStorage,
+		ElementInteraction
+	);
 	const spec: Spec = new Spec('pt-br');
-	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage, document);
+	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
 		tabId,
-		elementInteracationStorage,
+		elementInteractionStorage,
 		elementAnalysisStorage,
 		graphStorage,
 		interactionsGraphMutex
