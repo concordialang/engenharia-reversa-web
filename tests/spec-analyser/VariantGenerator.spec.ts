@@ -21,9 +21,11 @@ import { LocalObjectStorage } from '../../src/storage/LocalObjectStorage';
 import { TableRowInteractor } from '../../src/crawler/TableRowInteractor';
 import { TableColumnInteractor } from '../../src/crawler/TableColumnInteractor';
 import { Feature } from '../../src/spec-analyser/Feature';
+import { Spec } from '../../src/spec-analyser/Spec';
 import { Variant } from '../../src/spec-analyser/Variant';
 
 describe('VariantGenerator', () => {
+	const spec: Spec = new Spec('pt-br');
 	const uiElementGenerator = new UIElementGenerator();
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
 	const featureUtil = new FeatureUtil(variantSentencesGenerator);
@@ -141,7 +143,10 @@ describe('VariantGenerator', () => {
 	it('generate variants', async () => {
 		const url = new URL('https://www.google.com');
 		const observer = new MutationObserverManager(document.body);
-		const feature = new Feature();
+		const feature = featureUtil.createFeatureFromElement(
+			document.body,
+			spec.getFeatures().length
+		);
 		const variant = await variantGenerator.generate(
 			document.body,
 			url,
