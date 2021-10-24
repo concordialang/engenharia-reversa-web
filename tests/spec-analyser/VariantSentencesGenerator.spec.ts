@@ -5,11 +5,13 @@ import { UIElement } from '../../src/spec-analyser/UIElement';
 import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
 import clearElement from '../../src/util';
+import { getDictionary } from '../../src/dictionary';
 
 describe('VariantSentencesGenerator', () => {
 	const uiElementGenerator = new UIElementGenerator();
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
-	const featureutil = new FeatureUtil(variantSentencesGenerator);
+	const dictionary = getDictionary('pt');
+	const featureutil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
 	afterEach(() => {
 		clearElement(document.body);

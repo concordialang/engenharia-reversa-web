@@ -26,6 +26,7 @@ import { TableColumnInteractor } from './crawler/TableColumnInteractor';
 import { LocalObjectStorage } from './storage/LocalObjectStorage';
 import { ElementInteraction } from './crawler/ElementInteraction';
 import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
+import { getDictionary } from './dictionary';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -48,7 +49,11 @@ getTabId(communicationChannel).then((tabId) => {
 		window.localStorage,
 		ElementInteraction
 	);
-	const spec: Spec = new Spec('pt-br');
+
+	const language = 'pt';
+	const spec: Spec = new Spec(language);
+	const dictionary = getDictionary(language);
+
 	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
@@ -78,12 +83,13 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
 
-	const featureUtil = new FeatureUtil(variantSentencesGenerator);
+	const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
-		featureUtil
+		featureUtil,
+		dictionary
 	);
 
 	const featureManager = new FeatureManager(

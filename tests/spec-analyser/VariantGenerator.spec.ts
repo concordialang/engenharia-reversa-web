@@ -21,14 +21,17 @@ import { LocalObjectStorage } from '../../src/storage/LocalObjectStorage';
 import { TableRowInteractor } from '../../src/crawler/TableRowInteractor';
 import { TableColumnInteractor } from '../../src/crawler/TableColumnInteractor';
 import { Feature } from '../../src/spec-analyser/Feature';
+import { getDictionary } from '../../src/dictionary';
 import { Spec } from '../../src/spec-analyser/Spec';
 import { Variant } from '../../src/spec-analyser/Variant';
 
 describe('VariantGenerator', () => {
-	const spec: Spec = new Spec('pt-br');
+	const language = 'pt';
+	const spec: Spec = new Spec(language);
+	const dictionary = getDictionary(language);
 	const uiElementGenerator = new UIElementGenerator();
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
-	const featureUtil = new FeatureUtil(variantSentencesGenerator);
+	const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
 	const url: URL = new URL('https://www.google.com');
 	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
@@ -70,7 +73,8 @@ describe('VariantGenerator', () => {
 	const variantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
-		featureUtil
+		featureUtil,
+		dictionary
 	);
 
 	afterEach(() => {

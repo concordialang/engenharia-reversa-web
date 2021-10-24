@@ -7,7 +7,7 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { formatToFirstCapitalLetter } from '../util';
 
 export class FeatureUtil {
-	constructor(private variantSentencesGenerator: VariantSentencesGenerator) {}
+	constructor(private variantSentencesGenerator: VariantSentencesGenerator, private dictionary) {}
 
 	createFeatureFromElement(f: HTMLElement, featureCount: number): Feature {
 		const title: HTMLElement | null = this.titleBeforeElement(f);
@@ -31,15 +31,16 @@ export class FeatureUtil {
 	}
 
 	createScenario(featureName: string): Scenario {
-		const scenario = new Scenario(featureName + ' - General Scenario');
+		const scenario = new Scenario(featureName + ' - ' + this.dictionary.scenarioDefaultName);
 
 		return scenario;
 	}
 
 	createVariant(variantName, variantsCount: number): Variant {
 		let id = 1 + variantsCount;
+		let name = variantName + ' - ' + this.dictionary.variant + ' ' + id;
+
 		const variant = new Variant();
-		let name = variantName + ' - Variant ' + id;
 		variant.setName(name);
 
 		return variant;
@@ -80,11 +81,6 @@ export class FeatureUtil {
 	private generateDefaultFeatureName(featureCount: number, language?: string): string {
 		const id = 1 + featureCount;
 
-		switch (language) {
-			case 'pt-br':
-				return 'Funcionalidade ' + id;
-			default:
-				return 'Feature ' + id;
-		}
+		return this.dictionary.feature + ' ' + id;
 	}
 }

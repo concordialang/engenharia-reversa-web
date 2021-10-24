@@ -29,6 +29,7 @@ import { ElementInteraction } from '../src/crawler/ElementInteraction';
 import { TableRowInteractor } from '../src/crawler/TableRowInteractor';
 import { TableColumnInteractor } from '../src/crawler/TableColumnInteractor';
 import { ChromeMock } from '../tests/util/ChromeMock';
+import { getDictionary } from '../src/dictionary';
 
 const chrome = new ChromeMock();
 
@@ -388,7 +389,10 @@ describe('Crawler', () => {
 			window.localStorage,
 			ElementInteraction
 		);
-		const spec: Spec = new Spec('pt-br');
+
+		const language = 'pt';
+		const spec: Spec = new Spec(language);
+		const dictionary = getDictionary(language);
 
 		let analyzedElementStorage: ElementAnalysisStorage;
 		if (options.analyzedElementStorage) {
@@ -435,12 +439,13 @@ describe('Crawler', () => {
 
 		const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
 
-		const featureUtil = new FeatureUtil(variantSentencesGenerator);
+		const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
-			featureUtil
+			featureUtil,
+			dictionary
 		);
 
 		const featureManager = new FeatureManager(

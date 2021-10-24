@@ -21,6 +21,7 @@ import { LocalObjectStorage } from '../src/storage/LocalObjectStorage';
 import { ElementInteraction } from '../src/crawler/ElementInteraction';
 import { TableRowInteractor } from '../src/crawler/TableRowInteractor';
 import { TableColumnInteractor } from '../src/crawler/TableColumnInteractor';
+import { getDictionary } from '../src/dictionary';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -118,7 +119,10 @@ describe('Page Analyzer', () => {
 			window.localStorage,
 			ElementInteraction
 		);
-		const spec: Spec = new Spec('pt-br');
+
+		const language = 'pt';
+		const spec: Spec = new Spec(language);
+		const dictionary = getDictionary(language);
 
 		let elementAnalysisStorage: ElementAnalysisStorage;
 		if (options.elementAnalysisStorage) {
@@ -155,12 +159,13 @@ describe('Page Analyzer', () => {
 
 		const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
 
-		const featureUtil = new FeatureUtil(variantSentencesGenerator);
+		const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
-			featureUtil
+			featureUtil,
+			dictionary
 		);
 
 		const featureManager = new FeatureManager(

@@ -6,11 +6,13 @@ import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
 import clearElement from '../../src/util';
 import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
 import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
+import { getDictionary } from '../../src/dictionary';
 
 describe('MutationVariantSentencesGenerator', () => {
 	const uiElementGenerator = new UIElementGenerator();
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);
-	const featureutil = new FeatureUtil(variantSentencesGenerator);
+	const dictionary = getDictionary('pt');
+	const featureutil = new FeatureUtil(variantSentencesGenerator, dictionary);
 	let observer: MutationObserverManager;
 
 	beforeEach(() => {

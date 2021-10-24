@@ -15,7 +15,8 @@ export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private featureUtil: FeatureUtil
+		private featureUtil: FeatureUtil,
+		private dictionary
 	) {}
 
 	public async generate(
@@ -341,7 +342,9 @@ export class VariantGenerator {
 			(interactedElm) => interactedElm.xpath === xpathElement
 		);
 
-		if (alreadyInteracted) {
+		const isFinalActionButton = this.checskIfIsFinalActionButton(elm);
+
+		if (alreadyInteracted && !isFinalActionButton) {
 			return false;
 		}
 
@@ -360,11 +363,11 @@ export class VariantGenerator {
 			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) ||
 			elm instanceof HTMLButtonElement
 		) {
-			const anyButtonHasInteracted = feature.InteractedElements.some((radio) => {
-				return radio.variantName === currentVariantName && radio.elmType === 'button';
+			const anyButtonHasInteracted = feature.InteractedElements.some((btn) => {
+				return btn.variantName === currentVariantName && btn.elmType === 'button';
 			});
 
-			if (anyButtonHasInteracted) {
+			if (anyButtonHasInteracted && !isFinalActionButton) {
 				return false;
 			}
 		}
@@ -375,6 +378,49 @@ export class VariantGenerator {
 			scenario.getVariantsCount() < scenario.getMaxVariantsCount() - 1 ? true : false;
 
 		return true;
+	}
+
+	private checskIfIsFinalActionButton(elm: HTMLInputElement | HTMLButtonElement): boolean {
+		if (
+			!(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) &&
+			!(elm instanceof HTMLButtonElement)
+		) {
+			return false;
+		}
+
+		let isFinalActionBtn: boolean = false;
+
+		if (elm.type === 'submit') {
+			isFinalActionBtn = true;
+		} else {
+			const findFinalActionString = (propertyBtn) => {
+				isFinalActionBtn = this.dictionary.stringsFinalActionButtons.some((str) => {
+					return this.areSimilar(propertyBtn, str);
+				});
+			};
+
+			if (elm.innerText) {
+				findFinalActionString(elm.innerText);
+			}
+
+			if (elm.name && !isFinalActionBtn) {
+				findFinalActionString(elm.name);
+			}
+
+			if (elm.id && !isFinalActionBtn) {
+				findFinalActionString(elm.id);
+			}
+
+			if (elm.value && !isFinalActionBtn) {
+				findFinalActionString(elm.value);
+			}
+		}
+
+		return isFinalActionBtn;
+	}
+
+	private areSimilar(text1: string, text2: string, options?): boolean {
+		return text1.toLowerCase().includes(text2.toLowerCase());
 	}
 
 	private saveInteractedElement(
