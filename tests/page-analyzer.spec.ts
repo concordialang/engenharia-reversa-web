@@ -152,7 +152,7 @@ describe('Page Analyzer', () => {
 
 		const pageUrl: URL = new URL(window.location.href);
 
-		const browserContext = new BrowserContext(dom, pageUrl, window);
+		const browserContext = new BrowserContext(pageUrl, window);
 		const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 		const uiElementGenerator = new UIElementGenerator();

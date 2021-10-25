@@ -46,10 +46,7 @@ export class Crawler {
 		);
 
 		const previousDocument = await this.getPreviousDocument();
-		const analysisElement = await this.getAnalysisElement(
-			this.browserContext.getDocument(),
-			previousDocument
-		);
+		const analysisElement = await this.getAnalysisElement(document, previousDocument);
 
 		const messageResponse = await this.communicationChannel.sendMessageToAll(
 			new Message([Command.GetNumberOfAvailableTabs])

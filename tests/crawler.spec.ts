@@ -44,18 +44,19 @@ describe('Crawler', () => {
 		});
 		communicationChannel.sendMessageToAll = sendMessageToAll;
 
-		const link1 = 'www.link1.com';
+		const link1 = 'http://www.link1.com/';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent"><a id="link1" href="${link1}"></a></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div);
+
+		document.body = dom.body;
 
 		const crawler: Crawler = buildCrawler({
 			communicationChannel: communicationChannel,
-			document: document,
 		});
 		await crawler.crawl();
 
@@ -74,16 +75,16 @@ describe('Crawler', () => {
 		});
 		communicationChannel.sendMessageToAll = sendMessageToAll;
 
-		const link1 = 'www.link1.com';
+		const link1 = 'http://www.link1.com/';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent"><a id="link1" href="${link1}"></a></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div);
 
-		const link1Element = document.getElementById('link1');
+		const link1Element = dom.getElementById('link1');
 		expect(link1Element).not.toBeNull();
 
 		if (link1Element) {
@@ -98,9 +99,9 @@ describe('Crawler', () => {
 
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 				analyzedElementStorage: analyzedElementStorage,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
@@ -121,14 +122,14 @@ describe('Crawler', () => {
 
 		const link1 = 'www.link1.com';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent-parent"><div id="link1-parent"><a id="link1" href="${link1}"></a></div></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div);
 
-		const link1ParentElement = document.getElementById('link1-parent');
+		const link1ParentElement = dom.getElementById('link1-parent');
 		expect(link1ParentElement).not.toBeNull();
 
 		if (link1ParentElement) {
@@ -143,9 +144,9 @@ describe('Crawler', () => {
 
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 				analyzedElementStorage: analyzedElementStorage,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
@@ -166,14 +167,14 @@ describe('Crawler', () => {
 
 		const link1 = 'www.link1.com';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent"><a id="link1" href="${link1}"></a></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div);
 
-		const link1Element = document.getElementById('link1');
+		const link1Element = dom.getElementById('link1');
 		expect(link1Element).not.toBeNull();
 
 		if (link1Element) {
@@ -188,9 +189,9 @@ describe('Crawler', () => {
 
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 				analyzedElementStorage: analyzedElementStorage,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
@@ -211,14 +212,14 @@ describe('Crawler', () => {
 
 		const link1 = 'www.link1.com';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent-parent"><div id="link1-parent"><a id="link1" href="${link1}"></a></div></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div);
 
-		const link1ParentElement = document.getElementById('link1-parent');
+		const link1ParentElement = dom.getElementById('link1-parent');
 		expect(link1ParentElement).not.toBeNull();
 
 		if (link1ParentElement) {
@@ -233,9 +234,9 @@ describe('Crawler', () => {
 
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 				analyzedElementStorage: analyzedElementStorage,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
@@ -256,19 +257,19 @@ describe('Crawler', () => {
 
 		const link1 = 'www.link1.com';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `<div id="link1-parent"><a id="link1" href="${link1}"></a></div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
 
-		const div2 = document.createElement('div');
+		const div2 = dom.createElement('div');
 		div2.id = 'link1-parent-parent';
 		div2.appendChild(div);
 
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div2);
 
-		const link1ParentParentElement = document.getElementById('link1-parent-parent');
+		const link1ParentParentElement = dom.getElementById('link1-parent-parent');
 		expect(link1ParentParentElement).not.toBeNull();
 
 		if (link1ParentParentElement) {
@@ -283,9 +284,9 @@ describe('Crawler', () => {
 
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 				analyzedElementStorage: analyzedElementStorage,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).not.toHaveBeenCalledWith(
@@ -304,12 +305,12 @@ describe('Crawler', () => {
 		});
 		communicationChannel.sendMessageToAll = sendMessageToAll;
 
-		const link1 = 'www.link1.com';
-		const link2 = 'www.link2.com';
-		const link3 = 'www.link3.com';
-		const link4 = 'www.link4.com';
+		const link1 = 'http://www.link1.com/';
+		const link2 = 'http://www.link2.com/';
+		const link3 = 'http://www.link3.com/';
+		const link4 = 'http://www.link4.com/';
 
-		const document = getRootHtmlDocument();
+		const dom = getRootHtmlDocument();
 		const innerHTML = `
 		<div id="link-parent">
 			<a id="link1" href="${link1}"></a>
@@ -317,24 +318,24 @@ describe('Crawler', () => {
 			<a id="link3" href="${link3}"></a>
 			<a id="link4" href="${link4}"></a>
 		</div>`;
-		const div = document.createElement('div');
+		const div = dom.createElement('div');
 		div.innerHTML = innerHTML;
 
-		const div2 = document.createElement('div');
+		const div2 = dom.createElement('div');
 		div2.id = 'link-parent-parent';
 		div2.appendChild(div);
 
-		const body = document.getElementsByTagName('body')[0];
+		const body = dom.getElementsByTagName('body')[0];
 		body.appendChild(div2);
 
-		const linkParentParentElement = document.getElementById('link-parent-parent');
+		const linkParentParentElement = dom.getElementById('link-parent-parent');
 		expect(linkParentParentElement).not.toBeNull();
 
 		if (linkParentParentElement) {
 			const crawler: Crawler = buildCrawler({
 				communicationChannel: communicationChannel,
-				document: document,
 			});
+			document.body = dom.body;
 			await crawler.crawl();
 
 			expect(communicationChannel.sendMessageToAll).toHaveBeenCalledWith(
@@ -363,15 +364,12 @@ describe('Crawler', () => {
 	function buildCrawler(
 		options:
 			| {
-					document?: HTMLDocument;
 					communicationChannel?: CommunicationChannel;
 					analyzedElementStorage?: ElementAnalysisStorage;
 			  }
 			| undefined = {}
 	): Crawler {
 		const localStorage = new LocalStorageMock();
-
-		const dom = options.document ?? document;
 
 		const tabId = 'tab-test';
 
@@ -432,7 +430,7 @@ describe('Crawler', () => {
 
 		const pageUrl: URL = new URL(window.location.href);
 
-		const browserContext = new BrowserContext(dom, pageUrl, window);
+		const browserContext = new BrowserContext(pageUrl, window);
 		const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 		const uiElementGenerator = new UIElementGenerator();

@@ -67,7 +67,7 @@ describe('VariantGenerator', () => {
 	);
 
 	const pageUrl: URL = new URL(window.location.href);
-	const browserContext = new BrowserContext(document, pageUrl, window);
+	const browserContext = new BrowserContext(pageUrl, window);
 	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 	const variantGenerator = new VariantGenerator(

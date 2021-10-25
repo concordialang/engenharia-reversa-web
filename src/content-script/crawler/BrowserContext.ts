@@ -1,12 +1,7 @@
 export class BrowserContext {
-	constructor(private document: HTMLDocument, private url: URL, private window: Window) {
-		this.document = document;
+	constructor(private url: URL, private window: Window) {
 		this.url = url;
 		this.window = window;
-	}
-
-	public getDocument(): HTMLDocument {
-		return this.document;
 	}
 
 	public getUrl(): URL {
