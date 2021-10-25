@@ -43,7 +43,7 @@ describe('InMemoryStorage', () => {
 		}
 	});
 
-	it('saves Variant instance correctly', async () => {
+	it('saves Class object correctly', async () => {
 		const chromeMock = new ChromeMock();
 
 		const communicationChannel = new ChromeCommunicationChannel(chromeMock);

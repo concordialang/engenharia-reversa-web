@@ -40,7 +40,7 @@ describe('IndexedDBStorage', () => {
 		expect(retrievedValue).toBe(html);
 	});
 
-	it('saves Variant instance correctly', async () => {
+	it('saves Class object correctly', async () => {
 		const storage = new IndexedDBObjectStorage<Variant>('foo', 'bar', Variant);
 
 		const element = createElement(document, 'div', (element) => {
