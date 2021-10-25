@@ -1,10 +1,10 @@
-import { Feature } from '../../src/spec-analyser/Feature';
-import { Scenario } from '../../src/spec-analyser/Scenario';
-import { UIElement } from '../../src/spec-analyser/UIElement';
-import { Variant } from '../../src/spec-analyser/Variant';
-import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
-import { ElementInteraction } from '../../src/crawler/ElementInteraction';
-import { ElementAnalysis } from '../../src/crawler/ElementAnalysis';
+import { Feature } from '../../src/content-script/spec-analyser/Feature';
+import { Scenario } from '../../src/content-script/spec-analyser/Scenario';
+import { UIElement } from '../../src/content-script/spec-analyser/UIElement';
+import { Variant } from '../../src/content-script/spec-analyser/Variant';
+import { VariantSentence } from '../../src/content-script/spec-analyser/VariantSentence';
+import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
+import { ElementAnalysis } from '../../src/content-script/crawler/ElementAnalysis';
 
 export function assertElementAnalysisAreEqual(expected: ElementAnalysis, actual: ElementAnalysis) {
 	expect(actual.getElement()).toBe(expected.getElement());

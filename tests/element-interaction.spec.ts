@@ -1,5 +1,5 @@
 import { classToPlain, plainToClass } from 'class-transformer';
-import { ElementInteraction } from '../src/crawler/ElementInteraction';
+import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
 import { assertElementInteractionsAreEqual } from './util/assertions';
 import { createValidElementInteraction } from './util/util';
 describe('Element Interaction', () => {

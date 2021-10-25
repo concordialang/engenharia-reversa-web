@@ -1,7 +1,7 @@
-import { Message } from '../comm/Message';
+import { Message } from '../../shared/comm/Message';
 import { Extension } from './Extension';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
-import { Tab } from './Tab';
+import { Tab } from '../../shared/comm/Tab';
 
 export class ChromeExtension implements Extension {
 	constructor(private chrome) {}

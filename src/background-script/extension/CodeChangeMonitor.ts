@@ -1,4 +1,4 @@
-import { sleep } from '../util';
+import { sleep } from '../../content-script/util';
 import { Extension } from './Extension';
 
 export class CodeChangeMonitor {

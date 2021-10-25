@@ -1,14 +1,14 @@
-import { ElementInteractionGraph } from '../src/crawler/ElementInteractionGraph';
-import { ElementInteraction } from '../src/crawler/ElementInteraction';
-import Mutex from '../src/mutex/Mutex';
-import { GraphStorage } from '../src/storage/GraphStorage';
+import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
+import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
+import Mutex from '../src/content-script/mutex/Mutex';
+import { GraphStorage } from '../src/content-script/storage/GraphStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
-import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
-import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
-import { HTMLEventType } from '../src/enums/HTMLEventType';
-import { HTMLElementType } from '../src/enums/HTMLElementType';
-import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
-import { LocalObjectStorage } from '../src/storage/LocalObjectStorage';
+import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnalysisStatus';
+import { ElementAnalysisStorage } from '../src/content-script/storage/ElementAnalysisStorage';
+import { HTMLEventType } from '../src/content-script/enums/HTMLEventType';
+import { HTMLElementType } from '../src/content-script/enums/HTMLElementType';
+import { ElementAnalysis } from '../src/content-script/crawler/ElementAnalysis';
+import { LocalObjectStorage } from '../src/content-script/storage/LocalObjectStorage';
 
 describe('ElementInteractionGraph', () => {
 	const url1: URL = new URL('https://www.google.com');

@@ -1,4 +1,4 @@
-import { Graph } from '../src/graph/Graph';
+import { Graph } from '../src/content-script/graph/Graph';
 
 describe('Graph', () => {
 	const key1: string = 'key1';

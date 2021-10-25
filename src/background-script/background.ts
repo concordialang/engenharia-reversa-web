@@ -3,10 +3,10 @@
 import { ExtensionManager } from './extension/ExtensionManager';
 import { ChromeExtension } from './extension/ChromeExtension';
 import { Extension } from './extension/Extension';
-import { CommunicationChannel } from './comm/CommunicationChannel';
-import { ChromeCommunicationChannel } from './comm/ChromeCommunicationChannel';
 import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
 import { InMemoryDatabase } from './extension/InMemoryDatabase';
+import { CommunicationChannel } from '../shared/comm/CommunicationChannel';
+import { ChromeCommunicationChannel } from '../shared/comm/ChromeCommunicationChannel';
 
 const extension: Extension = new ChromeExtension(chrome);
 

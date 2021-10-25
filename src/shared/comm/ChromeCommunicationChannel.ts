@@ -1,5 +1,5 @@
-import { Tab } from '../extension/Tab';
-import { sleep } from '../util';
+import { Tab } from './Tab';
+import { sleep } from '../../content-script/util';
 import { AppEvent } from './AppEvent';
 import { Command } from './Command';
 import { CommunicationChannel } from './CommunicationChannel';

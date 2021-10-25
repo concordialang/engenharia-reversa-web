@@ -1,11 +1,11 @@
-import { VariantSentenceActions } from '../../src/enums/VariantSentenceActions';
-import { VariantSentenceType } from '../../src/enums/VariantSentenceType';
-import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
-import { UIElement } from '../../src/spec-analyser/UIElement';
-import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
-import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
-import clearElement from '../../src/util';
-import { getDictionary } from '../../src/dictionary';
+import { VariantSentenceActions } from '../../src/content-script/enums/VariantSentenceActions';
+import { VariantSentenceType } from '../../src/content-script/enums/VariantSentenceType';
+import { FeatureUtil } from '../../src/content-script/spec-analyser/FeatureUtil';
+import { UIElement } from '../../src/content-script/spec-analyser/UIElement';
+import { UIElementGenerator } from '../../src/content-script/spec-analyser/UIElementGenerator';
+import { VariantSentencesGenerator } from '../../src/content-script/spec-analyser/VariantSentencesGenerator';
+import clearElement from '../../src/content-script/util';
+import { getDictionary } from '../../src/content-script/dictionary';
 
 describe('VariantSentencesGenerator', () => {
 	const uiElementGenerator = new UIElementGenerator();

@@ -1,6 +1,6 @@
-import { ElementAnalysis } from '../src/crawler/ElementAnalysis';
-import { ElementAnalysisStatus } from '../src/crawler/ElementAnalysisStatus';
-import { ElementAnalysisStorage } from '../src/storage/ElementAnalysisStorage';
+import { ElementAnalysis } from '../src/content-script/crawler/ElementAnalysis';
+import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnalysisStatus';
+import { ElementAnalysisStorage } from '../src/content-script/storage/ElementAnalysisStorage';
 
 describe('ElementAnalysisStorage', () => {
 	it('saves element analysis correctly', async () => {

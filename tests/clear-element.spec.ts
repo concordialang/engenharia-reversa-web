@@ -1,4 +1,4 @@
-import clearElement from '../src/util';
+import clearElement from '../src/content-script/util';
 
 describe('#clearElement', () => {
 	it('does not change an empty element', () => {

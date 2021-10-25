@@ -1,9 +1,9 @@
-import { ChromeCommunicationChannel } from '../src/comm/ChromeCommunicationChannel';
-import { InMemoryStorage } from '../src/storage/InMemoryStorage';
-import { ChromeExtension } from '../src/extension/ChromeExtension';
-import { ExtensionManager } from '../src/extension/ExtensionManager';
-import { InMemoryDatabase } from '../src/extension/InMemoryDatabase';
-import { Variant } from '../src/spec-analyser/Variant';
+import { ChromeCommunicationChannel } from '../src/shared/comm/ChromeCommunicationChannel';
+import { InMemoryStorage } from '../src/content-script/storage/InMemoryStorage';
+import { ChromeExtension } from '../src/background-script/extension/ChromeExtension';
+import { ExtensionManager } from '../src/background-script/extension/ExtensionManager';
+import { InMemoryDatabase } from '../src/background-script/extension/InMemoryDatabase';
+import { Variant } from '../src/content-script/spec-analyser/Variant';
 import { ChromeMock } from './util/ChromeMock';
 import { assertVariantsAreEqual, assertVariantSentencesAreEqual } from './util/assertions';
 import { createElement, createValidUIElement, createValidVariant } from './util/util';

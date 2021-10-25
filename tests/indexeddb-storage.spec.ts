@@ -1,5 +1,5 @@
-import { Variant } from '../src/spec-analyser/Variant';
-import { IndexedDBObjectStorage } from '../src/storage/IndexedDBObjectStorage';
+import { Variant } from '../src/content-script/spec-analyser/Variant';
+import { IndexedDBObjectStorage } from '../src/content-script/storage/IndexedDBObjectStorage';
 import { assertVariantsAreEqual } from './util/assertions';
 import { createElement, createValidUIElement, createValidVariant } from './util/util';
 

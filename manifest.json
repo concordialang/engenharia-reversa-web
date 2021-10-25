@@ -3,7 +3,7 @@
 	"name": "engenharia-reversa-web",
 	"version": "0.1.0",
 	"background": {
-		"page": "/src/background.html"
+		"page": "/src/background-script/background.html"
 	},
 	"content_scripts": [
 		{

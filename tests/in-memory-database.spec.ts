@@ -1,4 +1,4 @@
-import { InMemoryDatabase } from '../src/extension/InMemoryDatabase';
+import { InMemoryDatabase } from '../src/background-script/extension/InMemoryDatabase';
 
 describe('InMemoryDatabase', () => {
 	it('saves value correctly', () => {

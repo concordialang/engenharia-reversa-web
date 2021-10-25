@@ -5,8 +5,8 @@ const CreateFileWebpack = require('create-file-webpack');
 
 module.exports = {
 	entry: {
-		background: path.join(__dirname, srcDir + 'background.ts'),
-		content: path.join(__dirname, srcDir + 'content.ts'),
+		background: path.join(__dirname, srcDir + '/background-script/background.ts'),
+		content: path.join(__dirname, srcDir + '/content-script/content.ts'),
 	},
 	output: {
 		path: path.join(__dirname, '../dist'),

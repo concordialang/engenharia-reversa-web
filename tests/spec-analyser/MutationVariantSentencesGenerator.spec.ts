@@ -1,12 +1,12 @@
-import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
-import { MutationObserverManager } from '../../src/mutation-observer/MutationObserverManager';
-import { VariantSentenceActions } from '../../src/enums/VariantSentenceActions';
-import { VariantSentenceType } from '../../src/enums/VariantSentenceType';
-import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
-import clearElement from '../../src/util';
-import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
-import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
-import { getDictionary } from '../../src/dictionary';
+import { getDictionary } from '../../src/content-script/dictionary';
+import { VariantSentenceActions } from '../../src/content-script/enums/VariantSentenceActions';
+import { VariantSentenceType } from '../../src/content-script/enums/VariantSentenceType';
+import { MutationObserverManager } from '../../src/content-script/mutation-observer/MutationObserverManager';
+import { FeatureUtil } from '../../src/content-script/spec-analyser/FeatureUtil';
+import { UIElementGenerator } from '../../src/content-script/spec-analyser/UIElementGenerator';
+import { VariantSentence } from '../../src/content-script/spec-analyser/VariantSentence';
+import { VariantSentencesGenerator } from '../../src/content-script/spec-analyser/VariantSentencesGenerator';
+import clearElement from '../../src/content-script/util';
 
 describe('MutationVariantSentencesGenerator', () => {
 	const uiElementGenerator = new UIElementGenerator();

@@ -1,6 +1,6 @@
-import { Message } from '../comm/Message';
+import { Message } from '../../shared/comm/Message';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
-import { Tab } from './Tab';
+import { Tab } from '../../shared/comm/Tab';
 
 export interface Extension {
 	sendMessageToTab(tabId: string, message: Message): Promise<void>;

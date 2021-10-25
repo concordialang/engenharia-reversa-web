@@ -1,14 +1,14 @@
-import { UIElement } from '../../src/spec-analyser/UIElement';
-import { UIProperty } from '../../src/spec-analyser/UIProperty';
-import { Variant } from '../../src/spec-analyser/Variant';
-import { Scenario } from '../../src/spec-analyser/Scenario';
-import { Feature } from '../../src/spec-analyser/Feature';
-import { VariantSentence } from '../../src/spec-analyser/VariantSentence';
-import { Import } from '../../src/spec-analyser/Import';
-import { ElementInteraction } from '../../src/crawler/ElementInteraction';
-import { HTMLEventType } from '../../src/enums/HTMLEventType';
-import { ElementAnalysis } from '../../src/crawler/ElementAnalysis';
-import { ElementAnalysisStatus } from '../../src/crawler/ElementAnalysisStatus';
+import { UIElement } from '../../src/content-script/spec-analyser/UIElement';
+import { UIProperty } from '../../src/content-script/spec-analyser/UIProperty';
+import { Variant } from '../../src/content-script/spec-analyser/Variant';
+import { Scenario } from '../../src/content-script/spec-analyser/Scenario';
+import { Feature } from '../../src/content-script/spec-analyser/Feature';
+import { VariantSentence } from '../../src/content-script/spec-analyser/VariantSentence';
+import { Import } from '../../src/content-script/spec-analyser/Import';
+import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
+import { HTMLEventType } from '../../src/content-script/enums/HTMLEventType';
+import { ElementAnalysis } from '../../src/content-script/crawler/ElementAnalysis';
+import { ElementAnalysisStatus } from '../../src/content-script/crawler/ElementAnalysisStatus';
 
 export function createValidElementAnalysis(element?: HTMLElement): ElementAnalysis {
 	if (!element) {

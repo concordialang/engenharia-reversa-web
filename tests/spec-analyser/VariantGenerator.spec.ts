@@ -1,29 +1,29 @@
-import { MutationObserverManager } from '../../src/mutation-observer/MutationObserverManager';
-import { FeatureUtil } from '../../src/spec-analyser/FeatureUtil';
-import { VariantGenerator } from '../../src/spec-analyser/VariantGenerator';
+import { MutationObserverManager } from '../../src/content-script/mutation-observer/MutationObserverManager';
+import { FeatureUtil } from '../../src/content-script/spec-analyser/FeatureUtil';
+import { VariantGenerator } from '../../src/content-script/spec-analyser/VariantGenerator';
 
-import { GraphStorage } from '../../src/storage/GraphStorage';
+import { GraphStorage } from '../../src/content-script/storage/GraphStorage';
 
-import { ElementInteraction } from '../../src/crawler/ElementInteraction';
-import { ElementInteractionGraph } from '../../src/crawler/ElementInteractionGraph';
-import { InputInteractor } from '../../src/crawler/InputInteractor';
-import { ButtonInteractor } from '../../src/crawler/ButtonInteractor';
-import { ElementInteractionExecutor } from '../../src/crawler/ElementInteractionExecutor';
-import { BrowserContext } from '../../src/crawler/BrowserContext';
-import { ElementInteractionGenerator } from '../../src/crawler/ElementInteractionGenerator';
+import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
+import { ElementInteractionGraph } from '../../src/content-script/crawler/ElementInteractionGraph';
+import { InputInteractor } from '../../src/content-script/crawler/InputInteractor';
+import { ButtonInteractor } from '../../src/content-script/crawler/ButtonInteractor';
+import { ElementInteractionExecutor } from '../../src/content-script/crawler/ElementInteractionExecutor';
+import { BrowserContext } from '../../src/content-script/crawler/BrowserContext';
+import { ElementInteractionGenerator } from '../../src/content-script/crawler/ElementInteractionGenerator';
 
-import clearElement from '../../src/util';
-import Mutex from '../../src/mutex/Mutex';
-import { VariantSentencesGenerator } from '../../src/spec-analyser/VariantSentencesGenerator';
-import { UIElementGenerator } from '../../src/spec-analyser/UIElementGenerator';
-import { ElementAnalysisStorage } from '../../src/storage/ElementAnalysisStorage';
-import { LocalObjectStorage } from '../../src/storage/LocalObjectStorage';
-import { TableRowInteractor } from '../../src/crawler/TableRowInteractor';
-import { TableColumnInteractor } from '../../src/crawler/TableColumnInteractor';
-import { Feature } from '../../src/spec-analyser/Feature';
-import { getDictionary } from '../../src/dictionary';
-import { Spec } from '../../src/spec-analyser/Spec';
-import { Variant } from '../../src/spec-analyser/Variant';
+import clearElement from '../../src/content-script/util';
+import Mutex from '../../src/content-script/mutex/Mutex';
+import { VariantSentencesGenerator } from '../../src/content-script/spec-analyser/VariantSentencesGenerator';
+import { UIElementGenerator } from '../../src/content-script/spec-analyser/UIElementGenerator';
+import { ElementAnalysisStorage } from '../../src/content-script/storage/ElementAnalysisStorage';
+import { LocalObjectStorage } from '../../src/content-script/storage/LocalObjectStorage';
+import { TableRowInteractor } from '../../src/content-script/crawler/TableRowInteractor';
+import { TableColumnInteractor } from '../../src/content-script/crawler/TableColumnInteractor';
+import { Feature } from '../../src/content-script/spec-analyser/Feature';
+import { getDictionary } from '../../src/content-script/dictionary';
+import { Spec } from '../../src/content-script/spec-analyser/Spec';
+import { Variant } from '../../src/content-script/spec-analyser/Variant';
 
 describe('VariantGenerator', () => {
 	const language = 'pt';

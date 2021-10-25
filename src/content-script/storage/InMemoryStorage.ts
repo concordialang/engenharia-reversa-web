@@ -1,7 +1,7 @@
 import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
-import { Command } from '../comm/Command';
-import { CommunicationChannel } from '../comm/CommunicationChannel';
-import { Message } from '../comm/Message';
+import { Command } from '../../shared/comm/Command';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { Message } from '../../shared/comm/Message';
 import { ObjectStorage } from './ObjectStorage';
 
 export class InMemoryStorage<Type> implements ObjectStorage<Type> {

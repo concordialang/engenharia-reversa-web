@@ -1,12 +1,12 @@
 import { stringify } from 'uuid';
-import { AppEvent } from '../comm/AppEvent';
-import { Command } from '../comm/Command';
-import { CommunicationChannel } from '../comm/CommunicationChannel';
-import { Message } from '../comm/Message';
+import { AppEvent } from '../../shared/comm/AppEvent';
+import { Command } from '../../shared/comm/Command';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { Message } from '../../shared/comm/Message';
 import { Extension } from './Extension';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
-import { Tab } from './Tab';
+import { Tab } from '../../shared/comm/Tab';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
