@@ -5,7 +5,12 @@ export class Scenario {
 	@Type(() => Variant)
 	private variants!: Array<Variant>;
 
-	constructor(private name: string, private maxVariantCount: number = 1) {
+	constructor(
+		private name: string,
+		private maxVariantCount: number = 1,
+		public btnVariantsAfterFinalAction: boolean = false,
+		public needNewVariants: boolean = false
+	) {
 		this.variants = [];
 	}
 

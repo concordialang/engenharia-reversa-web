@@ -9,7 +9,7 @@ export class Variant {
 	@Type(() => VariantSentence)
 	private sentences!: Array<VariantSentence>;
 
-	public last!: boolean;
+	public finalActionButtonFound = false;
 
 	constructor() {
 		this.sentences = [];

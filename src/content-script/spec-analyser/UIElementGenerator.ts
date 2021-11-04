@@ -2,7 +2,7 @@ import { UIElement } from './UIElement';
 import { UIProperty } from './UIProperty';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { formatToFirstCapitalLetter, getPathTo } from '../util';
-import { ValidNodesUiElements } from '../enums/ValidNodesUiElements';
+import { ValidUiElementsNodes } from '../enums/ValidUiElementsNodes';
 import { PropertyTypes } from '../enums/PropertyTypes';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 import { DataTypes } from '../enums/DataTypes';
@@ -13,8 +13,8 @@ export class UIElementGenerator {
 	public createFromElement(elm: HTMLElement): UIElement | null {
 		let uiElement: UIElement | null = null;
 
-		const isElementValid = (Object as any).values(ValidNodesUiElements).includes(elm.nodeName);
-		if (!isElementValid) {
+		const isValidElement = (Object as any).values(ValidUiElementsNodes).includes(elm.nodeName);
+		if (!isValidElement) {
 			return null;
 		}
 
@@ -109,7 +109,17 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private createFromOthers(elm): UIElement {
+	private createFromOthers(elm): UIElement | null {
+		if (
+			(elm.nodeName === ValidUiElementsNodes.LABEL ||
+				elm.nodeName === ValidUiElementsNodes.STRONG ||
+				elm.nodeName === ValidUiElementsNodes.B ||
+				elm.nodeName === ValidUiElementsNodes.P) &&
+			!elm.innerText
+		) {
+			return null;
+		}
+
 		let uiElm = new UIElement(elm);
 
 		// id
@@ -117,6 +127,11 @@ export class UIElementGenerator {
 
 		// name
 		uiElm.setName(uiElm.getId());
+
+		// value
+		if (elm.innerText) {
+			uiElm.setValue(elm.innerText);
+		}
 
 		return uiElm;
 	}
@@ -247,11 +262,11 @@ export class UIElementGenerator {
 	private gerateDataType(elm: HTMLElement): string {
 		let uiElmDataType = '';
 
-		if (elm.nodeName == ValidNodesUiElements.TEXTAREA) {
+		if (elm.nodeName == ValidUiElementsNodes.TEXTAREA) {
 			uiElmDataType = DataTypes.STRING;
 		}
 
-		if (elm.nodeName == ValidNodesUiElements.INPUT) {
+		if (elm.nodeName == ValidUiElementsNodes.INPUT) {
 			let inputType = (elm as HTMLInputElement).type;
 
 			if (inputType == 'date') {

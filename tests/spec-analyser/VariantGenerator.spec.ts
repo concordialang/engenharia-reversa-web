@@ -151,13 +151,7 @@ describe('VariantGenerator', () => {
 			document.body,
 			spec.getFeatures().length
 		);
-		const variant = await variantGenerator.generate(
-			document.body,
-			url,
-			observer,
-			false,
-			feature
-		);
+		const variant = await variantGenerator.generate(document.body, url, observer, feature);
 		expect(variant).toBeInstanceOf(Variant);
 	});
 });

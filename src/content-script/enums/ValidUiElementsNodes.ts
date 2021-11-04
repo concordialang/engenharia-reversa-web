@@ -1,4 +1,4 @@
-export enum ValidNodesUiElements {
+export enum ValidUiElementsNodes {
 	INPUT = 'INPUT',
 	CHECKBOX = 'CHECKBOX',
 	RADIO = 'RADIO',
@@ -13,5 +13,5 @@ export enum ValidNodesUiElements {
 	STRONG = 'STRONG',
 	I = 'I',
 	B = 'B',
-	p = 'p',
+	P = 'P',
 }

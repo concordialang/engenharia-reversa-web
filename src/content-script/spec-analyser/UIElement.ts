@@ -1,11 +1,11 @@
 import { UIProperty } from './UIProperty';
-import { Transform, Type } from 'class-transformer';
-import { getElementByXpath, getPathTo } from '../util';
+import { Type } from 'class-transformer';
 import 'reflect-metadata';
 import { TransformHTMLElement } from '../decorators';
 
 export class UIElement {
 	private name: string;
+	private value: string | null;
 
 	@Type(() => UIProperty)
 	private properties: Array<UIProperty>;
@@ -15,6 +15,7 @@ export class UIElement {
 
 	constructor(sourceElement?: Element) {
 		this.name = '';
+		this.value = null;
 		this.properties = new Array();
 		this.sourceElement = sourceElement;
 	}
@@ -25,6 +26,14 @@ export class UIElement {
 
 	public getName() {
 		return this.name;
+	}
+
+	public setValue(value: string) {
+		this.value = value;
+	}
+
+	public getValue() {
+		return this.value;
 	}
 
 	public setProperty(property: UIProperty) {

@@ -5,6 +5,7 @@ import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string;
+	public ignoreFormElements: boolean;
 	public InteractedElements: Array<{
 		xpath: string;
 		count: number;
@@ -24,6 +25,7 @@ export class Feature {
 
 	constructor() {
 		this.name = '';
+		this.ignoreFormElements = false;
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];

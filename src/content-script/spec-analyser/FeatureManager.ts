@@ -37,10 +37,12 @@ export class FeatureManager {
 			this.spec.featureCount()
 		);
 
+		feature.ignoreFormElements = ignoreFormElements;
+
 		const scenario = feature.getGeneralScenario();
 		const maxVariantCount: number = this.discoverElementMaxVariantCount(
 			analysisElement,
-			ignoreFormElements
+			feature.ignoreFormElements
 		);
 		scenario.setMaxVariantCount(maxVariantCount);
 
@@ -49,21 +51,25 @@ export class FeatureManager {
 		);
 
 		let variantAnalyzed: Variant | null;
-
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
 				url,
 				observer,
-				ignoreFormElements,
 				feature,
 				this.redirectionCallback
 			);
 
 			if (variantAnalyzed && variantAnalyzed.isValid()) {
 				scenario.addVariant(variantAnalyzed);
+			} else {
+				scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
 			}
-		} while (variantAnalyzed && !variantAnalyzed.last);
+
+			const varCount = scenario.getVariantsCount();
+			const maxVarCount = scenario.getMaxVariantsCount();
+			scenario.needNewVariants = varCount > 0 && varCount < maxVarCount ? true : false;
+		} while (scenario.needNewVariants);
 
 		observer.disconnect();
 

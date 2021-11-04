@@ -6,11 +6,7 @@ import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 
 export class ElementInteractionGenerator {
-	private radioGroupsAlreadyFilled: string[];
-
-	constructor(private browserContext: BrowserContext) {
-		this.radioGroupsAlreadyFilled = [];
-	}
+	constructor(private browserContext: BrowserContext) {}
 
 	public generate(
 		element: HTMLElement,
@@ -34,10 +30,6 @@ export class ElementInteractionGenerator {
 		interaction?.setVariant(variant);
 
 		return interaction;
-	}
-
-	public resetFilledRadioGroups() {
-		this.radioGroupsAlreadyFilled = [];
 	}
 
 	private generateInputInteraction(
@@ -76,32 +68,6 @@ export class ElementInteractionGenerator {
 
 	//RADIO
 
-	// private generateRadioInputInteraction(
-	// 	element: HTMLInputElement
-	// ): ElementInteraction<HTMLInputElement> | null {
-	// 	const name = element.getAttribute('name');
-	// 	const form = element.form;
-	// 	if (name && form) {
-	// 		if (!this.radioGroupsAlreadyFilled.includes(name)) {
-	// 			const radioGroup = this.getFormInputElementsByNameAttribute(form, name);
-	// 			if (radioGroup && radioGroup.length) {
-	// 				const chosenRadio = this.chooseRadioButton(radioGroup);
-	// 				if (chosenRadio) {
-	// 					const interaction = new ElementInteraction<HTMLInputElement>(
-	// 						chosenRadio,
-	// 						HTMLEventType.Change,
-	// 						this.browserContext.getUrl(),
-	// 						chosenRadio.value
-	// 					);
-	// 					this.radioGroupsAlreadyFilled.push(name);
-	// 					return interaction;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	return null;
-	// }
-
 	private generateRadioInputInteraction(
 		element: HTMLInputElement
 	): ElementInteraction<HTMLInputElement> | null {
@@ -116,13 +82,6 @@ export class ElementInteractionGenerator {
 			return interaction;
 		}
 
-		return null;
-	}
-
-	private chooseRadioButton(radioGroup: HTMLInputElement[]): HTMLInputElement | null {
-		if (radioGroup.length) {
-			return radioGroup[0];
-		}
 		return null;
 	}
 

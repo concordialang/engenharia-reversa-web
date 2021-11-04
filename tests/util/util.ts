@@ -86,7 +86,6 @@ export function createValidVariant(uiElement: UIElement): Variant {
 	const variant = new Variant();
 	variant.setName('variant 1');
 	variant.setVariantSentence(sentence);
-	variant.last = true;
 
 	return variant;
 }

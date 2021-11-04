@@ -1,5 +1,6 @@
 import { DiffDomManager } from './diff-dom/DiffDomManager';
 import getXPath from 'get-xpath';
+import { ValidUiElementsNodes } from './enums/ValidUiElementsNodes';
 
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -54,14 +55,20 @@ export async function getDiff(
 	return analysisContext !== null ? analysisContext : currentDocument.body;
 }
 
-export function getInteractableElements(element: HTMLElement) {
-	return Array.from(element.querySelectorAll('input, textarea, select, button, tr'));
+export function getValidUiElementsNodes(element: HTMLElement) {
+	const validNodes = Object.values(ValidUiElementsNodes).join(',');
+
+	return Array.from(element.querySelectorAll(validNodes));
 }
 
 export function formatToFirstCapitalLetter(txt: string): string {
 	txt = txt.replace(':', '');
 	txt = txt.charAt(0).toUpperCase() + txt.slice(1);
 	return txt;
+}
+
+export function areSimilar(text1: string, text2: string, options?): boolean {
+	return text1.toLowerCase().includes(text2.toLowerCase());
 }
 
 /**

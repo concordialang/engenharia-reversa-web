@@ -177,9 +177,9 @@ function overrideWindowOpen() {
 	document.body.appendChild(script);
 }
 
-async function getTabId(communicationChannel: CommunicationChannel): Promise<string> {
+async function getTabId(comChannel: CommunicationChannel): Promise<string> {
 	const message = new Message([Command.GetTabId]);
-	const responseMessage = await communicationChannel.sendMessageToAll(message);
+	const responseMessage = await comChannel.sendMessageToAll(message);
 	const tabId = responseMessage.getExtra();
 	return tabId;
 }

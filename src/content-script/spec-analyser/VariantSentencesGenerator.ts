@@ -2,7 +2,7 @@ import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
 import { VariantSentenceActions } from '../enums/VariantSentenceActions';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
-import { getInteractableElements } from '../util';
+import { getValidUiElementsNodes } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 
@@ -239,10 +239,10 @@ export class VariantSentencesGenerator {
 		if (uiElement) {
 			sentences.push(new VariantSentence(type, action, uiElement, attr));
 		} else {
-			const interactableElements = getInteractableElements(element);
+			const validsUiElmNodes = getValidUiElementsNodes(element);
 
-			for (let interacElm of interactableElements) {
-				uiElement = this.uiElementGenerator.createFromElement(interacElm as HTMLElement);
+			for (let node of validsUiElmNodes) {
+				uiElement = this.uiElementGenerator.createFromElement(node as HTMLElement);
 				if (uiElement) {
 					sentences.push(new VariantSentence(type, action, uiElement, attr));
 				}

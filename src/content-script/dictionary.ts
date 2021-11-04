@@ -19,36 +19,11 @@ const dictionary = {
 			'Gerar',
 			'Registrar',
 			'Manter',
-			'Ok',
 			'Sim',
 			'Listar',
 			'Pesquisar',
-			'Confirm',
-			'Save',
-			'Record',
-			'Conclude',
-			'Finish',
-			'Store',
-			'Register',
-			'Generate',
-			'Maintain',
-			'Ok',
-			'Yes',
-			'List',
-			'Search',
 		],
-		stringsCancelButtons: [
-			'Cancelar',
-			'Voltar',
-			'Fechar',
-			'Retornar',
-			'Não',
-			'Cancel',
-			'Back',
-			'Close',
-			'Return',
-			'No',
-		],
+		stringsCancelButtons: ['Cancelar', 'Voltar', 'Fechar', 'Retornar', 'Não'],
 	},
 	en: {
 		feature: 'Feature',
@@ -59,7 +34,7 @@ const dictionary = {
 		uiElement: 'User Interface Element',
 		state: 'State',
 		constant: 'Constant',
-		stringsConfirmButtons: [
+		stringsFinalActionButtons: [
 			'Confirm',
 			'Save',
 			'Record',
@@ -77,6 +52,13 @@ const dictionary = {
 		stringsCancelButtons: ['Cancel', 'Back', 'Close', 'Return', 'No'],
 	},
 };
+
+dictionary.pt.stringsFinalActionButtons = dictionary.pt.stringsFinalActionButtons.concat(
+	dictionary.en.stringsFinalActionButtons
+);
+dictionary.pt.stringsCancelButtons = dictionary.pt.stringsCancelButtons.concat(
+	dictionary.en.stringsCancelButtons
+);
 
 export function getDictionary(language: string) {
 	switch (language) {
