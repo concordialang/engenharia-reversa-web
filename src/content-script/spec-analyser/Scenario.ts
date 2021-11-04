@@ -44,7 +44,7 @@ export class Scenario {
 	}
 
 	public setMaxVariantCount(maxVariantCount: number) {
-		if (Number.isInteger(maxVariantCount) && maxVariantCount > 0) {
+		if (Number.isInteger(maxVariantCount)) {
 			this.maxVariantCount = maxVariantCount;
 		}
 	}

@@ -66,9 +66,8 @@ export class FeatureManager {
 				scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
 			}
 
-			const varCount = scenario.getVariantsCount();
-			const maxVarCount = scenario.getMaxVariantsCount();
-			scenario.needNewVariants = varCount > 0 && varCount < maxVarCount ? true : false;
+			scenario.needNewVariants =
+				scenario.getVariantsCount() < scenario.getMaxVariantsCount() ? true : false;
 		} while (scenario.needNewVariants);
 
 		observer.disconnect();
