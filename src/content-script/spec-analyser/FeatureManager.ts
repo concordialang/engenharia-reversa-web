@@ -5,6 +5,7 @@ import { MutationObserverManager } from '../mutation-observer/MutationObserverMa
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
+import { Scenario } from './Scenario';
 import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
@@ -18,19 +19,14 @@ export class FeatureManager {
 		private spec: Spec
 	) {}
 
-	redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
-		const elementAnalysis = new ElementAnalysis(
-			interaction.getElement(),
-			interaction.getPageUrl(),
-			ElementAnalysisStatus.Done
-		);
-		await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-	};
-
 	public async generateFeature(
 		analysisElement: HTMLElement,
 		url: URL,
-		ignoreFormElements: boolean = false
+		ignoreFormElements: boolean = false,
+		redirectionCallback?: (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newFeature: Feature
+		) => Promise<void>
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
@@ -50,6 +46,29 @@ export class FeatureManager {
 			analysisElement.ownerDocument.body
 		);
 
+		const _this = this;
+
+		const callback = async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => {
+			const elementAnalysis = new ElementAnalysis(
+				interactionThatTriggeredRedirect.getElement(),
+				interactionThatTriggeredRedirect.getPageUrl(),
+				ElementAnalysisStatus.Done
+			);
+			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			this.addVariantToScenario(newVariant, scenario);
+
+			const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+			feature.setUiElements(uiElements);
+
+			if (redirectionCallback) {
+				await redirectionCallback(interactionThatTriggeredRedirect, feature);
+			}
+		};
+
 		let variantAnalyzed: Variant | null;
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
@@ -57,17 +76,10 @@ export class FeatureManager {
 				url,
 				observer,
 				feature,
-				this.redirectionCallback
+				callback
 			);
 
-			if (variantAnalyzed && variantAnalyzed.isValid()) {
-				scenario.addVariant(variantAnalyzed);
-			} else {
-				scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
-			}
-
-			scenario.needNewVariants =
-				scenario.getVariantsCount() < scenario.getMaxVariantsCount() ? true : false;
+			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario);
 		} while (scenario.needNewVariants);
 
 		observer.disconnect();
@@ -80,6 +92,17 @@ export class FeatureManager {
 		feature.setUiElements(uiElements);
 
 		return feature;
+	}
+
+	private addVariantToScenario(variantAnalyzed: Variant, scenario: Scenario): void {
+		if (variantAnalyzed && variantAnalyzed.isValid()) {
+			scenario.addVariant(variantAnalyzed);
+		} else {
+			scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
+		}
+
+		scenario.needNewVariants =
+			scenario.getVariantsCount() < scenario.getMaxVariantsCount() ? true : false;
 	}
 
 	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {

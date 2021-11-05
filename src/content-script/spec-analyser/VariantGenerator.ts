@@ -30,7 +30,10 @@ export class VariantGenerator {
 		url: URL,
 		observer: MutationObserverManager,
 		feature: Feature,
-		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
+		redirectionCallback?: (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => Promise<void>
 	): Promise<Variant | null> {
 		const scenario = feature.getGeneralScenario();
 
@@ -78,7 +81,10 @@ export class VariantGenerator {
 		feature: Feature,
 		observer: MutationObserverManager,
 		firstAnalyzeSentence: boolean = true,
-		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
+		redirectionCallback?: (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => Promise<void>
 	): Promise<void> {
 		if (!elm) return;
 
@@ -133,12 +139,25 @@ export class VariantGenerator {
 			return;
 		}
 
+		const _this = this;
+
+		const callback = async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>
+		) => {
+			await _this.createVariantSentence(
+				elm,
+				variant,
+				feature,
+				observer,
+				firstAnalyzeSentence
+			);
+			if (redirectionCallback) {
+				await redirectionCallback(interactionThatTriggeredRedirect, variant);
+			}
+		};
+
 		// interacts with the element
-		const result = await this.elementInteractionExecutor.execute(
-			interaction,
-			redirectionCallback,
-			true
-		);
+		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
 
 		if (!result) {
 			if (elm.nextElementSibling) {
@@ -154,12 +173,11 @@ export class VariantGenerator {
 			return;
 		}
 
-		// save element in feature interaction array
-		this.saveInteractedElement(elm, variant.getName(), feature);
-
-		// create variant sentence
-		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
+		const variantSentence = this.createVariantSentence(
 			elm,
+			variant,
+			feature,
+			observer,
 			firstAnalyzeSentence
 		);
 
@@ -181,11 +199,6 @@ export class VariantGenerator {
 			firstAnalyzeSentence = false;
 		}
 
-		variant.setVariantSentence(variantSentence);
-
-		// treat mutational variant sentences
-		await this.treatMutationsSentences(observer, variant);
-
 		if (elm.nextElementSibling) {
 			await this.analyze(
 				<HTMLElement>elm.nextElementSibling,
@@ -196,6 +209,34 @@ export class VariantGenerator {
 				redirectionCallback
 			);
 		}
+	}
+
+	private async createVariantSentence(
+		elm: HTMLElement,
+		variant: Variant,
+		feature: Feature,
+		observer: MutationObserverManager,
+		firstAnalyzeSentence: boolean
+	): Promise<VariantSentence | null> {
+		// save element in feature interaction array
+		this.saveInteractedElement(elm, variant.getName(), feature);
+
+		// create variant sentence
+		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
+			elm,
+			firstAnalyzeSentence
+		);
+
+		if (!variantSentence) {
+			return null;
+		}
+
+		variant.setVariantSentence(variantSentence);
+
+		// treat mutational variant sentences
+		await this.treatMutationsSentences(observer, variant);
+
+		return variantSentence;
 	}
 
 	private getStartElementToAnalyse(
