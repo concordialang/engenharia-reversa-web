@@ -41,87 +41,6 @@ export class VariantGenerator {
 
 		let firstAnalyzeSentence = true;
 
-		const analyse = async (elm) => {
-			// treatment for tables
-			const checksChildsRow = await this.treatTableRow(elm, variant, observer);
-
-			// enters the children of the nodes tree
-			const validFirstChild = await this.checksValidFirstChild(
-				elm,
-				feature.ignoreFormElements,
-				checksChildsRow
-			);
-			if (validFirstChild) {
-				await analyse(elm.firstElementChild);
-			}
-
-			// check if element will receive interaction
-			const validInteractableElm = this.checkValidInteractableElement(elm, variant, feature);
-			if (!validInteractableElm) {
-				if (elm.nextElementSibling) {
-					await analyse(elm.nextElementSibling);
-				}
-				return;
-			}
-
-			// create interaction for the element
-			const interaction = await this.elementInteractionGenerator.generate(elm, variant);
-			if (!interaction) {
-				if (elm.nextElementSibling) {
-					await analyse(elm.nextElementSibling);
-				}
-				return;
-			}
-
-			// interacts with the element
-			const result = await this.elementInteractionExecutor.execute(
-				interaction,
-				redirectionCallback,
-				true
-			);
-
-			if (!result) {
-				if (elm.nextElementSibling) {
-					await analyse(elm.nextElementSibling);
-				}
-				return;
-			}
-
-			// save element in feature interaction array
-			this.saveInteractedElement(elm, variant.getName(), feature);
-
-			// returns variant if element is redirectable
-			if (result.getTriggeredRedirection()) {
-				return variant;
-			}
-
-			// create variant sentence
-			const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
-				elm,
-				firstAnalyzeSentence
-			);
-
-			if (!variantSentence) {
-				if (elm.nextElementSibling) {
-					await analyse(elm.nextElementSibling);
-				}
-				return;
-			}
-
-			if (firstAnalyzeSentence) {
-				firstAnalyzeSentence = false;
-			}
-
-			variant.setVariantSentence(variantSentence);
-
-			// treat mutational variant sentences
-			await this.treatMutationsSentences(observer, variant);
-
-			if (elm.nextElementSibling) {
-				await analyse(elm.nextElementSibling);
-			}
-		};
-
 		let startElement: HTMLElement | null = this.getStartElementToAnalyse(
 			analysisElement,
 			feature.ignoreFormElements
@@ -136,7 +55,14 @@ export class VariantGenerator {
 			variant.setVariantSentence(givenTypeSentence);
 		}
 
-		await analyse(startElement);
+		await this.analyze(
+			startElement,
+			variant,
+			feature,
+			observer,
+			firstAnalyzeSentence,
+			redirectionCallback
+		);
 
 		const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(feature.getName());
 		if (thenTypeSentence) {
@@ -144,6 +70,132 @@ export class VariantGenerator {
 		}
 
 		return variant;
+	}
+
+	private async analyze(
+		elm: HTMLElement | null,
+		variant: Variant,
+		feature: Feature,
+		observer: MutationObserverManager,
+		firstAnalyzeSentence: boolean = true,
+		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
+	): Promise<void> {
+		if (!elm) return;
+
+		const checksChildsRow = await this.treatTableRow(elm, variant, observer);
+
+		// enters the children of the nodes tree
+		const validFirstChild = await this.checksValidFirstChild(
+			elm,
+			feature.ignoreFormElements,
+			checksChildsRow
+		);
+		if (validFirstChild) {
+			await this.analyze(
+				<HTMLElement>elm.firstElementChild,
+				variant,
+				feature,
+				observer,
+				firstAnalyzeSentence,
+				redirectionCallback
+			);
+		}
+
+		// check if element will receive interaction
+		const validInteractableElm = this.checkValidInteractableElement(elm, variant, feature);
+		if (!validInteractableElm) {
+			if (elm.nextElementSibling) {
+				await this.analyze(
+					<HTMLElement>elm.nextElementSibling,
+					variant,
+					feature,
+					observer,
+					firstAnalyzeSentence,
+					redirectionCallback
+				);
+			}
+			return;
+		}
+
+		// create interaction for the element
+		const interaction = await this.elementInteractionGenerator.generate(elm, variant);
+		if (!interaction) {
+			if (elm.nextElementSibling) {
+				await this.analyze(
+					<HTMLElement>elm.nextElementSibling,
+					variant,
+					feature,
+					observer,
+					firstAnalyzeSentence,
+					redirectionCallback
+				);
+			}
+			return;
+		}
+
+		// interacts with the element
+		const result = await this.elementInteractionExecutor.execute(
+			interaction,
+			redirectionCallback,
+			true
+		);
+
+		if (!result) {
+			if (elm.nextElementSibling) {
+				await this.analyze(
+					<HTMLElement>elm.nextElementSibling,
+					variant,
+					feature,
+					observer,
+					firstAnalyzeSentence,
+					redirectionCallback
+				);
+			}
+			return;
+		}
+
+		// save element in feature interaction array
+		this.saveInteractedElement(elm, variant.getName(), feature);
+
+		// create variant sentence
+		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
+			elm,
+			firstAnalyzeSentence
+		);
+
+		if (!variantSentence) {
+			if (elm.nextElementSibling) {
+				await this.analyze(
+					<HTMLElement>elm.nextElementSibling,
+					variant,
+					feature,
+					observer,
+					firstAnalyzeSentence,
+					redirectionCallback
+				);
+			}
+			return;
+		}
+
+		if (firstAnalyzeSentence) {
+			firstAnalyzeSentence = false;
+		}
+
+		variant.setVariantSentence(variantSentence);
+
+		// treat mutational variant sentences
+		await this.treatMutationsSentences(observer, variant);
+
+		if (elm.nextElementSibling) {
+			await this.analyze(
+				<HTMLElement>elm.nextElementSibling,
+				variant,
+				feature,
+				observer,
+				firstAnalyzeSentence,
+				redirectionCallback
+			);
+		}
 	}
 
 	private getStartElementToAnalyse(
