@@ -9,6 +9,7 @@ import { VariantSentence } from './VariantSentence';
 import { getPathTo, areSimilar } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
+import { HTMLEventType } from '../enums/HTMLEventType';
 
 type InteractableElement =
 	| HTMLInputElement
@@ -88,7 +89,7 @@ export class VariantGenerator {
 	): Promise<void> {
 		if (!elm) return;
 
-		const checksChildsRow = await this.treatTableRow(elm, variant, observer);
+		const checksChildsRow = await this.treatTableRow(elm, variant, feature, observer);
 
 		// enters the children of the nodes tree
 		const validFirstChild = await this.checksValidFirstChild(
@@ -124,7 +125,7 @@ export class VariantGenerator {
 		}
 
 		// create interaction for the element
-		const interaction = await this.elementInteractionGenerator.generate(elm, variant);
+		const interaction = await this.generateInteraction(elm, variant, feature);
 		if (!interaction) {
 			if (elm.nextElementSibling) {
 				await this.analyze(
@@ -211,6 +212,20 @@ export class VariantGenerator {
 		}
 	}
 
+	private async generateInteraction(
+		element: HTMLElement,
+		variant: Variant,
+		feature: Feature
+	): Promise<ElementInteraction<HTMLElement> | null> {
+		const interaction = await this.elementInteractionGenerator.generate(element);
+		if (!interaction) {
+			return null;
+		}
+		interaction.setVariant(variant);
+		interaction.setFeature(feature);
+		return interaction;
+	}
+
 	private async createVariantSentence(
 		elm: HTMLElement,
 		variant: Variant,
@@ -281,6 +296,7 @@ export class VariantGenerator {
 	private async treatTableRow(
 		elm: HTMLElement,
 		variant: Variant,
+		feature: Feature,
 		observer: MutationObserverManager
 	): Promise<boolean> {
 		let checksChildsRow = false;
@@ -292,10 +308,10 @@ export class VariantGenerator {
 		const row = await this.checkValidRowTable(elm);
 		if (row.isValid) {
 			if (row.type == 'header') {
-				await this.interactWithTableColumn(elm, variant, observer);
+				await this.interactWithTableColumn(elm, variant, feature, observer);
 			} else if (row.type == 'content') {
 				checksChildsRow = true;
-				await this.interactWithTableContentRow(elm, variant, observer);
+				await this.interactWithTableContentRow(elm, variant, feature, observer);
 			}
 		}
 
@@ -338,9 +354,10 @@ export class VariantGenerator {
 	private async interactWithTableContentRow(
 		row,
 		variant: Variant,
+		feature: Feature,
 		observer: MutationObserverManager
 	): Promise<boolean | null> {
-		const interaction = await this.elementInteractionGenerator.generate(row, variant);
+		const interaction = await this.generateInteraction(row, variant, feature);
 		if (!interaction) {
 			return null;
 		}
@@ -366,6 +383,7 @@ export class VariantGenerator {
 	private async interactWithTableColumn(
 		row,
 		variant: Variant,
+		feature: Feature,
 		observer: MutationObserverManager
 	) {
 		let column: HTMLElement | null = null;
@@ -378,7 +396,7 @@ export class VariantGenerator {
 			return null;
 		}
 
-		const interaction = await this.elementInteractionGenerator.generate(column, variant);
+		const interaction = await this.generateInteraction(column, variant, feature);
 		if (!interaction) {
 			return null;
 		}

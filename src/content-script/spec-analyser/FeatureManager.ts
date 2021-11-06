@@ -3,6 +3,7 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
+import { LocalObjectStorage } from '../storage/LocalObjectStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Scenario } from './Scenario';
@@ -23,10 +24,7 @@ export class FeatureManager {
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
-		redirectionCallback?: (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newFeature: Feature
-		) => Promise<void>
+		redirectionCallback?: (newFeature: Feature) => Promise<void>
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
@@ -65,7 +63,7 @@ export class FeatureManager {
 			feature.setUiElements(uiElements);
 
 			if (redirectionCallback) {
-				await redirectionCallback(interactionThatTriggeredRedirect, feature);
+				await redirectionCallback(feature);
 			}
 		};
 

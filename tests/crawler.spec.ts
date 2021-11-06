@@ -30,6 +30,7 @@ import { TableColumnInteractor } from '../src/content-script/crawler/TableColumn
 import { getDictionary } from '../src/content-script/dictionary';
 import { ChromeMock } from './util/ChromeMock';
 import { LocalStorageMock } from './util/LocalStorageMock';
+import { Feature } from '../src/content-script/spec-analyser/Feature';
 
 const chrome = new ChromeMock();
 
@@ -389,7 +390,8 @@ describe('Crawler', () => {
 		);
 
 		const language = 'pt';
-		const spec: Spec = new Spec(language);
+		const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+		const spec: Spec = new Spec(language, featureStorage);
 		const dictionary = getDictionary(language);
 
 		let analyzedElementStorage: ElementAnalysisStorage;

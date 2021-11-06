@@ -18,13 +18,19 @@ export class ButtonInteractor implements ElementInteractor<HTMLButtonElement | H
 		const element = interaction.getElement();
 		let triggeredUnload = false;
 		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
-			triggeredUnload = true;
-			if (redirectionCallback) await redirectionCallback(interaction);
+			if (!triggeredUnload) {
+				triggeredUnload = true;
+				if (redirectionCallback) await redirectionCallback(interaction);
+			}
+		});
+		this.window.addEventListener(HTMLEventType.Submit, async (event) => {
+			timePassed = 0;
+			timeLimit = 20000;
 		});
 		element.click();
 
 		let timePassed = 0;
-		const timeLimit = 300;
+		let timeLimit = 300;
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {

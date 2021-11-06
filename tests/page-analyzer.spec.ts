@@ -22,6 +22,7 @@ import { ElementInteraction } from '../src/content-script/crawler/ElementInterac
 import { TableRowInteractor } from '../src/content-script/crawler/TableRowInteractor';
 import { TableColumnInteractor } from '../src/content-script/crawler/TableColumnInteractor';
 import { getDictionary } from '../src/content-script/dictionary';
+import { Feature } from '../src/content-script/spec-analyser/Feature';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -121,7 +122,8 @@ describe('Page Analyzer', () => {
 		);
 
 		const language = 'pt';
-		const spec: Spec = new Spec(language);
+		const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+		const spec: Spec = new Spec(language, featureStorage);
 		const dictionary = getDictionary(language);
 
 		let elementAnalysisStorage: ElementAnalysisStorage;

@@ -8,10 +8,7 @@ import { ElementInteraction } from './ElementInteraction';
 export class ElementInteractionGenerator {
 	constructor(private browserContext: BrowserContext) {}
 
-	public generate(
-		element: HTMLElement,
-		variant: Variant
-	): ElementInteraction<HTMLElement> | null {
+	public generate(element: HTMLElement): ElementInteraction<HTMLElement> | null {
 		let interaction: ElementInteraction<HTMLElement> | null = null;
 		if (element instanceof HTMLInputElement) {
 			interaction = this.generateInputInteraction(element);
@@ -26,8 +23,6 @@ export class ElementInteractionGenerator {
 				this.browserContext.getUrl()
 			);
 		}
-
-		interaction?.setVariant(variant);
 
 		return interaction;
 	}

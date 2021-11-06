@@ -23,13 +23,18 @@ export function createValidElementAnalysis(element?: HTMLElement): ElementAnalys
 }
 
 export function createValidElementInteraction(
-	element?: HTMLElement
+	element?: HTMLElement,
+	feature?: Feature | string
 ): ElementInteraction<HTMLElement> {
 	if (!element) {
 		element = createElement(document, 'input');
 	}
 
 	const variant = createValidVariant(createValidUIElement(element));
+
+	if (!feature) {
+		feature = createValidFeature();
+	}
 
 	return new ElementInteraction<HTMLElement>(
 		element,
@@ -38,7 +43,8 @@ export function createValidElementInteraction(
 		'A Value',
 		null,
 		'selector',
-		variant
+		variant,
+		feature
 	);
 }
 

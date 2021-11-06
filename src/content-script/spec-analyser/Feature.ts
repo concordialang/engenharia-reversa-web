@@ -5,6 +5,7 @@ import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string;
+	private id: string;
 	public ignoreFormElements: boolean;
 	public InteractedElements: Array<{
 		xpath: string;
@@ -23,13 +24,14 @@ export class Feature {
 	@Type(() => UIElement)
 	private uiElements: Array<UIElement>;
 
-	constructor() {
+	constructor(id?: string) {
 		this.name = '';
 		this.ignoreFormElements = false;
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
 		this.InteractedElements = [];
+		this.id = id || Math.random().toString(18).substring(2);
 	}
 
 	public setName(name: string): void {
@@ -38,6 +40,10 @@ export class Feature {
 
 	public getName(): string {
 		return this.name;
+	}
+
+	public getId(): string {
+		return this.id;
 	}
 
 	public addUiElement(uiElement: UIElement): void {

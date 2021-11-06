@@ -27,7 +27,8 @@ import { Variant } from '../../src/content-script/spec-analyser/Variant';
 
 describe('VariantGenerator', () => {
 	const language = 'pt';
-	const spec: Spec = new Spec(language);
+	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+	const spec: Spec = new Spec(language, featureStorage);
 	const dictionary = getDictionary(language);
 	const uiElementGenerator = new UIElementGenerator();
 	const variantSentencesGenerator = new VariantSentencesGenerator(uiElementGenerator);

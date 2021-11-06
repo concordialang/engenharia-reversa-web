@@ -6,14 +6,23 @@ import { getFormElements, getPathTo } from '../util';
 import { ElementAnalysis } from './ElementAnalysis';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { BrowserContext } from './BrowserContext';
+import { ElementInteraction } from './ElementInteraction';
+import { Feature } from '../spec-analyser/Feature';
 
 export class PageAnalyzer {
+	private redirectCallback: (feature: Feature) => Promise<void>;
+
 	constructor(
 		private featureManager: FeatureManager,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec,
 		private browserContext: BrowserContext
-	) {}
+	) {
+		const _this = this;
+		this.redirectCallback = async (feature: Feature) => {
+			_this.spec.addFeature(feature);
+		};
+	}
 
 	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
 		let xPath = getPathTo(contextElement);
@@ -39,7 +48,8 @@ export class PageAnalyzer {
 					const featureOuterFormElements = await this.featureManager.generateFeature(
 						contextElement,
 						url,
-						true
+						true,
+						this.redirectCallback
 					);
 
 					if (featureOuterFormElements) {
@@ -73,7 +83,9 @@ export class PageAnalyzer {
 				if (!isElementAnalyzed) {
 					const feature = await this.featureManager.generateFeature(
 						formElement as HTMLElement,
-						url
+						url,
+						false,
+						this.redirectCallback
 					);
 
 					if (feature) {

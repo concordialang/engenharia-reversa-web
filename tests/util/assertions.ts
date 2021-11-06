@@ -28,11 +28,23 @@ export function assertElementInteractionsAreEqual(
 	if (actualVariant && expectedVariant) {
 		assertVariantsAreEqual(expectedVariant, actualVariant);
 	}
+
+	const expectedFeature = expected.getFeature();
+	const actualFeature = actual.getFeature();
+	expect(actualFeature).not.toBeNull();
+	if (actualFeature instanceof Feature && expectedFeature instanceof Feature) {
+		assertFeaturesAreEqual(expectedFeature, actualFeature);
+	} else if (typeof actualFeature === 'string' && typeof expectedFeature === 'string') {
+		expect(actualFeature).toBe(expectedFeature);
+	} else {
+		fail('Feature must be a string or Feature object');
+	}
 }
 
 export function assertFeaturesAreEqual(expected: Feature, actual: Feature) {
 	expect(actual.getName()).toBe(expected.getName());
 	expect(actual.getImports()).toEqual(expected.getImports());
+	expect(actual.getId()).toEqual(expected.getId());
 	const expectedScenarios = expected.getScenarios();
 	const actualScenarios = actual.getScenarios();
 	for (let i = 0; i < expectedScenarios.length; i++) {

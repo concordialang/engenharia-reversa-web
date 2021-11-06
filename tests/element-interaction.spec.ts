@@ -12,4 +12,14 @@ describe('Element Interaction', () => {
 
 		assertElementInteractionsAreEqual(elementInteraction, deserializedElementInteraction);
 	});
+
+	it('serializes element interaction object correctly if feature property is a reference string', async () => {
+		const elementInteraction = createValidElementInteraction(undefined, 'feature-reference');
+
+		const json = classToPlain(elementInteraction);
+
+		const deserializedElementInteraction = plainToClass(ElementInteraction, json);
+
+		assertElementInteractionsAreEqual(elementInteraction, deserializedElementInteraction);
+	});
 });
