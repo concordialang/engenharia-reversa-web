@@ -5,12 +5,7 @@ export class Scenario {
 	@Type(() => Variant)
 	private variants!: Array<Variant>;
 
-	constructor(
-		private name: string,
-		private maxVariantCount: number = 1,
-		public btnVariantsAfterFinalAction: boolean = false,
-		public needNewVariants: boolean = false
-	) {
+	constructor(private name: string) {
 		this.variants = [];
 	}
 
@@ -33,19 +28,5 @@ export class Scenario {
 
 	public getVariants() {
 		return this.variants;
-	}
-
-	public getVariantsCount() {
-		return this.variants.length;
-	}
-
-	public getMaxVariantsCount() {
-		return this.maxVariantCount;
-	}
-
-	public setMaxVariantCount(maxVariantCount: number) {
-		if (Number.isInteger(maxVariantCount)) {
-			this.maxVariantCount = maxVariantCount;
-		}
 	}
 }

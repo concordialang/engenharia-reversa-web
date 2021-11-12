@@ -32,24 +32,19 @@ export class VariantGenerator {
 		feature: Feature,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<Variant | null> {
-		const scenario = feature.getGeneralScenario();
-
-		let variant = this.featureUtil.createVariant(
-			feature.getName(),
-			scenario.getVariantsCount()
-		);
+		let variant = this.featureUtil.createVariant(feature.getName(), feature.getVariantsCount());
 
 		let firstAnalyzeSentence = true;
 
 		const analyse = async (elm) => {
 			// treatment for tables
-			const checksChildsRow = await this.treatTableRow(elm, variant, observer);
+			const checksChildsTableRow = await this.treatTableRow(elm, variant, observer);
 
 			// enters the children of the nodes tree
 			const validFirstChild = await this.checksValidFirstChild(
 				elm,
 				feature.ignoreFormElements,
-				checksChildsRow
+				checksChildsTableRow
 			);
 			if (validFirstChild) {
 				await analyse(elm.firstElementChild);
@@ -170,11 +165,11 @@ export class VariantGenerator {
 	private async checksValidFirstChild(
 		elm: HTMLElement,
 		ignoreFormElements: boolean,
-		checksChildsRow: boolean
+		checksChildsTableRow: boolean
 	): Promise<boolean> {
 		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
 			if (elm instanceof HTMLTableRowElement) {
-				return checksChildsRow;
+				return checksChildsTableRow;
 			}
 
 			if (!ignoreFormElements || elm.nodeName !== HTMLElementType.FORM) {
@@ -309,54 +304,15 @@ export class VariantGenerator {
 
 	// check if the element is ready to receive interaction
 	private checkValidInteractableElement(elm: HTMLElement, variant: Variant, feature: Feature) {
-		const scenario = feature.getGeneralScenario();
-
-		if (
-			!varUtil.isInteractable(elm) ||
-			(scenario.btnVariantsAfterFinalAction && !(elm instanceof HTMLButtonElement))
-		) {
+		if (!varUtil.isInteractable(elm)) {
 			return false;
 		}
 
-		let interactableElm = elm as InteractableElement;
-
-		if (
-			interactableElm.disabled ||
-			interactableElm.hidden ||
-			interactableElm.style.display === 'none' ||
-			interactableElm.style.visibility === 'hidden'
-		) {
+		if (feature.analysesOnlyCancelBtns && !(elm instanceof HTMLButtonElement)) {
 			return false;
 		}
 
-		if (
-			interactableElm instanceof HTMLInputElement ||
-			interactableElm instanceof HTMLTextAreaElement
-		) {
-			if (interactableElm.readOnly) {
-				return false;
-			}
-
-			if (interactableElm instanceof HTMLInputElement && interactableElm.type === 'hidden') {
-				return false;
-			}
-		}
-
-		return this.checksIfElementCanInteract(interactableElm, variant, feature);
-	}
-
-	/*
-		Checks whether the element can interact based on previous feature interactions
-		Some elements can force creations of new variants and cannot have repeated interactions (button, checkbox, radio)
-	*/
-	private checksIfElementCanInteract(
-		elm: HTMLElement,
-		variant: Variant,
-		feature: Feature
-	): boolean {
-		const scenario = feature.getGeneralScenario();
-
-		if (variant.finalActionButtonFound && !scenario.btnVariantsAfterFinalAction) {
+		if (!varUtil.inEnabled(elm as InteractableElement)) {
 			return false;
 		}
 
@@ -364,97 +320,81 @@ export class VariantGenerator {
 			return true;
 		}
 
+		return this.canInteract(elm, variant, feature);
+	}
+
+	/*
+		Checks whether the element can interact based on previous feature interactions
+		Some elements can force creations of new variants and cannot have repeated interactions (button, checkbox, radio)
+	*/
+	private canInteract(elm: HTMLElement, variant: Variant, feature: Feature): boolean {
 		const xpathElement = getPathTo(elm);
 
-		const isFinalActionBtn = this.checksIfIsFinalActionButton(elm);
+		// checks if the element has already received interaction in the feature
+		const wasInteracted = feature.interactedElements.some(
+			(interactedElm) => interactedElm.xpath === xpathElement
+		);
+
+		let isCancelBtn = false;
+
+		if (
+			!wasInteracted &&
+			varUtil.isButton(elm) &&
+			(variant.finalActionButtonFound || feature.analysesOnlyCancelBtns)
+		) {
+			isCancelBtn = varUtil.isCancelButton(elm, this.dictionary);
+
+			this.saveBtnAfterFinalActionButton(feature, xpathElement, isCancelBtn);
+		}
+
+		if (feature.analysesOnlyCancelBtns && !isCancelBtn) {
+			return false;
+		}
+
+		if (!feature.analysesOnlyCancelBtns && isCancelBtn) {
+			return false;
+		}
+
+		if (variant.finalActionButtonFound && !feature.analysesBtnsAfterFinalActionBtn) {
+			return false;
+		}
+
+		const isFinalActionBtn = varUtil.isFinalActionButton(elm, this.dictionary);
 		if (isFinalActionBtn) {
 			variant.finalActionButtonFound = true;
 		}
 
-		// checks if the element has already received interaction in the feature
-		const alreadyInteracted = feature.InteractedElements.some(
-			(interactedElm) => interactedElm.xpath === xpathElement
-		);
+		if (wasInteracted && !isFinalActionBtn) {
+			return false;
+		}
 
-		if (
-			(alreadyInteracted && !isFinalActionBtn) ||
-			(isFinalActionBtn && scenario.btnVariantsAfterFinalAction)
-		) {
+		if (isFinalActionBtn && feature.analysesBtnsAfterFinalActionBtn) {
 			return false;
 		}
 
 		if (varUtil.isRadionButton(elm)) {
-			let radio = elm as HTMLInputElement;
-			// checks if some group radio button received interaction in this variant
-			const anyOfGroupHasInteracted = feature.InteractedElements.some((interactedElm) => {
-				return (
-					interactedElm.variantName === variant.getName() &&
-					interactedElm.radioGroupName == radio.name
-				);
-			});
-
+			const anyOfGroupHasInteracted = varUtil.anyOfRadioofGroupHasInteracted(
+				feature,
+				variant.getName(),
+				elm as HTMLInputElement
+			);
 			if (anyOfGroupHasInteracted) {
 				return false;
 			}
 		}
 
 		if (varUtil.isButton(elm)) {
-			const anyButtonHasInteracted = feature.InteractedElements.some((interactedElm) => {
-				return (
-					interactedElm.variantName === variant.getName() &&
-					interactedElm.elmType === 'button'
-				);
-			});
+			const anyButtonHasInteracted = varUtil.anyButtonHasInteracted(
+				feature,
+				variant.getName()
+			);
 
 			if (anyButtonHasInteracted && !isFinalActionBtn) {
 				return false;
 			}
-
-			if (!anyButtonHasInteracted && isFinalActionBtn) {
-				scenario.btnVariantsAfterFinalAction = true;
-			}
 		}
 
 		return true;
-	}
-
-	// checks whether the element is a final action buttons (buttons that characterize the final action of a variant)
-	private checksIfIsFinalActionButton(elm: HTMLElement): boolean {
-		if (!varUtil.isButton(elm)) {
-			return false;
-		}
-
-		let button = elm as HTMLInputElement | HTMLButtonElement;
-
-		let isFinalActionBtn: boolean = false;
-
-		if (button.type === 'submit') {
-			isFinalActionBtn = true;
-		} else {
-			const findFinalActionString = (btnProperty) => {
-				isFinalActionBtn = this.dictionary.stringsFinalActionButtons.some((str) => {
-					return areSimilar(btnProperty, str);
-				});
-			};
-
-			if (button.innerText) {
-				findFinalActionString(button.innerText);
-			}
-
-			if (button.name && !isFinalActionBtn) {
-				findFinalActionString(button.name);
-			}
-
-			if (button.id && !isFinalActionBtn) {
-				findFinalActionString(button.id);
-			}
-
-			if (button.value && !isFinalActionBtn) {
-				findFinalActionString(button.value);
-			}
-		}
-
-		return isFinalActionBtn;
 	}
 
 	private saveInteractedElement(
@@ -463,13 +403,13 @@ export class VariantGenerator {
 		feature: Feature
 	): void {
 		const xpathElement = getPathTo(elm);
-		const indexAnalyzedElm = feature.InteractedElements.findIndex(
+		const indexAnalyzedElm = feature.interactedElements.findIndex(
 			(analyzedElms) => analyzedElms.xpath === xpathElement
 		);
 
 		if (indexAnalyzedElm !== -1) {
-			feature.InteractedElements[indexAnalyzedElm].count++;
-			feature.InteractedElements[indexAnalyzedElm].variantName = currentVariantName;
+			feature.interactedElements[indexAnalyzedElm].count++;
+			feature.interactedElements[indexAnalyzedElm].variantName = currentVariantName;
 		} else {
 			let interactedElm: any = {
 				xpath: xpathElement,
@@ -485,7 +425,7 @@ export class VariantGenerator {
 				interactedElm.elmType = 'button';
 			}
 
-			feature.InteractedElements.push(interactedElm);
+			feature.interactedElements.push(interactedElm);
 		}
 	}
 
@@ -507,5 +447,22 @@ export class VariantGenerator {
 		}
 
 		observer.resetMutations();
+	}
+
+	private saveBtnAfterFinalActionButton(
+		feature: Feature,
+		xpathElement: string,
+		isCancelButton: boolean
+	): void {
+		const wasSaved = feature.btnsAfterFinalActionBtn.find((btn) => btn.xpath === xpathElement);
+
+		if (!wasSaved) {
+			const btnAfter = {
+				xpath: xpathElement,
+				isCancelButton: isCancelButton,
+			};
+
+			feature.btnsAfterFinalActionBtn.push(btnAfter);
+		}
 	}
 }

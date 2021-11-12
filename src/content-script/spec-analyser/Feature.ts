@@ -4,14 +4,28 @@ import { Scenario } from './Scenario';
 import { UIElement } from './UIElement';
 
 export class Feature {
-	private name: string;
-	public ignoreFormElements: boolean;
-	public InteractedElements: Array<{
+	private name: string = '';
+	private maxVariantCount: number = 1;
+	public ignoreFormElements: boolean = false;
+	public needNewVariants: boolean = false;
+
+	// it also starts to analyze the buttons that are after the final action button, ignoring the final action button
+	public analysesBtnsAfterFinalActionBtn: boolean = false;
+
+	// starts to create variant analyzing only the cancel buttons
+	public analysesOnlyCancelBtns: boolean = false;
+
+	public interactedElements: Array<{
 		xpath: string;
 		count: number;
 		variantName: string;
 		radioGroupName: string | null;
 		elmType: string;
+	}> = [];
+
+	public btnsAfterFinalActionBtn: Array<{
+		xpath: string;
+		isCancelButton: boolean;
 	}>;
 
 	@Type(() => Import)
@@ -24,12 +38,11 @@ export class Feature {
 	private uiElements: Array<UIElement>;
 
 	constructor() {
-		this.name = '';
-		this.ignoreFormElements = false;
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
-		this.InteractedElements = [];
+		this.interactedElements = [];
+		this.btnsAfterFinalActionBtn = [];
 	}
 
 	public setName(name: string): void {
@@ -70,5 +83,19 @@ export class Feature {
 
 	public getGeneralScenario(): Scenario {
 		return this.scenarios[0];
+	}
+
+	public getVariantsCount() {
+		return this.scenarios[0].getVariants().length;
+	}
+
+	public getMaxVariantsCount() {
+		return this.maxVariantCount;
+	}
+
+	public setMaxVariantCount(maxVariantCount: number) {
+		if (Number.isInteger(maxVariantCount)) {
+			this.maxVariantCount = maxVariantCount;
+		}
 	}
 }

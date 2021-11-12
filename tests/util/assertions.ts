@@ -57,7 +57,6 @@ export function assertScenariosAreEqual(expected: Scenario, actual: Scenario) {
 
 export function assertVariantsAreEqual(expected: Variant, actual: Variant) {
 	expect(actual.getName()).toBe(expected.getName());
-	expect(actual.last).toBe(expected.last);
 
 	const expectedVariantSentences = expected.getSentences();
 	const actualVariantSentences = actual.getSentences();

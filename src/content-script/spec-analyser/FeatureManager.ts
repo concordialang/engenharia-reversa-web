@@ -44,13 +44,14 @@ export class FeatureManager {
 			analysisElement,
 			feature.ignoreFormElements
 		);
-		scenario.setMaxVariantCount(maxVariantCount);
+		feature.setMaxVariantCount(maxVariantCount);
 
 		let observer: MutationObserverManager = new MutationObserverManager(
 			analysisElement.ownerDocument.body
 		);
 
 		let variantAnalyzed: Variant | null;
+
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
@@ -62,17 +63,32 @@ export class FeatureManager {
 
 			if (variantAnalyzed && variantAnalyzed.isValid()) {
 				scenario.addVariant(variantAnalyzed);
+
+				// if true, starts analyzing the buttons after the final action button if the variant just found it
+				if (!feature.analysesBtnsAfterFinalActionBtn) {
+					feature.analysesBtnsAfterFinalActionBtn = this.checksIfContainsOnlyneFinalActionButton(
+						variantAnalyzed
+					);
+				}
+
+				if (feature.analysesBtnsAfterFinalActionBtn) {
+					// if true, starts analyzing only the cancel buttons
+					feature.analysesOnlyCancelBtns = this.checksIfAnalysesOnlyCancelBtns(
+						feature.btnsAfterFinalActionBtn,
+						feature.interactedElements
+					);
+				}
 			} else {
-				scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
+				feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
 			}
 
-			scenario.needNewVariants =
-				scenario.getVariantsCount() < scenario.getMaxVariantsCount() ? true : false;
-		} while (scenario.needNewVariants);
+			feature.needNewVariants =
+				feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
+		} while (feature.needNewVariants);
 
 		observer.disconnect();
 
-		if (scenario.getVariantsCount() == 0) {
+		if (feature.getVariantsCount() == 0) {
 			return null;
 		}
 
@@ -206,5 +222,53 @@ export class FeatureManager {
 		}
 
 		return variantCountByButton;
+	}
+
+	/**
+	 * checks that the variant only contains a button element and it is the final action button
+	 */
+	private checksIfContainsOnlyneFinalActionButton(variant: Variant): boolean {
+		if (!variant.finalActionButtonFound) {
+			return false;
+		}
+
+		const analyzedBtnsCount = variant.getNumberOfAnalyzedButtons();
+
+		if (analyzedBtnsCount >= 2 || analyzedBtnsCount <= 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * checks whether only cancel buttons should be analyzed
+	 * this happens when there are only cancel buttons to be analyzed
+	 */
+	public checksIfAnalysesOnlyCancelBtns(btnsAfterFinalActionBtn, interactedElements): boolean {
+		if (btnsAfterFinalActionBtn.length <= 0) {
+			return false;
+		}
+
+		// checks if there is any button after the final action button that is not a cancel button and has not been analyzed
+		const anyOtherBtn = btnsAfterFinalActionBtn.some((btn) => {
+			if (btn.isCancelButton) {
+				return false;
+			}
+
+			const analysed = interactedElements.some(
+				(interactedElm) => interactedElm.xpath === btn.xpath
+			);
+
+			if (!analysed) {
+				return true;
+			}
+		});
+
+		if (anyOtherBtn) {
+			return false;
+		}
+
+		return true;
 	}
 }
