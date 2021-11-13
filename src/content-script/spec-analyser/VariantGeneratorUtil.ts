@@ -1,6 +1,5 @@
 import { areSimilar } from '../util';
 import { Feature } from './Feature';
-import { Variant } from './Variant';
 
 type InteractableElement =
 	| HTMLInputElement

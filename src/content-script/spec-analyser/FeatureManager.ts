@@ -3,7 +3,6 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { LocalObjectStorage } from '../storage/LocalObjectStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Scenario } from './Scenario';
@@ -11,6 +10,8 @@ import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
+
+const limitsOfVariants = 30;
 
 export class FeatureManager {
 	constructor(
@@ -44,8 +45,6 @@ export class FeatureManager {
 			analysisElement.ownerDocument.body
 		);
 
-		const _this = this;
-
 		const callback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
@@ -59,7 +58,9 @@ export class FeatureManager {
 
 			this.addVariantToScenario(newVariant, scenario, feature);
 
-			const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+				scenario.getVariants()
+			);
 			feature.setUiElements(uiElements);
 
 			if (redirectionCallback) {
@@ -79,7 +80,7 @@ export class FeatureManager {
 			);
 
 			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario, feature);
-		} while (feature.needNewVariants);
+		} while (feature.needNewVariants && feature.getVariantsCount() <= limitsOfVariants);
 
 		observer.disconnect();
 
@@ -87,7 +88,9 @@ export class FeatureManager {
 			return null;
 		}
 
-		const uniqueUiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+		const uniqueUiElements: Array<UIElement> = await this.getUniqueUIElements(
+			scenario.getVariants()
+		);
 		feature.setUiElements(uniqueUiElements);
 
 		return feature;
@@ -119,11 +122,15 @@ export class FeatureManager {
 			feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
 		}
 
+		this.checskNeedNewVariant(feature);
+	}
+
+	private checskNeedNewVariant(feature: Feature): void {
 		feature.needNewVariants =
 			feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
-	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {
+	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {

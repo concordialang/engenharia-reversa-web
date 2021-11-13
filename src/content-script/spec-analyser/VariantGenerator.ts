@@ -6,10 +6,9 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo, areSimilar } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
-import { HTMLEventType } from '../enums/HTMLEventType';
 
 type InteractableElement =
 	| HTMLInputElement
