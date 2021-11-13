@@ -1,9 +1,10 @@
+import { ObjectStorage } from '../storage/ObjectStorage';
 import { Feature } from './Feature';
 
 export class Spec {
 	private features: Array<Feature> = [];
 
-	constructor(public readonly language: string) {}
+	constructor(public readonly language: string, private featureStorage: ObjectStorage<Feature>) {}
 
 	public addFeature(feature: Feature) {
 		let featureName = feature.getName();
@@ -13,6 +14,8 @@ export class Spec {
 		if (featureName && featureScenarios.length > 0 && featureVariants.length > 0) {
 			this.features.push(feature);
 		}
+
+		this.featureStorage.set(feature.getId(), feature);
 	}
 
 	public getFeatures() {

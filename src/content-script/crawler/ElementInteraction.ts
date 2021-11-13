@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { TransformHTMLElement, TransformURL } from '../decorators';
 import { HTMLEventType } from '../enums/HTMLEventType';
+import { Feature } from '../spec-analyser/Feature';
 import { Variant } from '../spec-analyser/Variant';
 
 export class ElementInteraction<T extends HTMLElement> {
@@ -21,6 +22,9 @@ export class ElementInteraction<T extends HTMLElement> {
 	@Type(() => Variant)
 	private variant?: Variant | null;
 
+	@Type(() => Feature)
+	private feature?: Feature | string | null;
+
 	constructor(
 		element: T,
 		eventType: HTMLEventType,
@@ -29,7 +33,8 @@ export class ElementInteraction<T extends HTMLElement> {
 		//FIXME Remover esse argumento, pois id é gerado internamente
 		id: string | null = null,
 		elementSelector?: string | null,
-		variant?: Variant | null
+		variant?: Variant | null,
+		feature?: Feature | string | null
 	) {
 		this.element = element;
 		this.eventType = eventType;
@@ -38,6 +43,7 @@ export class ElementInteraction<T extends HTMLElement> {
 		this.id = id || Math.random().toString(18).substring(2);
 		this.elementSelector = elementSelector ? elementSelector : null;
 		this.variant = variant ? variant : null;
+		this.feature = feature ? feature : null;
 	}
 
 	public getElement(): T {
@@ -66,6 +72,14 @@ export class ElementInteraction<T extends HTMLElement> {
 
 	public getVariant(): Variant | null {
 		return this.variant ? this.variant : null;
+	}
+
+	public getFeature(): Feature | string | null {
+		return this.feature ? this.feature : null;
+	}
+
+	public setFeature(feature: Feature | string | null) {
+		this.feature = feature;
 	}
 
 	public setVariant(variant: Variant) {

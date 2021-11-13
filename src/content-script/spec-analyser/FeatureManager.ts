@@ -3,8 +3,10 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
+import { LocalObjectStorage } from '../storage/LocalObjectStorage';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
+import { Scenario } from './Scenario';
 import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
@@ -18,19 +20,11 @@ export class FeatureManager {
 		private spec: Spec
 	) {}
 
-	redirectionCallback = async (interaction: ElementInteraction<HTMLElement>) => {
-		const elementAnalysis = new ElementAnalysis(
-			interaction.getElement(),
-			interaction.getPageUrl(),
-			ElementAnalysisStatus.Done
-		);
-		await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-	};
-
 	public async generateFeature(
 		analysisElement: HTMLElement,
 		url: URL,
-		ignoreFormElements: boolean = false
+		ignoreFormElements: boolean = false,
+		redirectionCallback?: (newFeature: Feature) => Promise<void>
 	): Promise<Feature | null> {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
@@ -50,6 +44,29 @@ export class FeatureManager {
 			analysisElement.ownerDocument.body
 		);
 
+		const _this = this;
+
+		const callback = async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => {
+			const elementAnalysis = new ElementAnalysis(
+				interactionThatTriggeredRedirect.getElement(),
+				interactionThatTriggeredRedirect.getPageUrl(),
+				ElementAnalysisStatus.Done
+			);
+			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			this.addVariantToScenario(newVariant, scenario, feature);
+
+			const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+			feature.setUiElements(uiElements);
+
+			if (redirectionCallback) {
+				await redirectionCallback(feature);
+			}
+		};
+
 		let variantAnalyzed: Variant | null;
 
 		do {
@@ -58,32 +75,10 @@ export class FeatureManager {
 				url,
 				observer,
 				feature,
-				this.redirectionCallback
+				callback
 			);
 
-			if (variantAnalyzed && variantAnalyzed.isValid()) {
-				scenario.addVariant(variantAnalyzed);
-
-				// if true, starts analyzing the buttons after the final action button if the variant just found it
-				if (!feature.analysesBtnsAfterFinalActionBtn) {
-					feature.analysesBtnsAfterFinalActionBtn = this.checksIfContainsOnlyneFinalActionButton(
-						variantAnalyzed
-					);
-				}
-
-				if (feature.analysesBtnsAfterFinalActionBtn) {
-					// if true, starts analyzing only the cancel buttons
-					feature.analysesOnlyCancelBtns = this.checksIfAnalysesOnlyCancelBtns(
-						feature.btnsAfterFinalActionBtn,
-						feature.interactedElements
-					);
-				}
-			} else {
-				feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
-			}
-
-			feature.needNewVariants =
-				feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
+			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario, feature);
 		} while (feature.needNewVariants);
 
 		observer.disconnect();
@@ -92,10 +87,40 @@ export class FeatureManager {
 			return null;
 		}
 
-		const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
-		feature.setUiElements(uiElements);
+		const uniqueUiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+		feature.setUiElements(uniqueUiElements);
 
 		return feature;
+	}
+
+	private addVariantToScenario(
+		variantAnalyzed: Variant,
+		scenario: Scenario,
+		feature: Feature
+	): void {
+		if (variantAnalyzed && variantAnalyzed.isValid()) {
+			scenario.addVariant(variantAnalyzed);
+
+			// if true, starts analyzing the buttons after the final action button if the variant just found it
+			if (!feature.analysesBtnsAfterFinalActionBtn) {
+				feature.analysesBtnsAfterFinalActionBtn = this.checksIfContainsOnlyneFinalActionButton(
+					variantAnalyzed
+				);
+			}
+
+			if (feature.analysesBtnsAfterFinalActionBtn) {
+				// if true, starts analyzing only the cancel buttons
+				feature.analysesOnlyCancelBtns = this.checksIfAnalysesOnlyCancelBtns(
+					feature.btnsAfterFinalActionBtn,
+					feature.interactedElements
+				);
+			}
+		} else {
+			feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
+		}
+
+		feature.needNewVariants =
+			feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
 	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {

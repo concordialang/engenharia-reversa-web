@@ -5,6 +5,7 @@ import { UIElement } from './UIElement';
 
 export class Feature {
 	private name: string = '';
+	private id: string;
 	private maxVariantCount: number = 1;
 	public ignoreFormElements: boolean = false;
 	public needNewVariants: boolean = false;
@@ -37,12 +38,12 @@ export class Feature {
 	@Type(() => UIElement)
 	private uiElements: Array<UIElement>;
 
-	constructor() {
+	constructor(id?: string) {
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
-		this.interactedElements = [];
 		this.btnsAfterFinalActionBtn = [];
+		this.id = id || Math.random().toString(18).substring(2);
 	}
 
 	public setName(name: string): void {
@@ -51,6 +52,10 @@ export class Feature {
 
 	public getName(): string {
 		return this.name;
+	}
+
+	public getId(): string {
+		return this.id;
 	}
 
 	public addUiElement(uiElement: UIElement): void {

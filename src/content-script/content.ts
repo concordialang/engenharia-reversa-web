@@ -27,6 +27,8 @@ import { PageAnalyzer } from './crawler/PageAnalyzer';
 import { Message } from '../shared/comm/Message';
 import { Command } from '../shared/comm/Command';
 import { AppEvent } from '../shared/comm/AppEvent';
+import { ElementInteractionStorage } from '../content-script/storage/ElementInteractionStorage';
+import { Feature } from './spec-analyser/Feature';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -41,17 +43,19 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
+	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage);
+
 	const inputInteractor = new InputInteractor();
 	const tableRowInteractor = new TableRowInteractor();
 	const tableColumnInteractor = new TableColumnInteractor();
 	const buttonInteractor = new ButtonInteractor(window);
-	const elementInteractionStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
+	const elementInteractionStorage = new ElementInteractionStorage(
 		window.localStorage,
-		ElementInteraction
+		featureStorage
 	);
 
 	const language = 'pt';
-	const spec: Spec = new Spec(language);
+	const spec: Spec = new Spec(language, featureStorage);
 	const dictionary = getDictionary(language);
 
 	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
