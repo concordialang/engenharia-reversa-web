@@ -67,10 +67,6 @@ export function formatToFirstCapitalLetter(txt: string): string {
 	return txt;
 }
 
-export function areSimilar(text1: string, text2: string, options?): boolean {
-	return text1.toLowerCase().includes(text2.toLowerCase());
-}
-
 /**
  * Clear elements from the given element.
  *

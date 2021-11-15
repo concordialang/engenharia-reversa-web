@@ -13,7 +13,7 @@ import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 
-const limitsOfVariants = 30;
+const limitOfVariants = 50;
 
 export class FeatureManager {
 	constructor(
@@ -105,7 +105,7 @@ export class FeatureManager {
 			);
 
 			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario, feature);
-		} while (feature.needNewVariants && feature.getVariantsCount() <= limitsOfVariants);
+		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 
 		observer.disconnect();
 

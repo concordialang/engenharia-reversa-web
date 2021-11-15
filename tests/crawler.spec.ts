@@ -31,6 +31,7 @@ import { getDictionary } from '../src/content-script/dictionary';
 import { ChromeMock } from './util/ChromeMock';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { Feature } from '../src/content-script/spec-analyser/Feature';
+import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 
 const chrome = new ChromeMock();
 
@@ -441,11 +442,12 @@ describe('Crawler', () => {
 
 		const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
+		const variantGeneratorUtil = new VariantGeneratorUtil(dictionary);
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
 			featureUtil,
-			dictionary
+			variantGeneratorUtil
 		);
 
 		const featureManager = new FeatureManager(

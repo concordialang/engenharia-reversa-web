@@ -23,6 +23,7 @@ import { TableRowInteractor } from '../src/content-script/crawler/TableRowIntera
 import { TableColumnInteractor } from '../src/content-script/crawler/TableColumnInteractor';
 import { getDictionary } from '../src/content-script/dictionary';
 import { Feature } from '../src/content-script/spec-analyser/Feature';
+import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -163,11 +164,12 @@ describe('Page Analyzer', () => {
 
 		const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
+		const variantGeneratorUtil = new VariantGeneratorUtil(dictionary);
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
 			featureUtil,
-			dictionary
+			variantGeneratorUtil
 		);
 
 		const featureManager = new FeatureManager(

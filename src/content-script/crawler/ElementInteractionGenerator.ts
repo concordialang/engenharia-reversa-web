@@ -30,7 +30,12 @@ export class ElementInteractionGenerator {
 	private generateInputInteraction(
 		input: HTMLInputElement
 	): ElementInteraction<HTMLInputElement> | null {
-		const type = input.getAttribute('type');
+		let type = input.getAttribute('type');
+
+		if (!type) {
+			type = HTMLInputType.Text;
+		}
+
 		if (type == HTMLInputType.Text) {
 			return this.generateTextInputInteraction(input);
 		} else if (type == HTMLInputType.Email) {

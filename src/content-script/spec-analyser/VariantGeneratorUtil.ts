@@ -1,4 +1,4 @@
-import { areSimilar } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 
 type InteractableElement =
@@ -8,6 +8,28 @@ type InteractableElement =
 	| HTMLButtonElement;
 
 export class VariantGeneratorUtil {
+	private analysisElement?: HTMLElement;
+	private analysisInputFields?;
+	private lastAnalysisInputField?: HTMLElement;
+
+	constructor(private dictionary) {}
+
+	public addAnalysisElement(analysisElement: HTMLElement) {
+		if (analysisElement) {
+			this.analysisElement = analysisElement;
+
+			this.updateAnalysisInputFields();
+		}
+	}
+
+	public updateAnalysisInputFields() {
+		if (this.analysisElement) {
+			this.analysisInputFields = Array.from(
+				this.analysisElement.querySelectorAll('input, textarea, select')
+			);
+		}
+	}
+
 	public isButton(elm: HTMLElement): boolean {
 		if (
 			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) ||
@@ -48,7 +70,19 @@ export class VariantGeneratorUtil {
 		return false;
 	}
 
-	public inEnabled(elm: InteractableElement): boolean {
+	public isInputField(elm: HTMLElement) {
+		if (
+			elm instanceof HTMLInputElement ||
+			elm instanceof HTMLSelectElement ||
+			elm instanceof HTMLTextAreaElement
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public isEnabled(elm: InteractableElement): boolean {
 		if (
 			elm.disabled ||
 			elm.hidden ||
@@ -71,8 +105,12 @@ export class VariantGeneratorUtil {
 		return true;
 	}
 
+	public areSimilar(text1: string, text2: string, options?): boolean {
+		return text1.toLowerCase().includes(text2.toLowerCase());
+	}
+
 	// checks whether the element is a final action button (buttons that characterize the final action of a variant)
-	public isFinalActionButton(elm: HTMLElement, dictionary): boolean {
+	public isFinalActionButton(elm: HTMLElement): boolean {
 		if (!this.isButton(elm)) {
 			return false;
 		}
@@ -85,8 +123,8 @@ export class VariantGeneratorUtil {
 			isFinalActionBtn = true;
 		} else {
 			const findFinalActionString = (btnProperty) => {
-				isFinalActionBtn = dictionary.stringsFinalActionButtons.some((str) => {
-					return areSimilar(btnProperty, str);
+				isFinalActionBtn = this.dictionary.stringsFinalActionButtons.some((str) => {
+					return this.areSimilar(btnProperty, str);
 				});
 			};
 
@@ -111,7 +149,7 @@ export class VariantGeneratorUtil {
 	}
 
 	// checks whether the element is a cancel button (buttons that characterize the final action of a variant)
-	public isCancelButton(elm: HTMLElement, dictionary): boolean {
+	public isCancelButton(elm: HTMLElement): boolean {
 		if (!this.isButton(elm)) {
 			return false;
 		}
@@ -121,8 +159,8 @@ export class VariantGeneratorUtil {
 		let isCancelBtn: boolean = false;
 
 		const findCancelString = (btnProperty) => {
-			isCancelBtn = dictionary.stringsCancelButtons.some((str) => {
-				return areSimilar(btnProperty, str);
+			isCancelBtn = this.dictionary.stringsCancelButtons.some((str) => {
+				return this.areSimilar(btnProperty, str);
 			});
 		};
 
@@ -168,5 +206,41 @@ export class VariantGeneratorUtil {
 		});
 
 		return anyInteracted;
+	}
+
+	// checks if it is the last input field to be parsed
+	public isLastFieldAnalyzed(elm: HTMLElement, lastInputFieldAnalized: boolean) {
+		if (!this.analysisElement || !this.analysisInputFields) {
+			return false;
+		}
+
+		if (!this.isInputField(elm)) {
+			return lastInputFieldAnalized;
+		}
+
+		const indexField = this.analysisInputFields.findIndex((field) => field === elm);
+
+		const nextFields = this.analysisInputFields.slice(indexField + 1);
+
+		if (nextFields.length > 0) {
+			return false;
+		}
+
+		this.lastAnalysisInputField = this.analysisInputFields[indexField] as HTMLElement;
+
+		return true;
+	}
+
+	// check if the last analysis field remains the same
+	public checksLastAnalysisField() {
+		if (!this.analysisElement || !this.lastAnalysisInputField) {
+			return false;
+		}
+
+		const lastField = Array.from(
+			this.analysisElement.querySelectorAll('input, textarea, select')
+		).reverse()[0];
+
+		return lastField === this.lastAnalysisInputField;
 	}
 }
