@@ -6,8 +6,6 @@ import { GraphStorage } from '../../src/content-script/storage/GraphStorage';
 
 import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
 import { ElementInteractionGraph } from '../../src/content-script/crawler/ElementInteractionGraph';
-import { InputInteractor } from '../../src/content-script/crawler/InputInteractor';
-import { ButtonInteractor } from '../../src/content-script/crawler/ButtonInteractor';
 import { ElementInteractionExecutor } from '../../src/content-script/crawler/ElementInteractionExecutor';
 import { BrowserContext } from '../../src/content-script/crawler/BrowserContext';
 import { ElementInteractionGenerator } from '../../src/content-script/crawler/ElementInteractionGenerator';
@@ -18,13 +16,12 @@ import { VariantSentencesGenerator } from '../../src/content-script/spec-analyse
 import { UIElementGenerator } from '../../src/content-script/spec-analyser/UIElementGenerator';
 import { ElementAnalysisStorage } from '../../src/content-script/storage/ElementAnalysisStorage';
 import { LocalObjectStorage } from '../../src/content-script/storage/LocalObjectStorage';
-import { TableRowInteractor } from '../../src/content-script/crawler/TableRowInteractor';
-import { TableColumnInteractor } from '../../src/content-script/crawler/TableColumnInteractor';
 import { Feature } from '../../src/content-script/spec-analyser/Feature';
 import { getDictionary } from '../../src/content-script/dictionary';
 import { Spec } from '../../src/content-script/spec-analyser/Spec';
 import { Variant } from '../../src/content-script/spec-analyser/Variant';
 import { VariantGeneratorUtil } from '../../src/content-script/spec-analyser/VariantGeneratorUtil';
+import { Interactor } from '../../src/content-script/crawler/Interactor';
 
 describe('VariantGenerator', () => {
 	const language = 'pt';
@@ -55,16 +52,10 @@ describe('VariantGenerator', () => {
 		interactionsGraphMutex
 	);
 
-	const inputInteractor = new InputInteractor();
-	const buttonInteractor = new ButtonInteractor(window);
-	const tableRowInteractor = new TableRowInteractor();
-	const tableColumnInteractor = new TableColumnInteractor();
+	const interactor = new Interactor(window);
 
 	const elementInteractionExecutor = new ElementInteractionExecutor(
-		inputInteractor,
-		buttonInteractor,
-		tableRowInteractor,
-		tableColumnInteractor,
+		interactor,
 		elementInteractionGraph
 	);
 

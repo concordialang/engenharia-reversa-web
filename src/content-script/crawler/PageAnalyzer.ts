@@ -49,9 +49,10 @@ export class PageAnalyzer {
 							ElementAnalysisStatus.Done
 						);
 						this.elementAnalysisStorage.set(analysis.getId(), analysis);
-					} else {
-						throw new Error("UIElement source element doesn't exist");
 					}
+					// else {
+					// 	throw new Error("UIElement source element doesn't exist");
+					// }
 				}
 			}
 			this.spec.addFeature(feature);

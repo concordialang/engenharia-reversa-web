@@ -4,7 +4,6 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { LocalObjectStorage } from '../storage/LocalObjectStorage';
 import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
@@ -108,7 +107,7 @@ export class FeatureManager {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
-				this.browserContext.getWindow().location.reload();
+				// this.browserContext.getWindow().location.reload();
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 
@@ -118,7 +117,7 @@ export class FeatureManager {
 			return null;
 		}
 
-		const uniqueUiElements: Array<UIElement> = await this.getUniqueUIElements(
+		const uniqueUiElements: UIElement[] = await this.getUniqueUIElements(
 			scenario.getVariants()
 		);
 		feature.setUiElements(uniqueUiElements);

@@ -1,11 +1,9 @@
 import { CommunicationChannel } from '../src/shared/comm/CommunicationChannel';
 import { BrowserContext } from '../src/content-script/crawler/BrowserContext';
-import { ButtonInteractor } from '../src/content-script/crawler/ButtonInteractor';
 import { Crawler } from '../src/content-script/crawler/Crawler';
 import { ElementInteractionExecutor } from '../src/content-script/crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../src/content-script/crawler/ElementInteractionGenerator';
 import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
-import { InputInteractor } from '../src/content-script/crawler/InputInteractor';
 import { PageAnalyzer } from '../src/content-script/crawler/PageAnalyzer';
 import { VisitedURLGraph } from '../src/content-script/crawler/VisitedURLGraph';
 import Mutex from '../src/content-script/mutex/Mutex';
@@ -25,13 +23,12 @@ import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnal
 import { IndexedDBObjectStorage } from '../src/content-script/storage/IndexedDBObjectStorage';
 import { LocalObjectStorage } from '../src/content-script/storage/LocalObjectStorage';
 import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
-import { TableRowInteractor } from '../src/content-script/crawler/TableRowInteractor';
-import { TableColumnInteractor } from '../src/content-script/crawler/TableColumnInteractor';
 import { getDictionary } from '../src/content-script/dictionary';
 import { ChromeMock } from './util/ChromeMock';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { Feature } from '../src/content-script/spec-analyser/Feature';
 import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
+import { Interactor } from '../src/content-script/crawler/Interactor';
 
 const chrome = new ChromeMock();
 
@@ -383,8 +380,6 @@ describe('Crawler', () => {
 
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
-		const inputInteractor = new InputInteractor();
-		const buttonInteractor = new ButtonInteractor(window);
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
 			window.localStorage,
 			ElementInteraction
@@ -420,14 +415,10 @@ describe('Crawler', () => {
 
 		const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
-		const tableRowInteractor = new TableRowInteractor();
-		const tableColumnInteractor = new TableColumnInteractor();
+		const interactor = new Interactor(window);
 
 		const elementInteractionExecutor = new ElementInteractionExecutor(
-			inputInteractor,
-			buttonInteractor,
-			tableRowInteractor,
-			tableColumnInteractor,
+			interactor,
 			elementInteractionGraph
 		);
 
