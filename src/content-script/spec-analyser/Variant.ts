@@ -9,6 +9,7 @@ export class Variant {
 	@Type(() => VariantSentence)
 	private sentences!: Array<VariantSentence>;
 
+	public lastAnalysisInputFieldFound = false;
 	public finalActionButtonFound = false;
 
 	constructor() {

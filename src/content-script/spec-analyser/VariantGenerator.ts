@@ -10,19 +10,12 @@ import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 
-type InteractableElement =
-	| HTMLInputElement
-	| HTMLSelectElement
-	| HTMLTextAreaElement
-	| HTMLButtonElement;
-const varUtil = new VariantGeneratorUtil();
-
 export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private featureUtil: FeatureUtil,
-		private dictionary
+		private varUtil: VariantGeneratorUtil
 	) {}
 
 	public async generate(
@@ -35,6 +28,8 @@ export class VariantGenerator {
 			newVariant: Variant
 		) => Promise<void>
 	): Promise<Variant | null> {
+		this.varUtil.addAnalysisElement(analysisElement);
+
 		let variant = this.featureUtil.createVariant(feature.getName(), feature.getVariantsCount());
 
 		let firstAnalyzeSentence = true;
@@ -43,7 +38,6 @@ export class VariantGenerator {
 			analysisElement,
 			feature.ignoreFormElements
 		);
-		// let startElement: HTMLElement = analysisElement.firstElementChild as HTMLElement;
 		if (!startElement) {
 			return null;
 		}
@@ -83,6 +77,17 @@ export class VariantGenerator {
 	): Promise<void> {
 		if (!elm) return;
 
+		const nextElement = async (nextElmToBeAnalyzed) => {
+			return this.analyze(
+				nextElmToBeAnalyzed as HTMLElement,
+				variant,
+				feature,
+				observer,
+				firstAnalyzeSentence,
+				redirectionCallback
+			);
+		};
+
 		const checksChildsRow = await this.treatTableRow(elm, variant, feature, observer);
 
 		// enters the children of the nodes tree
@@ -92,28 +97,19 @@ export class VariantGenerator {
 			checksChildsRow
 		);
 		if (validFirstChild) {
-			await this.analyze(
-				<HTMLElement>elm.firstElementChild,
-				variant,
-				feature,
-				observer,
-				firstAnalyzeSentence,
-				redirectionCallback
-			);
+			await nextElement(elm.firstElementChild);
 		}
 
 		// check if element will receive interaction
 		const validInteractableElm = this.checkValidInteractableElement(elm, variant, feature);
 		if (!validInteractableElm) {
+			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
+				elm,
+				variant.lastAnalysisInputFieldFound
+			);
+
 			if (elm.nextElementSibling) {
-				await this.analyze(
-					<HTMLElement>elm.nextElementSibling,
-					variant,
-					feature,
-					observer,
-					firstAnalyzeSentence,
-					redirectionCallback
-				);
+				await nextElement(elm.nextElementSibling);
 			}
 			return;
 		}
@@ -121,31 +117,21 @@ export class VariantGenerator {
 		// create interaction for the element
 		const interaction = await this.generateInteraction(elm, variant, feature);
 		if (!interaction) {
+			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
+				elm,
+				variant.lastAnalysisInputFieldFound
+			);
+
 			if (elm.nextElementSibling) {
-				await this.analyze(
-					<HTMLElement>elm.nextElementSibling,
-					variant,
-					feature,
-					observer,
-					firstAnalyzeSentence,
-					redirectionCallback
-				);
+				await nextElement(elm.nextElementSibling);
 			}
 			return;
 		}
 
-		const _this = this;
-
 		const callback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>
 		) => {
-			await _this.createVariantSentence(
-				elm,
-				variant,
-				feature,
-				observer,
-				firstAnalyzeSentence
-			);
+			await this.createVariantSentence(elm, variant, feature, observer, firstAnalyzeSentence);
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant);
 			}
@@ -153,17 +139,14 @@ export class VariantGenerator {
 
 		// interacts with the element
 		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
-
 		if (!result) {
+			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
+				elm,
+				variant.lastAnalysisInputFieldFound
+			);
+
 			if (elm.nextElementSibling) {
-				await this.analyze(
-					<HTMLElement>elm.nextElementSibling,
-					variant,
-					feature,
-					observer,
-					firstAnalyzeSentence,
-					redirectionCallback
-				);
+				await nextElement(elm.nextElementSibling);
 			}
 			return;
 		}
@@ -178,14 +161,7 @@ export class VariantGenerator {
 
 		if (!variantSentence) {
 			if (elm.nextElementSibling) {
-				await this.analyze(
-					<HTMLElement>elm.nextElementSibling,
-					variant,
-					feature,
-					observer,
-					firstAnalyzeSentence,
-					redirectionCallback
-				);
+				await nextElement(elm.nextElementSibling);
 			}
 			return;
 		}
@@ -194,15 +170,13 @@ export class VariantGenerator {
 			firstAnalyzeSentence = false;
 		}
 
+		variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
+			elm,
+			variant.lastAnalysisInputFieldFound
+		);
+
 		if (elm.nextElementSibling) {
-			await this.analyze(
-				<HTMLElement>elm.nextElementSibling,
-				variant,
-				feature,
-				observer,
-				firstAnalyzeSentence,
-				redirectionCallback
-			);
+			await nextElement(elm.nextElementSibling);
 		}
 	}
 
@@ -414,7 +388,7 @@ export class VariantGenerator {
 
 	// check if the element is ready to receive interaction
 	private checkValidInteractableElement(elm: HTMLElement, variant: Variant, feature: Feature) {
-		if (!varUtil.isInteractable(elm)) {
+		if (!this.varUtil.isInteractable(elm)) {
 			return false;
 		}
 
@@ -422,11 +396,23 @@ export class VariantGenerator {
 			return false;
 		}
 
-		if (!varUtil.inEnabled(elm as InteractableElement)) {
+		if (
+			!this.varUtil.isEnabled(
+				elm as
+					| HTMLInputElement
+					| HTMLSelectElement
+					| HTMLTextAreaElement
+					| HTMLButtonElement
+			)
+		) {
 			return false;
 		}
 
-		if (!varUtil.isButton(elm) && !varUtil.isCheckBox(elm) && !varUtil.isRadionButton(elm)) {
+		if (
+			!this.varUtil.isButton(elm) &&
+			!this.varUtil.isCheckBox(elm) &&
+			!this.varUtil.isRadionButton(elm)
+		) {
 			return true;
 		}
 
@@ -449,10 +435,10 @@ export class VariantGenerator {
 
 		if (
 			!wasInteracted &&
-			varUtil.isButton(elm) &&
+			this.varUtil.isButton(elm) &&
 			(variant.finalActionButtonFound || feature.analysesOnlyCancelBtns)
 		) {
-			isCancelBtn = varUtil.isCancelButton(elm, this.dictionary);
+			isCancelBtn = this.varUtil.isCancelButton(elm);
 
 			this.saveBtnAfterFinalActionButton(feature, xpathElement, isCancelBtn);
 		}
@@ -469,7 +455,11 @@ export class VariantGenerator {
 			return false;
 		}
 
-		const isFinalActionBtn = varUtil.isFinalActionButton(elm, this.dictionary);
+		let isFinalActionBtn = false;
+		if (variant.lastAnalysisInputFieldFound) {
+			isFinalActionBtn = this.varUtil.isFinalActionButton(elm);
+		}
+
 		if (isFinalActionBtn) {
 			variant.finalActionButtonFound = true;
 		}
@@ -482,8 +472,8 @@ export class VariantGenerator {
 			return false;
 		}
 
-		if (varUtil.isRadionButton(elm)) {
-			const anyOfGroupHasInteracted = varUtil.anyOfRadioofGroupHasInteracted(
+		if (this.varUtil.isRadionButton(elm)) {
+			const anyOfGroupHasInteracted = this.varUtil.anyOfRadioofGroupHasInteracted(
 				feature,
 				variant.getName(),
 				elm as HTMLInputElement
@@ -493,8 +483,8 @@ export class VariantGenerator {
 			}
 		}
 
-		if (varUtil.isButton(elm)) {
-			const anyButtonHasInteracted = varUtil.anyButtonHasInteracted(
+		if (this.varUtil.isButton(elm)) {
+			const anyButtonHasInteracted = this.varUtil.anyButtonHasInteracted(
 				feature,
 				variant.getName()
 			);
@@ -528,10 +518,10 @@ export class VariantGenerator {
 				elmType: elm.nodeName.toLowerCase(),
 			};
 
-			if (varUtil.isRadionButton(elm) && (elm as HTMLInputElement).name) {
+			if (this.varUtil.isRadionButton(elm) && (elm as HTMLInputElement).name) {
 				interactedElm.radioGroupName = (elm as HTMLInputElement).name;
 				interactedElm.elmType = 'radio';
-			} else if (varUtil.isButton(interactedElm)) {
+			} else if (this.varUtil.isButton(interactedElm)) {
 				interactedElm.elmType = 'button';
 			}
 
@@ -553,6 +543,12 @@ export class VariantGenerator {
 				if (mutationSentence) {
 					variant.setVariantsSentences(mutationSentence);
 				}
+			}
+
+			this.varUtil.updateAnalysisInputFields();
+
+			if (variant.lastAnalysisInputFieldFound) {
+				variant.lastAnalysisInputFieldFound = this.varUtil.checksLastAnalysisField();
 			}
 		}
 

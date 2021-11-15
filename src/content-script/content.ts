@@ -15,7 +15,6 @@ import { InputInteractor } from './crawler/InputInteractor';
 import { TableRowInteractor } from './crawler/TableRowInteractor';
 import { TableColumnInteractor } from './crawler/TableColumnInteractor';
 import { ButtonInteractor } from './crawler/ButtonInteractor';
-import { ElementInteraction } from './crawler/ElementInteraction';
 import { getDictionary } from './dictionary';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
@@ -29,6 +28,7 @@ import { Command } from '../shared/comm/Command';
 import { AppEvent } from '../shared/comm/AppEvent';
 import { ElementInteractionStorage } from '../content-script/storage/ElementInteractionStorage';
 import { Feature } from './spec-analyser/Feature';
+import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -89,11 +89,12 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const featureUtil = new FeatureUtil(variantSentencesGenerator, dictionary);
 
+	const variantGeneratorUtil = new VariantGeneratorUtil(dictionary);
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
 		featureUtil,
-		dictionary
+		variantGeneratorUtil
 	);
 
 	const featureManager = new FeatureManager(

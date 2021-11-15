@@ -24,6 +24,7 @@ import { Feature } from '../../src/content-script/spec-analyser/Feature';
 import { getDictionary } from '../../src/content-script/dictionary';
 import { Spec } from '../../src/content-script/spec-analyser/Spec';
 import { Variant } from '../../src/content-script/spec-analyser/Variant';
+import { VariantGeneratorUtil } from '../../src/content-script/spec-analyser/VariantGeneratorUtil';
 
 describe('VariantGenerator', () => {
 	const language = 'pt';
@@ -71,11 +72,12 @@ describe('VariantGenerator', () => {
 	const browserContext = new BrowserContext(pageUrl, window);
 	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
+	const variantGeneratorUtil = new VariantGeneratorUtil(dictionary);
 	const variantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
 		featureUtil,
-		dictionary
+		variantGeneratorUtil
 	);
 
 	afterEach(() => {
