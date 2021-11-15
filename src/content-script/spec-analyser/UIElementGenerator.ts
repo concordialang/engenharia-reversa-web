@@ -103,8 +103,7 @@ export class UIElementGenerator {
 		uiElm.setName(this.generateNameForButton(elm, uiElm.getId()));
 
 		// type
-		let type = elm.type ? elm.type : 'button';
-		uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, type));
+		uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, 'button'));
 
 		return uiElm;
 	}

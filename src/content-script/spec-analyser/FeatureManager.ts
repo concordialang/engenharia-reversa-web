@@ -13,6 +13,8 @@ import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 
+const limitsOfVariants = 30;
+
 export class FeatureManager {
 	constructor(
 		private variantGenerator: VariantGenerator,
@@ -47,13 +49,11 @@ export class FeatureManager {
 			analysisElement,
 			feature.ignoreFormElements
 		);
-		scenario.setMaxVariantCount(maxVariantCount);
+		feature.setMaxVariantCount(maxVariantCount);
 
 		let observer: MutationObserverManager = new MutationObserverManager(
 			analysisElement.ownerDocument.body
 		);
-
-		const _this = this;
 
 		const callback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
@@ -66,9 +66,12 @@ export class FeatureManager {
 			);
 			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
-			this.addVariantToScenario(newVariant, scenario);
+			// @ts-ignore
+			this.addVariantToScenario(newVariant, scenario, feature);
 
-			const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
+			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+				scenario.getVariants()
+			);
 			feature?.setUiElements(uiElements);
 
 			if (redirectionCallback) {
@@ -89,6 +92,7 @@ export class FeatureManager {
 		}
 
 		let variantAnalyzed: Variant | null;
+
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
@@ -100,33 +104,58 @@ export class FeatureManager {
 				pathsOfElementsToIgnore
 			);
 
-			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario);
-		} while (scenario.needNewVariants);
+			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario, feature);
+		} while (feature.needNewVariants && feature.getVariantsCount() <= limitsOfVariants);
 
 		observer.disconnect();
 
-		if (scenario.getVariantsCount() == 0) {
+		if (feature.getVariantsCount() == 0) {
 			return null;
 		}
 
-		const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
-		feature.setUiElements(uiElements);
+		const uniqueUiElements: Array<UIElement> = await this.getUniqueUIElements(
+			scenario.getVariants()
+		);
+		feature.setUiElements(uniqueUiElements);
 
 		return feature;
 	}
 
-	private addVariantToScenario(variantAnalyzed: Variant, scenario: Scenario): void {
+	private addVariantToScenario(
+		variantAnalyzed: Variant,
+		scenario: Scenario,
+		feature: Feature
+	): void {
 		if (variantAnalyzed && variantAnalyzed.isValid()) {
 			scenario.addVariant(variantAnalyzed);
+
+			// if true, starts analyzing the buttons after the final action button if the variant just found it
+			if (!feature.analysesBtnsAfterFinalActionBtn) {
+				feature.analysesBtnsAfterFinalActionBtn = this.checksIfContainsOnlyneFinalActionButton(
+					variantAnalyzed
+				);
+			}
+
+			if (feature.analysesBtnsAfterFinalActionBtn) {
+				// if true, starts analyzing only the cancel buttons
+				feature.analysesOnlyCancelBtns = this.checksIfAnalysesOnlyCancelBtns(
+					feature.btnsAfterFinalActionBtn,
+					feature.interactedElements
+				);
+			}
 		} else {
-			scenario.setMaxVariantCount(scenario.getMaxVariantsCount() - 1);
+			feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
 		}
 
-		scenario.needNewVariants =
-			scenario.getVariantsCount() < scenario.getMaxVariantsCount() ? true : false;
+		this.checskNeedNewVariant(feature);
 	}
 
-	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {
+	private checskNeedNewVariant(feature: Feature): void {
+		feature.needNewVariants =
+			feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
+	}
+
+	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {
@@ -250,5 +279,53 @@ export class FeatureManager {
 		}
 
 		return variantCountByButton;
+	}
+
+	/**
+	 * checks that the variant only contains a button element and it is the final action button
+	 */
+	private checksIfContainsOnlyneFinalActionButton(variant: Variant): boolean {
+		if (!variant.finalActionButtonFound) {
+			return false;
+		}
+
+		const analyzedBtnsCount = variant.getNumberOfAnalyzedButtons();
+
+		if (analyzedBtnsCount >= 2 || analyzedBtnsCount <= 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * checks whether only cancel buttons should be analyzed
+	 * this happens when there are only cancel buttons to be analyzed
+	 */
+	public checksIfAnalysesOnlyCancelBtns(btnsAfterFinalActionBtn, interactedElements): boolean {
+		if (btnsAfterFinalActionBtn.length <= 0) {
+			return false;
+		}
+
+		// checks if there is any button after the final action button that is not a cancel button and has not been analyzed
+		const anyOtherBtn = btnsAfterFinalActionBtn.some((btn) => {
+			if (btn.isCancelButton) {
+				return false;
+			}
+
+			const analysed = interactedElements.some(
+				(interactedElm) => interactedElm.xpath === btn.xpath
+			);
+
+			if (!analysed) {
+				return true;
+			}
+		});
+
+		if (anyOtherBtn) {
+			return false;
+		}
+
+		return true;
 	}
 }

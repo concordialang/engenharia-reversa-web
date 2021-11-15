@@ -49,4 +49,12 @@ export class Variant {
 			);
 		});
 	}
+
+	public getNumberOfAnalyzedButtons() {
+		const btnSentences = this.sentences.filter(
+			(sentence) => sentence.uiElement?.getType() === 'button'
+		);
+
+		return btnSentences.length;
+	}
 }
