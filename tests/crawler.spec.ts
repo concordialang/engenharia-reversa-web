@@ -454,7 +454,8 @@ describe('Crawler', () => {
 			variantGenerator,
 			featureUtil,
 			analyzedElementStorage,
-			spec
+			spec,
+			browserContext
 		);
 
 		const pageAnalyzer = new PageAnalyzer(

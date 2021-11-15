@@ -176,7 +176,8 @@ describe('Page Analyzer', () => {
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
-			spec
+			spec,
+			browserContext
 		);
 
 		const pageAnalyzer = new PageAnalyzer(

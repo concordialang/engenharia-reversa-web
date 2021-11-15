@@ -1,3 +1,4 @@
+import { BrowserContext } from '../crawler/BrowserContext';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
@@ -20,7 +21,8 @@ export class FeatureManager {
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private spec: Spec
+		private spec: Spec,
+		private browserContext: BrowserContext
 	) {}
 
 	public async generateFeature(
@@ -104,7 +106,10 @@ export class FeatureManager {
 				pathsOfElementsToIgnore
 			);
 
-			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario, feature);
+			if (variantAnalyzed) {
+				this.addVariantToScenario(variantAnalyzed, scenario, feature);
+				this.browserContext.getWindow().location.reload();
+			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 
 		observer.disconnect();

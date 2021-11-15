@@ -101,7 +101,8 @@ getTabId(communicationChannel).then((tabId) => {
 		variantGenerator,
 		featureUtil,
 		elementAnalysisStorage,
-		spec
+		spec,
+		browserContext
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
