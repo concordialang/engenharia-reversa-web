@@ -8,23 +8,61 @@ import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
 import { Feature } from '../spec-analyser/Feature';
+import { Variant } from '../spec-analyser/Variant';
+import { ObjectStorage } from '../storage/ObjectStorage';
+import { ElementInteractionExecutor } from './ElementInteractionExecutor';
 
 export class PageAnalyzer {
-	private redirectCallback: (feature: Feature) => Promise<void>;
+	private redirectCallback: (
+		interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+		variant: Variant,
+		feature: Feature
+	) => Promise<void>;
 
 	constructor(
 		private featureManager: FeatureManager,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec,
-		private browserContext: BrowserContext
+		private browserContext: BrowserContext,
+		private featureStorage: ObjectStorage<Feature>,
+		private elementInteractionExecutor: ElementInteractionExecutor
 	) {
-		const _this = this;
-		this.redirectCallback = async (feature: Feature) => {
-			_this.spec.addFeature(feature);
+		this.redirectCallback = async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			variant: Variant,
+			feature: Feature
+		) => {
+			const analysisFinished = await this.isAnalysisFinished(
+				interactionThatTriggeredRedirect,
+				variant,
+				feature
+			);
+
+			if (analysisFinished) {
+				const uiElements = feature.getUiElements();
+				for (let uiElement of uiElements) {
+					const element = <HTMLElement>uiElement.getSourceElement();
+					if (element) {
+						const analysis = new ElementAnalysis(
+							element,
+							this.browserContext.getUrl(),
+							ElementAnalysisStatus.Done
+						);
+						this.elementAnalysisStorage.set(analysis.getId(), analysis);
+					} else {
+						throw new Error("UIElement source element doesn't exist");
+					}
+				}
+			}
+			this.spec.addFeature(feature);
 		};
 	}
 
-	public async analyze(url: URL, contextElement: HTMLElement): Promise<void> {
+	public async analyze(
+		url: URL,
+		contextElement: HTMLElement,
+		previousInteractions: ElementInteraction<HTMLElement>[] = []
+	): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
@@ -35,13 +73,27 @@ export class PageAnalyzer {
 				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
 				analisar novamente depois
 				*/
+
+				let feature: Feature | string | null = null;
+				const lastInteraction = previousInteractions[previousInteractions.length - 1];
+				if (lastInteraction) {
+					feature = lastInteraction.getFeature();
+					if (typeof feature === 'string') {
+						feature = await this.featureStorage.get(feature);
+					}
+				}
+
+				for (let interaction of previousInteractions) {
+					await this.elementInteractionExecutor.execute(interaction, undefined, false);
+				}
+
 				const elementAnalysis = new ElementAnalysis(
 					contextElement,
 					this.browserContext.getUrl(),
 					ElementAnalysisStatus.InProgress
 				);
 				this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-				await this.analyseFormElements(url, contextElement);
+				await this.analyseFormElements(url, contextElement, feature, previousInteractions);
 
 				if (contextElement.nodeName !== HTMLElementType.FORM) {
 					// generate feature for elements outside forms
@@ -49,7 +101,9 @@ export class PageAnalyzer {
 						contextElement,
 						url,
 						true,
-						this.redirectCallback
+						this.redirectCallback,
+						feature,
+						previousInteractions
 					);
 
 					if (featureOuterFormElements) {
@@ -60,7 +114,12 @@ export class PageAnalyzer {
 		}
 	}
 
-	private async analyseFormElements(url: URL, analysisElement: HTMLElement) {
+	private async analyseFormElements(
+		url: URL,
+		analysisElement: HTMLElement,
+		feature: Feature | null = null,
+		previousInteractions: ElementInteraction<HTMLElement>[] = []
+	) {
 		const formElements: NodeListOf<Element> | HTMLElement[] =
 			analysisElement.nodeName === HTMLElementType.FORM
 				? [analysisElement]
@@ -81,11 +140,13 @@ export class PageAnalyzer {
 					)) == ElementAnalysisStatus.Done;
 
 				if (!isElementAnalyzed) {
-					const feature = await this.featureManager.generateFeature(
+					feature = await this.featureManager.generateFeature(
 						formElement as HTMLElement,
 						url,
 						false,
-						this.redirectCallback
+						this.redirectCallback,
+						feature,
+						previousInteractions
 					);
 
 					if (feature) {
@@ -94,5 +155,17 @@ export class PageAnalyzer {
 				}
 			}
 		}
+	}
+
+	private async isAnalysisFinished(
+		currentInteraction: ElementInteraction<HTMLElement>,
+		variant: Variant,
+		feature: Feature
+	): Promise<boolean> {
+		const element = currentInteraction.getElement();
+		if (element.getAttribute('type') !== 'submit') {
+			return false;
+		}
+		return true;
 	}
 }

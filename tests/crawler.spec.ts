@@ -459,7 +459,9 @@ describe('Crawler', () => {
 			featureManager,
 			analyzedElementStorage,
 			spec,
-			browserContext
+			browserContext,
+			featureStorage,
+			elementInteractionExecutor
 		);
 
 		const crawler: Crawler = new Crawler(

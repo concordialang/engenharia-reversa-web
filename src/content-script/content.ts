@@ -43,7 +43,7 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
-	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage);
+	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
 
 	const inputInteractor = new InputInteractor();
 	const tableRowInteractor = new TableRowInteractor();
@@ -107,7 +107,9 @@ getTabId(communicationChannel).then((tabId) => {
 		featureManager,
 		elementAnalysisStorage,
 		spec,
-		browserContext
+		browserContext,
+		featureStorage,
+		elementInteractionExecutor
 	);
 
 	const crawler: Crawler = new Crawler(

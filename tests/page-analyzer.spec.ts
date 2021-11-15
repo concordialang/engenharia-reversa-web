@@ -181,7 +181,9 @@ describe('Page Analyzer', () => {
 			featureManager,
 			elementAnalysisStorage,
 			spec,
-			browserContext
+			browserContext,
+			new LocalObjectStorage<Feature>(window.localStorage, Feature),
+			elementInteractionExecutor
 		);
 		return pageAnalyzer;
 	}

@@ -34,14 +34,15 @@ export class VariantGenerator {
 		redirectionCallback?: (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
-		) => Promise<void>
+		) => Promise<void>,
+		variant: Variant | null = null,
+		pathsOfElementsToIgnore: string[] = []
 	): Promise<Variant | null> {
 		const scenario = feature.getGeneralScenario();
 
-		let variant = this.featureUtil.createVariant(
-			feature.getName(),
-			scenario.getVariantsCount()
-		);
+		variant =
+			variant ??
+			this.featureUtil.createVariant(feature.getName(), scenario.getVariantsCount());
 
 		let firstAnalyzeSentence = true;
 
@@ -65,7 +66,8 @@ export class VariantGenerator {
 			feature,
 			observer,
 			firstAnalyzeSentence,
-			redirectionCallback
+			redirectionCallback,
+			pathsOfElementsToIgnore
 		);
 
 		const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(feature.getName());
@@ -85,9 +87,25 @@ export class VariantGenerator {
 		redirectionCallback?: (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
-		) => Promise<void>
+		) => Promise<void>,
+		pathsOfElementsToIgnore: string[] = []
 	): Promise<void> {
 		if (!elm) return;
+
+		if (pathsOfElementsToIgnore.includes(getPathTo(elm))) {
+			if (elm.nextElementSibling) {
+				await this.analyze(
+					<HTMLElement>elm.nextElementSibling,
+					variant,
+					feature,
+					observer,
+					firstAnalyzeSentence,
+					redirectionCallback,
+					pathsOfElementsToIgnore
+				);
+			}
+			return;
+		}
 
 		const checksChildsRow = await this.treatTableRow(elm, variant, feature, observer);
 
@@ -104,7 +122,8 @@ export class VariantGenerator {
 				feature,
 				observer,
 				firstAnalyzeSentence,
-				redirectionCallback
+				redirectionCallback,
+				pathsOfElementsToIgnore
 			);
 		}
 
@@ -118,7 +137,8 @@ export class VariantGenerator {
 					feature,
 					observer,
 					firstAnalyzeSentence,
-					redirectionCallback
+					redirectionCallback,
+					pathsOfElementsToIgnore
 				);
 			}
 			return;
@@ -134,7 +154,8 @@ export class VariantGenerator {
 					feature,
 					observer,
 					firstAnalyzeSentence,
-					redirectionCallback
+					redirectionCallback,
+					pathsOfElementsToIgnore
 				);
 			}
 			return;
@@ -168,7 +189,8 @@ export class VariantGenerator {
 					feature,
 					observer,
 					firstAnalyzeSentence,
-					redirectionCallback
+					redirectionCallback,
+					pathsOfElementsToIgnore
 				);
 			}
 			return;
@@ -190,7 +212,8 @@ export class VariantGenerator {
 					feature,
 					observer,
 					firstAnalyzeSentence,
-					redirectionCallback
+					redirectionCallback,
+					pathsOfElementsToIgnore
 				);
 			}
 			return;
@@ -207,7 +230,8 @@ export class VariantGenerator {
 				feature,
 				observer,
 				firstAnalyzeSentence,
-				redirectionCallback
+				redirectionCallback,
+				pathsOfElementsToIgnore
 			);
 		}
 	}

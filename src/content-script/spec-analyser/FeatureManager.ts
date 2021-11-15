@@ -4,6 +4,7 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { LocalObjectStorage } from '../storage/LocalObjectStorage';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Scenario } from './Scenario';
@@ -24,12 +25,20 @@ export class FeatureManager {
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
-		redirectionCallback?: (newFeature: Feature) => Promise<void>
+		redirectionCallback?: (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			variant: Variant,
+			feature: Feature
+		) => Promise<void>,
+		feature: Feature | null = null,
+		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
-		const feature = this.featureUtil.createFeatureFromElement(
-			analysisElement,
-			this.spec.featureCount()
-		);
+		if (!feature) {
+			feature = this.featureUtil.createFeatureFromElement(
+				analysisElement,
+				this.spec.featureCount()
+			);
+		}
 
 		feature.ignoreFormElements = ignoreFormElements;
 
@@ -60,12 +69,24 @@ export class FeatureManager {
 			this.addVariantToScenario(newVariant, scenario);
 
 			const uiElements: Array<UIElement> = this.getUniqueUIElements(scenario.getVariants());
-			feature.setUiElements(uiElements);
+			feature?.setUiElements(uiElements);
 
 			if (redirectionCallback) {
-				await redirectionCallback(feature);
+				// Typescrypt bugou em uma verificação abaixo
+				// @ts-ignore
+				await redirectionCallback(interactionThatTriggeredRedirect, newVariant, feature);
 			}
 		};
+
+		let pathsOfElementsToIgnore: string[] = [];
+		let variant: Variant | null = null;
+		if (previousInteractions.length > 0) {
+			pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
+				return getPathTo(interaction.getElement());
+			});
+			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+			variant = lastInteraction.getVariant();
+		}
 
 		let variantAnalyzed: Variant | null;
 		do {
@@ -74,7 +95,9 @@ export class FeatureManager {
 				url,
 				observer,
 				feature,
-				callback
+				callback,
+				variant,
+				pathsOfElementsToIgnore
 			);
 
 			if (variantAnalyzed) this.addVariantToScenario(variantAnalyzed, scenario);

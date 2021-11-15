@@ -45,6 +45,19 @@ export class Crawler {
 			this.elementInteractionGraph
 		);
 
+		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
+
+		if (lastUnanalyzed) {
+			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
+			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
+				lastUnanalyzed,
+				false,
+				urlCriteria,
+				false
+			);
+			previousInteractions = previousInteractions.reverse();
+		}
+
 		const previousDocument = await this.getPreviousDocument();
 		const analysisElement = await this.getAnalysisElement(document, previousDocument);
 
@@ -69,7 +82,11 @@ export class Crawler {
 			}
 		}
 
-		await this.pageAnalyzer.analyze(this.browserContext.getUrl(), analysisElement);
+		await this.pageAnalyzer.analyze(
+			this.browserContext.getUrl(),
+			analysisElement,
+			previousInteractions
+		);
 
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (

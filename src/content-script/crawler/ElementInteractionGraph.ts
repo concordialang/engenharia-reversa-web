@@ -84,21 +84,22 @@ export class ElementInteractionGraph {
 			throw new Error('Error while fetching next interaction');
 		}
 
-		let satisfiesCriteria = true;
+		const satisfiesCriteria = await this.satisfiesCriteria(
+			nextInteraction,
+			urlCriteria,
+			isInteractionAnalyzed
+		);
 
-		if (urlCriteria) {
-			satisfiesCriteria = this.interactionSatisfiesUrlCriteria(nextInteraction, urlCriteria);
-		}
-
-		if (satisfiesCriteria && typeof isInteractionAnalyzed === 'boolean') {
-			satisfiesCriteria = await this.interactionSatisfiesAnalysisCriteria(
-				nextInteraction,
-				isInteractionAnalyzed
-			);
-		}
-
-		if ((searchForClosest && satisfiesCriteria) || (!searchForClosest && !satisfiesCriteria)) {
+		if (searchForClosest && satisfiesCriteria) {
 			return [currentInteraction, nextInteraction];
+		} else if (!searchForClosest && !satisfiesCriteria) {
+			if (
+				await this.satisfiesCriteria(currentInteraction, urlCriteria, isInteractionAnalyzed)
+			) {
+				return [currentInteraction, nextInteraction];
+			} else {
+				return [];
+			}
 		}
 
 		const nextInteractionResult = await this.pathToInteraction(
@@ -114,6 +115,27 @@ export class ElementInteractionGraph {
 		}
 
 		return [currentInteraction].concat(nextInteractionResult);
+	}
+
+	private async satisfiesCriteria(
+		interaction: ElementInteraction<HTMLElement>,
+		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
+		isInteractionAnalyzed: boolean | null = null
+	): Promise<boolean> {
+		let satisfiesCriteria = true;
+
+		if (urlCriteria) {
+			satisfiesCriteria = this.interactionSatisfiesUrlCriteria(interaction, urlCriteria);
+		}
+
+		if (satisfiesCriteria && typeof isInteractionAnalyzed === 'boolean') {
+			satisfiesCriteria = await this.interactionSatisfiesAnalysisCriteria(
+				interaction,
+				isInteractionAnalyzed
+			);
+		}
+
+		return satisfiesCriteria;
 	}
 
 	private interactionSatisfiesUrlCriteria(
