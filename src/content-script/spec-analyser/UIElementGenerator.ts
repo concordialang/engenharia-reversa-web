@@ -46,6 +46,10 @@ export class UIElementGenerator {
 		// name
 		uiElm.setName(this.generateName(elm, uiElm.getId()));
 
+		if (elm instanceof HTMLSelectElement && elm.options.length > 0) {
+			uiElm.setValue(Array.from(elm.options).reverse()[0].value); // set last option value
+		}
+
 		// type
 		let type = this.generateType(elm);
 		if (type) {

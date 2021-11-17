@@ -57,7 +57,8 @@ export class PageAnalyzer {
 				);
 				this.elementAnalysisStorage.set(analysis.getId(), analysis);
 			} else {
-				throw new Error("UIElement source element doesn't exist");
+				// FIXME Descomentar essa parte
+				//throw new Error("UIElement source element doesn't exist");
 			}
 		}
 	}

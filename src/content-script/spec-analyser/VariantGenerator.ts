@@ -205,6 +205,7 @@ export class VariantGenerator {
 		}
 		interaction.setVariant(variant);
 		interaction.setFeature(feature);
+
 		return interaction;
 	}
 

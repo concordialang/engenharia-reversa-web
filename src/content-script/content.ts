@@ -11,10 +11,6 @@ import { LocalObjectStorage } from './storage/LocalObjectStorage';
 import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
 import { ChromeCommunicationChannel } from '../shared/comm/ChromeCommunicationChannel';
 import { CommunicationChannel } from '../shared/comm/CommunicationChannel';
-import { InputInteractor } from './crawler/InputInteractor';
-import { TableRowInteractor } from './crawler/TableRowInteractor';
-import { TableColumnInteractor } from './crawler/TableColumnInteractor';
-import { ButtonInteractor } from './crawler/ButtonInteractor';
 import { getDictionary } from './dictionary';
 import { ElementInteractionGraph } from './crawler/ElementInteractionGraph';
 import { ElementInteractionExecutor } from './crawler/ElementInteractionExecutor';
@@ -29,6 +25,7 @@ import { AppEvent } from '../shared/comm/AppEvent';
 import { ElementInteractionStorage } from '../content-script/storage/ElementInteractionStorage';
 import { Feature } from './spec-analyser/Feature';
 import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
+import { Interactor } from './crawler/Interactor';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -45,10 +42,6 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
 
-	const inputInteractor = new InputInteractor();
-	const tableRowInteractor = new TableRowInteractor();
-	const tableColumnInteractor = new TableColumnInteractor();
-	const buttonInteractor = new ButtonInteractor(window);
 	const elementInteractionStorage = new ElementInteractionStorage(
 		window.localStorage,
 		featureStorage
@@ -70,11 +63,10 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
 
+	const interactor = new Interactor(window);
+
 	const elementInteractionExecutor = new ElementInteractionExecutor(
-		inputInteractor,
-		buttonInteractor,
-		tableRowInteractor,
-		tableColumnInteractor,
+		interactor,
 		elementInteractionGraph
 	);
 

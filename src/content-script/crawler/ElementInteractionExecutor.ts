@@ -1,21 +1,15 @@
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { sleep } from '../util';
-import { ButtonInteractor } from './ButtonInteractor';
 import { ElementInteraction } from './ElementInteraction';
-import { InputInteractor } from './InputInteractor';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
-import { TableRowInteractor } from './TableRowInteractor';
-import { TableColumnInteractor } from './TableColumnInteractor';
+import { Interactor } from './Interactor';
 
 // TODO: Refatorar essa classe
 export class ElementInteractionExecutor {
 	constructor(
-		private inputInteractor: InputInteractor,
-		private buttonInteractor: ButtonInteractor,
-		private tableRowInteractor: TableRowInteractor,
-		private tableColumnInteractor: TableColumnInteractor,
+		private interactor: Interactor,
 		private elementInteractionGraph: ElementInteractionGraph
 	) {}
 
@@ -33,28 +27,35 @@ export class ElementInteractionExecutor {
 		if (type == HTMLElementType.INPUT) {
 			const inputType = element.getAttribute('type');
 			if (inputType == HTMLInputType.Submit) {
-				result = await this.buttonInteractor.execute(
+				result = await this.interactor.executeButton(
 					<ElementInteraction<HTMLButtonElement>>interaction,
 					redirectionCallback
 				);
 			} else {
-				result = await this.inputInteractor.execute(
-					<ElementInteraction<HTMLInputElement>>interaction,
-					redirectionCallback
+				result = await this.interactor.executeInput(
+					<ElementInteraction<HTMLInputElement>>interaction
 				);
 			}
 		} else if (type == HTMLElementType.BUTTON) {
-			result = await this.buttonInteractor.execute(
+			result = await this.interactor.executeButton(
 				<ElementInteraction<HTMLButtonElement>>interaction,
 				redirectionCallback
 			);
 		} else if (type == HTMLElementType.TR) {
-			result = await this.tableRowInteractor.execute(
+			result = await this.interactor.executeTableRow(
 				<ElementInteraction<HTMLTableRowElement>>interaction
 			);
 		} else if (type == HTMLElementType.TH) {
-			result = await this.tableColumnInteractor.execute(
+			result = await this.interactor.executeTableColumn(
 				<ElementInteraction<HTMLTableColElement>>interaction
+			);
+		} else if (type == HTMLElementType.TEXTAREA) {
+			result = await this.interactor.executeTextarea(
+				<ElementInteraction<HTMLTextAreaElement>>interaction
+			);
+		} else if (type == HTMLElementType.SELECT) {
+			result = await this.interactor.executeSelect(
+				<ElementInteraction<HTMLSelectElement>>interaction
 			);
 		}
 
