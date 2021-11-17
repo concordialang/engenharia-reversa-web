@@ -33,29 +33,33 @@ export class PageAnalyzer {
 			feature: Feature
 		) => {
 			const analysisFinished = await this.isAnalysisFinished(
-				interactionThatTriggeredRedirect,
+				feature,
 				variant,
-				feature
+				interactionThatTriggeredRedirect
 			);
 
 			if (analysisFinished) {
-				const uiElements = feature.getUiElements();
-				for (let uiElement of uiElements) {
-					const element = <HTMLElement>uiElement.getSourceElement();
-					if (element) {
-						const analysis = new ElementAnalysis(
-							element,
-							this.browserContext.getUrl(),
-							ElementAnalysisStatus.Done
-						);
-						this.elementAnalysisStorage.set(analysis.getId(), analysis);
-					} else {
-						throw new Error("UIElement source element doesn't exist");
-					}
-				}
+				this.setFeatureUiElementsAsAnalyzed(feature);
 			}
 			this.spec.addFeature(feature);
 		};
+	}
+
+	private setFeatureUiElementsAsAnalyzed(feature: Feature) {
+		const uiElements = feature.getUiElements();
+		for (let uiElement of uiElements) {
+			const element = <HTMLElement>uiElement.getSourceElement();
+			if (element) {
+				const analysis = new ElementAnalysis(
+					element,
+					this.browserContext.getUrl(),
+					ElementAnalysisStatus.Done
+				);
+				this.elementAnalysisStorage.set(analysis.getId(), analysis);
+			} else {
+				throw new Error("UIElement source element doesn't exist");
+			}
+		}
 	}
 
 	public async analyze(
@@ -107,6 +111,13 @@ export class PageAnalyzer {
 					);
 
 					if (featureOuterFormElements) {
+						const analysisFinished = await this.isAnalysisFinished(
+							featureOuterFormElements
+						);
+
+						if (analysisFinished) {
+							this.setFeatureUiElementsAsAnalyzed(featureOuterFormElements);
+						}
 						this.spec.addFeature(featureOuterFormElements);
 					}
 				}
@@ -150,6 +161,11 @@ export class PageAnalyzer {
 					);
 
 					if (feature) {
+						const analysisFinished = await this.isAnalysisFinished(feature);
+
+						if (analysisFinished) {
+							this.setFeatureUiElementsAsAnalyzed(feature);
+						}
 						this.spec.addFeature(feature);
 					}
 				}
@@ -158,14 +174,17 @@ export class PageAnalyzer {
 	}
 
 	private async isAnalysisFinished(
-		currentInteraction: ElementInteraction<HTMLElement>,
-		variant: Variant,
-		feature: Feature
+		feature: Feature,
+		variant: Variant | null = null,
+		currentInteraction: ElementInteraction<HTMLElement> | null = null
 	): Promise<boolean> {
-		const element = currentInteraction.getElement();
-		if (element.getAttribute('type') !== 'submit') {
-			return false;
+		if (currentInteraction) {
+			const element = currentInteraction.getElement();
+			if (element.getAttribute('type') !== 'submit') {
+				return false;
+			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 }
