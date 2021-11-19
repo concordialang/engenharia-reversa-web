@@ -40,64 +40,24 @@ export class ElementInteractionGenerator {
 			type = HTMLInputType.Text;
 		}
 
-		if (type == HTMLInputType.Text) {
-			return this.generateTextInputInteraction(input);
-		} else if (type == HTMLInputType.Email) {
-			return this.generateTextInputInteraction(input);
-		} else if (type == HTMLInputType.Radio) {
-			return this.generateRadioInputInteraction(input);
+		let interaction: ElementInteraction<HTMLInputElement> | null = new ElementInteraction<
+			HTMLInputElement
+		>(input, HTMLEventType.Change, this.browserContext.getUrl());
+
+		if (type == HTMLInputType.Radio && input.value) {
+			interaction.setValue(input.value);
 		} else if (type == HTMLInputType.Checkbox) {
-			return this.generateCheckboxInputInteraction(input);
-		} else if (type == HTMLInputType.Submit) {
-			return new ElementInteraction(input, HTMLEventType.Click, this.browserContext.getUrl());
-		}
-		return null;
-	}
-
-	//RADIO
-
-	private generateRadioInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> | null {
-		if (element.value) {
-			const interaction = new ElementInteraction<HTMLInputElement>(
-				element,
-				HTMLEventType.Change,
-				this.browserContext.getUrl(),
-				element.value
+			interaction.setValue(true);
+		} else if (type == HTMLInputType.Submit || type == HTMLInputType.Button) {
+			interaction = new ElementInteraction(
+				input,
+				HTMLEventType.Click,
+				this.browserContext.getUrl()
 			);
-
-			return interaction;
+		} else {
+			interaction.setValue(this.generateDataInteraction(input));
 		}
 
-		return null;
-	}
-
-	//TEXT
-
-	private generateTextInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.browserContext.getUrl(),
-			'teste'
-		);
-		return interaction;
-	}
-
-	//CHECKBOX
-
-	private generateCheckboxInputInteraction(
-		element: HTMLInputElement
-	): ElementInteraction<HTMLInputElement> {
-		const interaction = new ElementInteraction<HTMLInputElement>(
-			element,
-			HTMLEventType.Change,
-			this.browserContext.getUrl(),
-			true
-		);
 		return interaction;
 	}
 
@@ -126,7 +86,7 @@ export class ElementInteractionGenerator {
 			element,
 			HTMLEventType.Change,
 			this.browserContext.getUrl(),
-			'teste'
+			this.generateDataInteraction(element)
 		);
 		return interaction;
 	}
@@ -150,18 +110,98 @@ export class ElementInteractionGenerator {
 		return interaction;
 	}
 
-	// private getFormInputElementsByNameAttribute(
-	// 	form: HTMLFormElement,
-	// 	name: string
-	// ): HTMLInputElement[] {
-	// 	const matchedInputs: HTMLInputElement[] = [];
-	// 	const inputs = form.getElementsByTagName(HTMLElementType.INPUT);
-	// 	for (const input of inputs) {
-	// 		const inputNameAttr = input.getAttribute('name');
-	// 		if (inputNameAttr && inputNameAttr == name) {
-	// 			matchedInputs.push(input as HTMLInputElement);
-	// 		}
-	// 	}
-	// 	return matchedInputs;
-	// }
+	// avaliar email, data, time, date-time, number
+	private generateDataInteraction(elm: HTMLInputElement | HTMLTextAreaElement): string {
+		if (elm.value) {
+			return elm.value;
+		}
+
+		if (elm instanceof HTMLTextAreaElement) {
+			return this.generateStringToInpuTextAndTextArea(elm);
+		}
+
+		switch (elm.type) {
+			case HTMLInputType.Text:
+				return this.generateStringToInpuTextAndTextArea(elm);
+			case HTMLInputType.Number:
+				return this.generateStringToInputNumber(elm);
+			case HTMLInputType.Email:
+				return this.generateStringToInputEmail(elm);
+			case HTMLInputType.Date:
+				return this.generateStringToInputDate(elm);
+			case HTMLInputType.Date:
+				return this.generateStringToInputTime(elm);
+			case HTMLInputType.Date:
+				return this.generateStringToInputDateTime(elm);
+			default:
+				return this.generateStringToInpuTextAndTextArea(elm);
+		}
+	}
+
+	private generateStringToInpuTextAndTextArea(
+		elm: HTMLInputElement | HTMLTextAreaElement
+	): string {
+		const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+		const charactersLength = characters.length;
+		let stringLength = 15; // default value
+
+		if (elm.minLength && elm.minLength !== -1 && elm.minLength > stringLength) {
+			stringLength = elm.minLength;
+		}
+
+		if (elm.maxLength && elm.maxLength !== -1 && elm.maxLength < stringLength) {
+			stringLength = elm.maxLength;
+		}
+
+		let strText = '';
+
+		for (let i = 0; i < stringLength; i++) {
+			strText += characters.charAt(Math.floor(Math.random() * charactersLength));
+		}
+
+		return strText;
+	}
+
+	private generateStringToInputNumber(elm: HTMLInputElement): string {
+		let minNumber: number = 0; // default value
+		let maxNumber: number = 99; // default value
+
+		if (elm.min && parseInt(elm.min) > minNumber) {
+			minNumber = parseInt(elm.min);
+		}
+
+		if (elm.max && parseInt(elm.max) > maxNumber) {
+			maxNumber = parseInt(elm.max);
+		}
+
+		if (minNumber >= maxNumber) {
+			maxNumber = minNumber * 10;
+		}
+
+		return Math.round(Math.random() * (maxNumber - minNumber) + minNumber).toString();
+	}
+
+	private generateStringToInputEmail(elm: HTMLInputElement): string {
+		let strEmail = '';
+
+		return strEmail;
+	}
+
+	private generateStringToInputDate(elm: HTMLInputElement): string {
+		let strDateTime = '';
+
+		return strDateTime;
+	}
+
+	private generateStringToInputTime(elm: HTMLInputElement): string {
+		let strDateTime = '';
+
+		return strDateTime;
+	}
+
+	private generateStringToInputDateTime(elm: HTMLInputElement): string {
+		let strDateTime = '';
+
+		return strDateTime;
+	}
 }
