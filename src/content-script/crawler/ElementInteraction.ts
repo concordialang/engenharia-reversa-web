@@ -62,6 +62,10 @@ export class ElementInteraction<T extends HTMLElement> {
 		return this.value;
 	}
 
+	public setValue(value: string | boolean | null) {
+		this.value = value;
+	}
+
 	public getId(): string {
 		return this.id;
 	}

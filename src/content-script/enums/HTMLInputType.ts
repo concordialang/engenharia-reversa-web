@@ -4,4 +4,9 @@ export enum HTMLInputType {
 	Checkbox = 'checkbox',
 	Submit = 'submit',
 	Email = 'email',
+	Number = 'number',
+	Date = 'date',
+	Time = 'time',
+	DateTime = 'datetime-local',
+	Button = 'button',
 }

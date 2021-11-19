@@ -14,12 +14,12 @@ export class Interactor {
 		const input = interaction.getElement();
 		const type = input.getAttribute('type');
 
-		if (type == HTMLInputType.Text) {
-			this.fillTextInput(interaction);
-		} else if (type == HTMLInputType.Radio) {
+		if (type == HTMLInputType.Radio) {
 			this.fillRadioInput(interaction);
 		} else if (type == HTMLInputType.Checkbox) {
 			this.fillCheckboxInput(interaction);
+		} else {
+			this.fillTextInput(interaction);
 		}
 
 		//refatorar para verificar se causou redirecionamento
