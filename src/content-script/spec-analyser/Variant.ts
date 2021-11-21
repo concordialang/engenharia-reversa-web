@@ -5,6 +5,7 @@ import 'reflect-metadata';
 
 export class Variant {
 	private name!: string;
+	private id: string;
 
 	@Type(() => VariantSentence)
 	private sentences!: Array<VariantSentence>;
@@ -12,8 +13,9 @@ export class Variant {
 	public lastAnalysisInputFieldFound = false;
 	public finalActionButtonFound = false;
 
-	constructor() {
+	constructor(id?: string) {
 		this.sentences = [];
+		this.id = id || Math.random().toString(18).substring(2);
 	}
 
 	public setName(name: string) {
