@@ -70,34 +70,37 @@ export class PageAnalyzer {
 	): Promise<void> {
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
+			let feature: Feature | string | null = null;
+			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+			if (lastInteraction) {
+				feature = lastInteraction.getFeature();
+				if (typeof feature === 'string') {
+					feature = await this.featureStorage.get(feature);
+				}
+			}
 			const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
 				xPath,
 				url
 			);
-			if (elementAnalysisStatus == ElementAnalysisStatus.Pending) {
-				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
-				analisar novamente depois
-				*/
 
-				let feature: Feature | string | null = null;
-				const lastInteraction = previousInteractions[previousInteractions.length - 1];
-				if (lastInteraction) {
-					feature = lastInteraction.getFeature();
-					if (typeof feature === 'string') {
-						feature = await this.featureStorage.get(feature);
-					}
-				}
-
+			if (
+				elementAnalysisStatus == ElementAnalysisStatus.Pending ||
+				feature?.needNewVariants
+			) {
 				for (let interaction of previousInteractions) {
 					await this.elementInteractionExecutor.execute(interaction, undefined, false);
 				}
 
+				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
+				analisar novamente depois
+				*/
 				const elementAnalysis = new ElementAnalysis(
 					contextElement,
 					this.browserContext.getUrl(),
 					ElementAnalysisStatus.InProgress
 				);
 				this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
 				await this.analyseFormElements(url, contextElement, feature, previousInteractions);
 
 				if (contextElement.nodeName !== HTMLElementType.FORM) {

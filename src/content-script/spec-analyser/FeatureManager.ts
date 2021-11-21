@@ -107,7 +107,7 @@ export class FeatureManager {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
-				// this.browserContext.getWindow().location.reload();
+				this.browserContext.getWindow().location.reload();
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 
