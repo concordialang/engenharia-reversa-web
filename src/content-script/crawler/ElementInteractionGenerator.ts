@@ -2,7 +2,12 @@ import { HTMLEventType } from '../enums/HTMLEventType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
-import { generateRandomStr, generateRandomNumber, isValidDate } from '../util';
+import {
+	generateRandomStr,
+	generateRandomNumber,
+	isValidDate,
+	generateRamdonStrForRegex,
+} from '../util';
 
 export class ElementInteractionGenerator {
 	constructor(private browserContext: BrowserContext) {}
@@ -111,19 +116,18 @@ export class ElementInteractionGenerator {
 		return interaction;
 	}
 
-	// avaliar email, data, time, date-time, number
 	private generateDataInteraction(elm: HTMLInputElement | HTMLTextAreaElement): string {
 		if (elm.value) {
 			return elm.value;
 		}
 
 		if (elm instanceof HTMLTextAreaElement) {
-			return this.generateStringToInpuTextAndTextArea(elm);
+			return this.generateStringToTextArea(elm);
 		}
 
 		switch (elm.type) {
 			case HTMLInputType.Text:
-				return this.generateStringToInpuTextAndTextArea(elm);
+				return this.generateStringToInpuText(elm);
 			case HTMLInputType.Number:
 				return this.generateStringToInputNumber(elm);
 			case HTMLInputType.Email:
@@ -135,13 +139,11 @@ export class ElementInteractionGenerator {
 			case HTMLInputType.DateTime:
 				return this.generateStringToInputDateTime(elm);
 			default:
-				return this.generateStringToInpuTextAndTextArea(elm);
+				return this.generateStringToInpuText(elm);
 		}
 	}
 
-	private generateStringToInpuTextAndTextArea(
-		elm: HTMLInputElement | HTMLTextAreaElement
-	): string {
+	private generateStringToTextArea(elm: HTMLTextAreaElement): string {
 		let strLength = 15; // default value
 
 		if (elm.minLength && elm.minLength !== -1 && elm.minLength > strLength) {
@@ -153,6 +155,27 @@ export class ElementInteractionGenerator {
 		}
 
 		let strText = generateRandomStr(strLength);
+
+		return strText;
+	}
+
+	private generateStringToInpuText(elm: HTMLInputElement): string {
+		let strLength = 15; // default value
+		let strText = '';
+
+		if (elm.pattern) {
+			strText = generateRamdonStrForRegex(elm.pattern);
+		} else {
+			if (elm.minLength && elm.minLength !== -1 && elm.minLength > strLength) {
+				strLength = elm.minLength;
+			}
+
+			if (elm.maxLength && elm.maxLength !== -1 && elm.maxLength < strLength) {
+				strLength = elm.maxLength;
+			}
+
+			strText = generateRandomStr(strLength);
+		}
 
 		return strText;
 	}
@@ -208,9 +231,7 @@ export class ElementInteractionGenerator {
 			strEmail2 = generateRandomStr(strLengthPart);
 		}
 
-		let strEmail = strEmail1 + '@' + strEmail2;
-
-		return strEmail;
+		return strEmail1 + '@' + strEmail2;
 	}
 
 	private generateStringToInputDate(elm: HTMLInputElement): string {

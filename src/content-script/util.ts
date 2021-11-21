@@ -1,6 +1,7 @@
 import { DiffDomManager } from './diff-dom/DiffDomManager';
-import getXPath from 'get-xpath';
 import { ValidUiElementsNodes } from './enums/ValidUiElementsNodes';
+import getXPath from 'get-xpath';
+import RandExp from 'randexp';
 
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -122,6 +123,11 @@ export function isValidDate(str: string): boolean {
 	}
 
 	return true;
+}
+
+export function generateRamdonStrForRegex(regex) {
+	const randexp = new RandExp(regex);
+	return randexp.gen();
 }
 
 /**
