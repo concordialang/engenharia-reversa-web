@@ -60,20 +60,20 @@ export class FeatureManager {
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
 		) => {
-			const elementAnalysis = new ElementAnalysis(
-				interactionThatTriggeredRedirect.getElement(),
-				interactionThatTriggeredRedirect.getPageUrl(),
-				ElementAnalysisStatus.Done
-			);
-			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+			// const elementAnalysis = new ElementAnalysis(
+			// 	interactionThatTriggeredRedirect.getElement(),
+			// 	interactionThatTriggeredRedirect.getPageUrl(),
+			// 	ElementAnalysisStatus.Done
+			// );
+			// await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
-			// @ts-ignore
-			this.addVariantToScenario(newVariant, scenario, feature);
+			// // @ts-ignore
+			// this.addVariantToScenario(newVariant, scenario, feature);
 
-			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
-				scenario.getVariants()
-			);
-			feature?.setUiElements(uiElements);
+			// const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+			// 	scenario.getVariants()
+			// );
+			// feature?.setUiElements(uiElements);
 
 			if (redirectionCallback) {
 				// Typescrypt bugou em uma verificação abaixo
@@ -85,11 +85,11 @@ export class FeatureManager {
 		let pathsOfElementsToIgnore: string[] = [];
 		let variant: Variant | null = null;
 		if (previousInteractions.length > 0) {
-			pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
-				return getPathTo(interaction.getElement());
-			});
-			const lastInteraction = previousInteractions[previousInteractions.length - 1];
-			variant = lastInteraction.getVariant();
+			// pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
+			// 	return getPathTo(interaction.getElement());
+			// });
+			// const lastInteraction = previousInteractions[previousInteractions.length - 1];
+			// variant = lastInteraction.getVariant();
 		}
 
 		let variantAnalyzed: Variant | null;

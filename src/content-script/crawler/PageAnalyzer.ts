@@ -32,15 +32,15 @@ export class PageAnalyzer {
 			variant: Variant,
 			feature: Feature
 		) => {
-			const analysisFinished = await this.isAnalysisFinished(
-				feature,
-				variant,
-				interactionThatTriggeredRedirect
-			);
+			// const analysisFinished = await this.isAnalysisFinished(
+			// 	feature,
+			// 	variant,
+			// 	interactionThatTriggeredRedirect
+			// );
 
-			if (analysisFinished) {
-				this.setFeatureUiElementsAsAnalyzed(feature);
-			}
+			// if (analysisFinished) {
+			// 	this.setFeatureUiElementsAsAnalyzed(feature);
+			// }
 			this.spec.addFeature(feature);
 		};
 	}
@@ -88,7 +88,7 @@ export class PageAnalyzer {
 				feature?.needNewVariants
 			) {
 				for (let interaction of previousInteractions) {
-					await this.elementInteractionExecutor.execute(interaction, undefined, false);
+					//await this.elementInteractionExecutor.execute(interaction, undefined, false);
 				}
 
 				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 
