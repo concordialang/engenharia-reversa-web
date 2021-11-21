@@ -2,6 +2,7 @@ import { HTMLEventType } from '../enums/HTMLEventType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { BrowserContext } from './BrowserContext';
 import { ElementInteraction } from './ElementInteraction';
+import { generateRandomStr, generateRandomNumber, isValidDate } from '../util';
 
 export class ElementInteractionGenerator {
 	constructor(private browserContext: BrowserContext) {}
@@ -129,9 +130,9 @@ export class ElementInteractionGenerator {
 				return this.generateStringToInputEmail(elm);
 			case HTMLInputType.Date:
 				return this.generateStringToInputDate(elm);
-			case HTMLInputType.Date:
+			case HTMLInputType.Time:
 				return this.generateStringToInputTime(elm);
-			case HTMLInputType.Date:
+			case HTMLInputType.DateTime:
 				return this.generateStringToInputDateTime(elm);
 			default:
 				return this.generateStringToInpuTextAndTextArea(elm);
@@ -141,23 +142,17 @@ export class ElementInteractionGenerator {
 	private generateStringToInpuTextAndTextArea(
 		elm: HTMLInputElement | HTMLTextAreaElement
 	): string {
-		const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-		const charactersLength = characters.length;
-		let stringLength = 15; // default value
+		let strLength = 15; // default value
 
-		if (elm.minLength && elm.minLength !== -1 && elm.minLength > stringLength) {
-			stringLength = elm.minLength;
+		if (elm.minLength && elm.minLength !== -1 && elm.minLength > strLength) {
+			strLength = elm.minLength;
 		}
 
-		if (elm.maxLength && elm.maxLength !== -1 && elm.maxLength < stringLength) {
-			stringLength = elm.maxLength;
+		if (elm.maxLength && elm.maxLength !== -1 && elm.maxLength < strLength) {
+			strLength = elm.maxLength;
 		}
 
-		let strText = '';
-
-		for (let i = 0; i < stringLength; i++) {
-			strText += characters.charAt(Math.floor(Math.random() * charactersLength));
-		}
+		let strText = generateRandomStr(strLength);
 
 		return strText;
 	}
@@ -178,29 +173,68 @@ export class ElementInteractionGenerator {
 			maxNumber = minNumber * 10;
 		}
 
-		return Math.round(Math.random() * (maxNumber - minNumber) + minNumber).toString();
+		let strNumber = generateRandomNumber(minNumber, maxNumber).toString();
+
+		return strNumber;
 	}
 
 	private generateStringToInputEmail(elm: HTMLInputElement): string {
-		let strEmail = '';
+		let strLength = 15; // default value
+
+		if (elm.minLength && elm.minLength !== -1 && elm.minLength > strLength) {
+			strLength = elm.minLength;
+		}
+
+		if (elm.maxLength && elm.maxLength !== -1 && elm.maxLength < strLength) {
+			strLength = elm.maxLength;
+		}
+
+		// discounts @ character
+		strLength--;
+
+		let strEmail1 = '';
+		let strEmail2 = '';
+
+		if (strLength % 2 === 0) {
+			let strLengthPart = strLength / 2;
+			strEmail1 = generateRandomStr(strLengthPart);
+			strEmail2 = generateRandomStr(strLengthPart);
+		} else {
+			strLength++;
+			let strLengthPart = strLength / 2;
+			strEmail1 = generateRandomStr(strLengthPart);
+
+			strLengthPart--;
+			strEmail2 = generateRandomStr(strLengthPart);
+		}
+
+		let strEmail = strEmail1 + '@' + strEmail2;
 
 		return strEmail;
 	}
 
 	private generateStringToInputDate(elm: HTMLInputElement): string {
-		let strDateTime = '';
+		let strDate = '2000-01-01'; // default value
 
-		return strDateTime;
+		if (elm.min && isValidDate(elm.min) && elm.min > strDate) {
+			strDate = elm.min;
+		}
+
+		if (elm.max && isValidDate(elm.max) && elm.max < strDate) {
+			strDate = elm.max;
+		}
+
+		return strDate;
 	}
 
 	private generateStringToInputTime(elm: HTMLInputElement): string {
-		let strDateTime = '';
+		let strTime = '00:00';
 
-		return strDateTime;
+		return strTime;
 	}
 
 	private generateStringToInputDateTime(elm: HTMLInputElement): string {
-		let strDateTime = '';
+		let strDateTime = '2000-01-01 00:00';
 
 		return strDateTime;
 	}

@@ -67,6 +67,63 @@ export function formatToFirstCapitalLetter(txt: string): string {
 	return txt;
 }
 
+export function generateRandomStr(length: number): string {
+	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	const charactersLength = characters.length;
+
+	let str = '';
+
+	for (let i = 0; i < length; i++) {
+		str += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+
+	return str;
+}
+
+export function generateRandomNumber(minNumber: number, maxNumber: number): number {
+	return Math.round(Math.random() * (maxNumber - minNumber) + minNumber);
+}
+
+export function isValidDate(str: string): boolean {
+	let separator = '-';
+
+	let values = str.split(separator);
+
+	if (values.length !== 3 || values.some((v) => isNaN(parseInt(v)))) {
+		return false;
+	}
+
+	let day = parseInt(values[2]);
+	let month = parseInt(values[1]);
+	let year = parseInt(values[0]);
+
+	if (year < 1901 || year > 2100) {
+		return false;
+	}
+
+	if (month < 1 || month > 12) {
+		return false;
+	}
+
+	if (day < 1 || day > 31) {
+		return false;
+	}
+
+	if ((month == 4 || month == 6 || month == 9 || month == 11) && day == 31) {
+		return false;
+	}
+
+	// check for february 29th
+	if (month == 2) {
+		let isleap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+		if (day > 29 || (day == 29 && !isleap)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 /**
  * Clear elements from the given element.
  *
