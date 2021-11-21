@@ -28,6 +28,7 @@ export function getFormElements(element: HTMLElement): NodeListOf<Element> {
 }
 
 export function getElementByXpath(path: string, document: Document): HTMLElement | null {
+	if (path === '') return null;
 	const node = document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
 		.singleNodeValue;
 	if (node) {
