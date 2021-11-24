@@ -82,14 +82,18 @@ export function generateRandomStr(length: number): string {
 	return str;
 }
 
+export function generateRamdonStrForRegex(regex) {
+	const randexp = new RandExp(regex);
+	return randexp.gen();
+}
+
 export function generateRandomNumber(minNumber: number, maxNumber: number): number {
 	return Math.round(Math.random() * (maxNumber - minNumber) + minNumber);
 }
 
+// format: 'yyyy-mm-dd'
 export function isValidDate(str: string): boolean {
-	let separator = '-';
-
-	let values = str.split(separator);
+	let values = str.split('-');
 
 	if (values.length !== 3 || values.some((v) => isNaN(parseInt(v)))) {
 		return false;
@@ -117,8 +121,8 @@ export function isValidDate(str: string): boolean {
 
 	// check for february 29th
 	if (month == 2) {
-		let isleap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-		if (day > 29 || (day == 29 && !isleap)) {
+		let isLeap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+		if (day > 29 || (day == 29 && !isLeap)) {
 			return false;
 		}
 	}
@@ -126,9 +130,42 @@ export function isValidDate(str: string): boolean {
 	return true;
 }
 
-export function generateRamdonStrForRegex(regex) {
-	const randexp = new RandExp(regex);
-	return randexp.gen();
+// format: 'hh:mm' or 'hh:mm:ss'
+export function isValidTime(str: string) {
+	let values = str.split(':');
+
+	if (values.length !== 2 && values.length !== 3) {
+		return false;
+	}
+
+	let checkSeconds = values.length === 3 ? true : false;
+
+	let regex: RegExp;
+	if (checkSeconds) {
+		regex = /^([0-1]?[\d]|2[0-4]):([0-5][\d])(:[0-5][\d])(:[0-5][\d])?$/;
+	} else {
+		regex = /^([0-1]?[\d]|2[0-4]):([0-5][\d])(:[0-5][\d])?$/;
+	}
+
+	let isValid = regex.test(str);
+
+	return isValid;
+}
+
+// format: 'yyyy-mm-dd hh:mm' or 'yyyy-mm-dd hh:mm:ss'
+export function isValidDateTime(str: string) {
+	let dateTime = str.split('T');
+
+	if (dateTime.length !== 2) {
+		return false;
+	}
+
+	let date = dateTime[0];
+	let time = dateTime[1];
+
+	let isValid = isValidDate(date) && isValidTime(time);
+
+	return isValid;
 }
 
 /**
