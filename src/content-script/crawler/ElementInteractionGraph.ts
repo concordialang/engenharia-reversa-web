@@ -175,6 +175,42 @@ export class ElementInteractionGraph {
 		return true;
 	}
 
+	public async getPreviousInteraction(
+		interaction: ElementInteraction<HTMLElement>
+	): Promise<ElementInteraction<HTMLElement> | null> {
+		const graph = await this.getLatestVersionOfGraph();
+		if (graph) {
+			const parentNodeKey = graph.getParentNodeKey(interaction.getId());
+			if (parentNodeKey) {
+				return this.elementInteractionStorage.get(parentNodeKey);
+			}
+		}
+		return null;
+	}
+
+	public async getNextInteraction(
+		interaction: ElementInteraction<HTMLElement>
+	): Promise<ElementInteraction<HTMLElement> | null> {
+		const graph = await this.getLatestVersionOfGraph();
+		if (graph) {
+			const childNodeKey = graph.getChildNodeKey(interaction.getId());
+			if (childNodeKey) {
+				return this.elementInteractionStorage.get(childNodeKey);
+			}
+		}
+		return null;
+	}
+
+	public async isNextInteractionOnAnotherPage(
+		interaction: ElementInteraction<HTMLElement>
+	): Promise<boolean> {
+		const nextInteraction = await this.getNextInteraction(interaction);
+		if (nextInteraction) {
+			return nextInteraction.getPageUrl().href != interaction.getPageUrl().href;
+		}
+		return false;
+	}
+
 	public async getLastInteraction(): Promise<ElementInteraction<HTMLElement> | null> {
 		return await this.elementInteractionStorage.get(this.lastInteractionKey);
 	}

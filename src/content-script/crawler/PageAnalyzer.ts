@@ -11,6 +11,7 @@ import { Feature } from '../spec-analyser/Feature';
 import { Variant } from '../spec-analyser/Variant';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { ElementInteractionExecutor } from './ElementInteractionExecutor';
+import { ElementInteractionGraph } from './ElementInteractionGraph';
 
 export class PageAnalyzer {
 	private redirectCallback: (
@@ -25,22 +26,23 @@ export class PageAnalyzer {
 		private spec: Spec,
 		private browserContext: BrowserContext,
 		private featureStorage: ObjectStorage<Feature>,
-		private elementInteractionExecutor: ElementInteractionExecutor
+		private elementInteractionExecutor: ElementInteractionExecutor,
+		private elementInteractionGraph: ElementInteractionGraph
 	) {
 		this.redirectCallback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			variant: Variant,
 			feature: Feature
 		) => {
-			// const analysisFinished = await this.isAnalysisFinished(
-			// 	feature,
-			// 	variant,
-			// 	interactionThatTriggeredRedirect
-			// );
+			const analysisFinished = await this.isAnalysisFinished(
+				feature,
+				variant,
+				interactionThatTriggeredRedirect
+			);
 
-			// if (analysisFinished) {
-			// 	this.setFeatureUiElementsAsAnalyzed(feature);
-			// }
+			if (analysisFinished) {
+				this.setFeatureUiElementsAsAnalyzed(feature);
+			}
 			this.spec.addFeature(feature);
 		};
 	}
@@ -87,8 +89,27 @@ export class PageAnalyzer {
 				elementAnalysisStatus == ElementAnalysisStatus.Pending ||
 				feature?.needNewVariants
 			) {
-				for (let interaction of previousInteractions) {
-					//await this.elementInteractionExecutor.execute(interaction, undefined, false);
+				if (lastInteraction) {
+					//Only re-executes previous interactions when is revisting the page after a redirect
+					if (
+						await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+							lastInteraction
+						)
+					) {
+						for (let interaction of previousInteractions) {
+							if (
+								!(await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+									interaction
+								))
+							) {
+								await this.elementInteractionExecutor.execute(
+									interaction,
+									undefined,
+									false
+								);
+							}
+						}
+					}
 				}
 
 				/*TODO Essa parte do código que altera o status de análise para in progress pode gerar uma condição de corrida, 

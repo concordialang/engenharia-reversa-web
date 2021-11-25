@@ -446,7 +446,8 @@ describe('Crawler', () => {
 			featureUtil,
 			analyzedElementStorage,
 			spec,
-			browserContext
+			browserContext,
+			elementInteractionGraph
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
@@ -455,7 +456,8 @@ describe('Crawler', () => {
 			spec,
 			browserContext,
 			featureStorage,
-			elementInteractionExecutor
+			elementInteractionExecutor,
+			elementInteractionGraph
 		);
 
 		const crawler: Crawler = new Crawler(

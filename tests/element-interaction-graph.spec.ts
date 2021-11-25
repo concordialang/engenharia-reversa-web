@@ -67,6 +67,24 @@ describe('ElementInteractionGraph', () => {
 		expect(path[3].getId()).toBe(interactionB.getId());
 	});
 
+	it('returns next interaction', async () => {
+		const nextInteraction = await elementInteractionGraph.getNextInteraction(interactionE);
+		expect(nextInteraction).not.toBeNull();
+		if (nextInteraction) {
+			expect(nextInteraction.getId()).toBe(interactionF.getId());
+		}
+	});
+
+	it('returns previous interaction', async () => {
+		const previousInteraction = await elementInteractionGraph.getPreviousInteraction(
+			interactionE
+		);
+		expect(previousInteraction).not.toBeNull();
+		if (previousInteraction) {
+			expect(previousInteraction.getId()).toBe(interactionD.getId());
+		}
+	});
+
 	beforeAll(async () => {
 		const storage = new LocalStorageMock();
 		elementAnalysisStorage = new ElementAnalysisStorage(storage);

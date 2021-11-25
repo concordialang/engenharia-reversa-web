@@ -2,6 +2,8 @@ import { BrowserContext } from '../crawler/BrowserContext';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
+import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
+import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppageError';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getPathTo } from '../util';
@@ -21,7 +23,8 @@ export class FeatureManager {
 		private featureUtil: FeatureUtil,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec,
-		private browserContext: BrowserContext
+		private browserContext: BrowserContext,
+		private elementInteractionGraph: ElementInteractionGraph
 	) {}
 
 	public async generateFeature(
@@ -60,20 +63,20 @@ export class FeatureManager {
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
 		) => {
-			// const elementAnalysis = new ElementAnalysis(
-			// 	interactionThatTriggeredRedirect.getElement(),
-			// 	interactionThatTriggeredRedirect.getPageUrl(),
-			// 	ElementAnalysisStatus.Done
-			// );
-			// await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+			const elementAnalysis = new ElementAnalysis(
+				interactionThatTriggeredRedirect.getElement(),
+				interactionThatTriggeredRedirect.getPageUrl(),
+				ElementAnalysisStatus.Done
+			);
+			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
-			// // @ts-ignore
-			// this.addVariantToScenario(newVariant, scenario, feature);
+			// @ts-ignore
+			this.addVariantToScenario(newVariant, scenario, feature);
 
-			// const uiElements: Array<UIElement> = await this.getUniqueUIElements(
-			// 	scenario.getVariants()
-			// );
-			// feature?.setUiElements(uiElements);
+			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+				scenario.getVariants()
+			);
+			feature?.setUiElements(uiElements);
 
 			if (redirectionCallback) {
 				// Typescrypt bugou em uma verificação abaixo
@@ -85,11 +88,16 @@ export class FeatureManager {
 		let pathsOfElementsToIgnore: string[] = [];
 		let variant: Variant | null = null;
 		if (previousInteractions.length > 0) {
-			// pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
-			// 	return getPathTo(interaction.getElement());
-			// });
-			// const lastInteraction = previousInteractions[previousInteractions.length - 1];
-			// variant = lastInteraction.getVariant();
+			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+			//Only enters this block in the case of a redirection
+			if (
+				await this.elementInteractionGraph.isNextInteractionOnAnotherPage(lastInteraction)
+			) {
+				variant = lastInteraction.getVariant();
+				pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
+					return getPathTo(interaction.getElement());
+				});
+			}
 		}
 
 		let variantAnalyzed: Variant | null;
@@ -107,7 +115,9 @@ export class FeatureManager {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
+				this.spec.addFeature(feature);
 				this.browserContext.getWindow().location.reload();
+				throw new ForcingExecutionStoppageError('Forcing execution to stop');
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 

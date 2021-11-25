@@ -74,6 +74,17 @@ export class Graph {
 		return null;
 	}
 
+	public getChildNodeKey(key: string): string | null {
+		const edge = this.graph.elements(`edge[source = "${key}"]`);
+		if (edge) {
+			const source = edge.data('target');
+			if (source) {
+				return source;
+			}
+		}
+		return null;
+	}
+
 	public serialize(): object {
 		const nodes: { id: string }[] = [];
 		const edges: { source: string; target: string }[] = [];

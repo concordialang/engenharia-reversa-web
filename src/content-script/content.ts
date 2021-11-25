@@ -94,7 +94,8 @@ getTabId(communicationChannel).then((tabId) => {
 		featureUtil,
 		elementAnalysisStorage,
 		spec,
-		browserContext
+		browserContext,
+		elementInteractionGraph
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
@@ -103,7 +104,8 @@ getTabId(communicationChannel).then((tabId) => {
 		spec,
 		browserContext,
 		featureStorage,
-		elementInteractionExecutor
+		elementInteractionExecutor,
+		elementInteractionGraph
 	);
 
 	const crawler: Crawler = new Crawler(

@@ -44,7 +44,11 @@ describe('Page Analyzer', () => {
 		const div1 = document.getElementById('div1');
 		expect(div1).not.toBeNull();
 		if (div1) {
-			await pageAnalyzer.analyze(pageUrl, div1);
+			try {
+				await pageAnalyzer.analyze(pageUrl, div1);
+			} catch (ForcingExecutionStoppageError) {
+				// ignore
+			}
 
 			const pathToElement = getPathTo(div1);
 			const div1AnalysisStatus = await elementAnalysisStorage.getElementAnalysisStatus(
@@ -168,7 +172,8 @@ describe('Page Analyzer', () => {
 			featureUtil,
 			elementAnalysisStorage,
 			spec,
-			browserContext
+			browserContext,
+			elementInteractionGraph
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
@@ -177,7 +182,8 @@ describe('Page Analyzer', () => {
 			spec,
 			browserContext,
 			new LocalObjectStorage<Feature>(window.localStorage, Feature),
-			elementInteractionExecutor
+			elementInteractionExecutor,
+			elementInteractionGraph
 		);
 		return pageAnalyzer;
 	}

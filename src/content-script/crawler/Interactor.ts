@@ -95,8 +95,9 @@ export class Interactor {
 	): Promise<InteractionResult> {
 		const element = interaction.getElement();
 		let triggeredUnload = false;
+		let alreadyExitedFunction = false;
 		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
-			if (!triggeredUnload) {
+			if (!triggeredUnload && !alreadyExitedFunction) {
 				triggeredUnload = true;
 				if (redirectionCallback) await redirectionCallback(interaction);
 			}
@@ -118,6 +119,7 @@ export class Interactor {
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
 		}
+		alreadyExitedFunction = true;
 		return new InteractionResult(false);
 	}
 

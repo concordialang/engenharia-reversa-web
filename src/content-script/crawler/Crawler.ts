@@ -47,7 +47,10 @@ export class Crawler {
 
 		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
 
-		if (lastUnanalyzed) {
+		if (
+			lastUnanalyzed &&
+			lastUnanalyzed.getPageUrl().href == this.browserContext.getUrl().href
+		) {
 			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
 			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
 				lastUnanalyzed,
@@ -56,6 +59,13 @@ export class Crawler {
 				false
 			);
 			previousInteractions = previousInteractions.reverse();
+
+			const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
+				lastUnanalyzed
+			);
+			if (interactionAfterTriggeredRedirect) {
+				previousInteractions.push(interactionAfterTriggeredRedirect);
+			}
 		}
 
 		const previousDocument = await this.getPreviousDocument();
@@ -82,11 +92,15 @@ export class Crawler {
 			}
 		}
 
-		await this.pageAnalyzer.analyze(
-			this.browserContext.getUrl(),
-			analysisElement,
-			previousInteractions
-		);
+		try {
+			await this.pageAnalyzer.analyze(
+				this.browserContext.getUrl(),
+				analysisElement,
+				previousInteractions
+			);
+		} catch (ForcingExecutionStoppageError) {
+			return;
+		}
 
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
@@ -197,5 +211,52 @@ export class Crawler {
 		}
 
 		return ancestorElement ? ancestorElement : document.body;
+	}
+
+	/*
+		Interactions that trigger redirections to other pages will have their element analysis flagged as "done", so when
+		retrieving the previous interactions, these interactions will be ignored, so this function checks if there is one 
+		of these interactions to be added to the list of previous interactions
+	*/
+	private async didInteractionAfterTriggeredPageRedirection(
+		interaction: ElementInteraction<HTMLElement>
+	): Promise<ElementInteraction<HTMLElement> | null> {
+		const interactionAfter = await this.elementInteractionGraph.getNextInteraction(interaction);
+		if (interactionAfter) {
+			const interactionsAreOnSamePage =
+				interactionAfter.getPageUrl().href == interaction.getPageUrl().href;
+
+			const elementOfInteractionAfter = interactionAfter.getElement();
+
+			let xPathOfInteractionAfterElement: string | null;
+			if (elementOfInteractionAfter) {
+				xPathOfInteractionAfterElement = getPathTo(interactionAfter.getElement());
+			} else {
+				xPathOfInteractionAfterElement = interactionAfter.getElementSelector();
+				if (!xPathOfInteractionAfterElement) {
+					return null;
+				}
+			}
+			const interactionAfterElementAnalysysStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
+				xPathOfInteractionAfterElement,
+				interactionAfter.getPageUrl()
+			);
+
+			const interactionAfterIsAnalyzed =
+				interactionAfterElementAnalysysStatus == ElementAnalysisStatus.Done;
+
+			const interactionAfterTriggeredReload = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+				interactionAfter
+			);
+
+			if (
+				interactionsAreOnSamePage &&
+				interactionAfterIsAnalyzed &&
+				interactionAfterTriggeredReload
+			) {
+				return interactionAfter;
+			}
+		}
+		return null;
 	}
 }
