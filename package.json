@@ -80,6 +80,7 @@
 		"mustache": "^4.0.1",
 		"mutation-observer": "^1.0.3",
 		"one-wise": "^2.0.0",
+		"randexp": "^0.5.3",
 		"reflect-metadata": "^0.1.13",
 		"watch": "^1.0.2"
 	}

@@ -40,20 +40,10 @@ export class FeatureManager {
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
 		if (!feature) {
-			feature = this.featureUtil.createFeatureFromElement(
-				analysisElement,
-				this.spec.featureCount()
-			);
+			feature = this.initializeNewFeature(analysisElement, ignoreFormElements);
 		}
 
-		feature.ignoreFormElements = ignoreFormElements;
-
 		const scenario = feature.getGeneralScenario();
-		const maxVariantCount: number = this.discoverElementMaxVariantCount(
-			analysisElement,
-			feature.ignoreFormElements
-		);
-		feature.setMaxVariantCount(maxVariantCount);
 
 		let observer: MutationObserverManager = new MutationObserverManager(
 			analysisElement.ownerDocument.body
@@ -116,8 +106,10 @@ export class FeatureManager {
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
 				this.spec.addFeature(feature);
-				this.browserContext.getWindow().location.reload();
-				throw new ForcingExecutionStoppageError('Forcing execution to stop');
+				if (feature.needNewVariants) {
+					this.browserContext.getWindow().location.reload();
+					throw new ForcingExecutionStoppageError('Forcing execution to stop');
+				}
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
 
@@ -131,6 +123,26 @@ export class FeatureManager {
 			scenario.getVariants()
 		);
 		feature.setUiElements(uniqueUiElements);
+
+		return feature;
+	}
+
+	private initializeNewFeature(
+		analysisElement: HTMLElement,
+		ignoreFormElements: boolean
+	): Feature {
+		const feature = this.featureUtil.createFeatureFromElement(
+			analysisElement,
+			this.spec.featureCount()
+		);
+
+		feature.ignoreFormElements = ignoreFormElements;
+
+		const maxVariantCount: number = this.discoverElementMaxVariantCount(
+			analysisElement,
+			feature.ignoreFormElements
+		);
+		feature.setMaxVariantCount(maxVariantCount);
 
 		return feature;
 	}

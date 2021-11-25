@@ -7,6 +7,6 @@ export enum HTMLInputType {
 	Number = 'number',
 	Date = 'date',
 	Time = 'time',
-	DateTime = 'datetime-local',
+	DateTimeLocal = 'datetime-local',
 	Button = 'button',
 }
