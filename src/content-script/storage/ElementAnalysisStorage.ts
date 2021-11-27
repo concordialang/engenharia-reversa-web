@@ -1,4 +1,4 @@
-import { getElementByXpath, getPathTo } from '../util';
+import { getPathTo } from '../util';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';

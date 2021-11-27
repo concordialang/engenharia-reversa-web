@@ -14,10 +14,9 @@ import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
+import { limitOfVariants } from '../config';
 
-const limitOfVariants = 50;
-
-export class FeatureManager {
+export class FeatureGenerator {
 	constructor(
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
@@ -27,7 +26,7 @@ export class FeatureManager {
 		private elementInteractionGraph: ElementInteractionGraph
 	) {}
 
-	public async generateFeature(
+	public async generate(
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,

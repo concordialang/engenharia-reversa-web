@@ -15,7 +15,7 @@ import { ChromeCommunicationChannel } from '../src/shared/comm/ChromeCommunicati
 import { Message } from '../src/shared/comm/Message';
 import { Command } from '../src/shared/comm/Command';
 import { ElementAnalysis } from '../src/content-script/crawler/ElementAnalysis';
-import { FeatureManager } from '../src/content-script/spec-analyser/FeatureManager';
+import { FeatureGenerator } from '../src/content-script/spec-analyser/FeatureGenerator';
 import { UIElementGenerator } from '../src/content-script/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../src/content-script/spec-analyser/VariantSentencesGenerator';
 import { VariantGenerator } from '../src/content-script/spec-analyser/VariantGenerator';
@@ -441,7 +441,7 @@ describe('Crawler', () => {
 			variantGeneratorUtil
 		);
 
-		const featureManager = new FeatureManager(
+		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			analyzedElementStorage,
@@ -451,7 +451,7 @@ describe('Crawler', () => {
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
-			featureManager,
+			featureGenerator,
 			analyzedElementStorage,
 			spec,
 			browserContext,

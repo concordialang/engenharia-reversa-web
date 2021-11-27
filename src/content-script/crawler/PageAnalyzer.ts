@@ -1,5 +1,5 @@
 import { HTMLElementType } from '../enums/HTMLElementType';
-import { FeatureManager } from '../spec-analyser/FeatureManager';
+import { FeatureGenerator } from '../spec-analyser/FeatureGenerator';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { getFormElements, getPathTo } from '../util';
@@ -21,7 +21,7 @@ export class PageAnalyzer {
 	) => Promise<void>;
 
 	constructor(
-		private featureManager: FeatureManager,
+		private featureGenerator: FeatureGenerator,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private spec: Spec,
 		private browserContext: BrowserContext,
@@ -126,7 +126,7 @@ export class PageAnalyzer {
 
 				if (contextElement.nodeName !== HTMLElementType.FORM) {
 					// generate feature for elements outside forms
-					const featureOuterFormElements = await this.featureManager.generateFeature(
+					const featureOuterFormElements = await this.featureGenerator.generate(
 						contextElement,
 						url,
 						true,
@@ -176,7 +176,7 @@ export class PageAnalyzer {
 					)) == ElementAnalysisStatus.Done;
 
 				if (!isElementAnalyzed) {
-					feature = await this.featureManager.generateFeature(
+					feature = await this.featureGenerator.generate(
 						formElement as HTMLElement,
 						url,
 						false,

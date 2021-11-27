@@ -1,5 +1,5 @@
 import { Spec } from './spec-analyser/Spec';
-import { FeatureManager } from './spec-analyser/FeatureManager';
+import { FeatureGenerator } from './spec-analyser/FeatureGenerator';
 import { ElementAnalysisStorage } from './storage/ElementAnalysisStorage';
 import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { GraphStorage } from './storage/GraphStorage';
@@ -89,7 +89,7 @@ getTabId(communicationChannel).then((tabId) => {
 		variantGeneratorUtil
 	);
 
-	const featureManager = new FeatureManager(
+	const featureGenerator = new FeatureGenerator(
 		variantGenerator,
 		featureUtil,
 		elementAnalysisStorage,
@@ -99,7 +99,7 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
-		featureManager,
+		featureGenerator,
 		elementAnalysisStorage,
 		spec,
 		browserContext,

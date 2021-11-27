@@ -6,7 +6,6 @@ import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { Interactor } from './Interactor';
 
-// TODO: Refatorar essa classe
 export class ElementInteractionExecutor {
 	constructor(
 		private interactor: Interactor,

@@ -4,7 +4,7 @@ import { ElementInteractionExecutor } from '../src/content-script/crawler/Elemen
 import { ElementInteractionGenerator } from '../src/content-script/crawler/ElementInteractionGenerator';
 import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
 import { PageAnalyzer } from '../src/content-script/crawler/PageAnalyzer';
-import { FeatureManager } from '../src/content-script/spec-analyser/FeatureManager';
+import { FeatureGenerator } from '../src/content-script/spec-analyser/FeatureGenerator';
 import { FeatureUtil } from '../src/content-script/spec-analyser/FeatureUtil';
 import { Spec } from '../src/content-script/spec-analyser/Spec';
 import { UIElementGenerator } from '../src/content-script/spec-analyser/UIElementGenerator';
@@ -167,7 +167,7 @@ describe('Page Analyzer', () => {
 			variantGeneratorUtil
 		);
 
-		const featureManager = new FeatureManager(
+		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
@@ -177,7 +177,7 @@ describe('Page Analyzer', () => {
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
-			featureManager,
+			featureGenerator,
 			elementAnalysisStorage,
 			spec,
 			browserContext,

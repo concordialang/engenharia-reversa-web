@@ -1,4 +1,3 @@
-import { getPathTo } from '../util';
 import { Feature } from './Feature';
 
 type InteractableElement =
