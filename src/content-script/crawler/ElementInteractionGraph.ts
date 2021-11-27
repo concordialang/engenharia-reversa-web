@@ -14,13 +14,11 @@ export class ElementInteractionGraph {
 		private id: string,
 		private elementInteractionStorage: ObjectStorage<ElementInteraction<HTMLElement>>,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private graphStorage: GraphStorage,
-		private mutex: Mutex
+		private graphStorage: GraphStorage
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementAnalysisStorage = elementAnalysisStorage;
-		this.mutex = mutex;
 		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
 		this.lastInteractionKey = 'last-interaction-' + this.id;
 	}
@@ -30,7 +28,6 @@ export class ElementInteractionGraph {
 	): Promise<void> {
 		const interactionId = elementInteraction.getId();
 		await this.elementInteractionStorage.set(interactionId, elementInteraction);
-		await this.mutex.lock();
 		const graph = await this.getLatestVersionOfGraph();
 		graph.addNode(interactionId);
 		const sourceInteraction = await this.getLastInteraction();
@@ -39,7 +36,6 @@ export class ElementInteractionGraph {
 		}
 		this.graphStorage.set(this.elementInteractionGraphKey, graph);
 		await this.elementInteractionStorage.set(this.lastInteractionKey, elementInteraction);
-		await this.mutex.unlock();
 	}
 
 	private async getLatestVersionOfGraph(): Promise<Graph> {

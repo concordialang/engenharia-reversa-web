@@ -18,6 +18,10 @@ export class Variant {
 		this.id = id || Math.random().toString(18).substring(2);
 	}
 
+	public getId() {
+		return this.id;
+	}
+
 	public setName(name: string) {
 		this.name = name;
 	}

@@ -19,7 +19,12 @@ export class Scenario {
 	}
 
 	public addVariant(variant: Variant) {
-		this.variants.push(variant);
+		const index = this.variants.findIndex((v) => v.getId() === variant.getId());
+		if (index > -1) {
+			this.variants[index] = variant;
+		} else {
+			this.variants.push(variant);
+		}
 	}
 
 	public setVariants(variants: Array<Variant>) {

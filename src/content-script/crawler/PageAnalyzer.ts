@@ -74,10 +74,16 @@ export class PageAnalyzer {
 		if (xPath) {
 			let feature: Feature | string | null = null;
 			const lastInteraction = previousInteractions[previousInteractions.length - 1];
-			if (lastInteraction) {
-				feature = lastInteraction.getFeature();
-				if (typeof feature === 'string') {
-					feature = await this.featureStorage.get(feature);
+			if (
+				lastInteraction &&
+				lastInteraction.getPageUrl().href === this.browserContext.getUrl().href
+			) {
+				let interactionFeature: Feature | string | null = lastInteraction.getFeature();
+				if (typeof interactionFeature === 'string') {
+					interactionFeature = await this.featureStorage.get(interactionFeature);
+				}
+				if (interactionFeature?.needNewVariants) {
+					feature = interactionFeature;
 				}
 			}
 			const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
@@ -131,7 +137,7 @@ export class PageAnalyzer {
 						url,
 						true,
 						this.redirectCallback,
-						feature,
+						null,
 						previousInteractions
 					);
 
@@ -203,11 +209,7 @@ export class PageAnalyzer {
 		variant: Variant | null = null,
 		currentInteraction: ElementInteraction<HTMLElement> | null = null
 	): Promise<boolean> {
-		if (currentInteraction) {
-			const element = currentInteraction.getElement();
-			if (element.getAttribute('type') !== 'submit') {
-				return false;
-			}
+		if (!feature.needNewVariants) {
 			return true;
 		}
 		return false;
