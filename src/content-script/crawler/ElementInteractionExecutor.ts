@@ -18,7 +18,7 @@ export class ElementInteractionExecutor {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
-		await sleep(400);
+		await sleep(50);
 		const element = interaction.getElement();
 		const type = element.tagName;
 
