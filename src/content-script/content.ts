@@ -57,8 +57,7 @@ getTabId(communicationChannel).then((tabId) => {
 		tabId,
 		elementInteractionStorage,
 		elementAnalysisStorage,
-		graphStorage,
-		interactionsGraphMutex
+		graphStorage
 	);
 
 	const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
