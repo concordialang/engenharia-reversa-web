@@ -374,8 +374,6 @@ describe('Crawler', () => {
 
 		const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-		const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
-
 		const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
@@ -409,8 +407,7 @@ describe('Crawler', () => {
 			tabId,
 			elementInteracationStorage,
 			analyzedElementStorage,
-			graphStorage,
-			interactionsGraphMutex
+			graphStorage
 		);
 
 		const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);

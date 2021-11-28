@@ -1,6 +1,5 @@
 import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
 import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
-import Mutex from '../src/content-script/mutex/Mutex';
 import { GraphStorage } from '../src/content-script/storage/GraphStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnalysisStatus';
@@ -94,14 +93,11 @@ describe('ElementInteractionGraph', () => {
 		);
 		const graphStorage = new GraphStorage(storage);
 
-		const mutex = new Mutex('test-graph');
-
 		elementInteractionGraph = new ElementInteractionGraph(
 			'graph',
 			elementInteractionStorage,
 			elementAnalysisStorage,
-			graphStorage,
-			mutex
+			graphStorage
 		);
 
 		interactionA = await createElementInteraction('elementA', HTMLEventType.Click, url1);

@@ -1,4 +1,3 @@
-import Mutex from '../src/content-script/mutex/Mutex';
 import { BrowserContext } from '../src/content-script/crawler/BrowserContext';
 import { ElementInteractionExecutor } from '../src/content-script/crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../src/content-script/crawler/ElementInteractionGenerator';
@@ -112,8 +111,6 @@ describe('Page Analyzer', () => {
 
 		const tabId = 'tab-test';
 
-		const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
-
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
@@ -137,8 +134,7 @@ describe('Page Analyzer', () => {
 			tabId,
 			elementInteracationStorage,
 			elementAnalysisStorage,
-			graphStorage,
-			interactionsGraphMutex
+			graphStorage
 		);
 
 		const interactor = new Interactor(window);

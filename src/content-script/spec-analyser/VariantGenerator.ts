@@ -165,7 +165,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		const variantSentence = this.createVariantSentence(
+		const sentenceCreated = await this.createVariantSentence(
 			elm,
 			variant,
 			feature,
@@ -173,7 +173,7 @@ export class VariantGenerator {
 			firstAnalyzeSentence
 		);
 
-		if (!variantSentence) {
+		if (!sentenceCreated) {
 			if (elm.nextElementSibling) {
 				await nextElement(elm.nextElementSibling);
 			}
@@ -215,7 +215,7 @@ export class VariantGenerator {
 		feature: Feature,
 		observer: MutationObserverManager,
 		firstAnalyzeSentence: boolean
-	): Promise<VariantSentence | null> {
+	): Promise<boolean | null> {
 		// save element in feature interaction array
 		this.saveInteractedElement(elm, variant.getName(), feature);
 
@@ -234,7 +234,7 @@ export class VariantGenerator {
 		// treat mutational variant sentences
 		await this.treatMutationsSentences(observer, variant);
 
-		return variantSentence;
+		return true;
 	}
 
 	private getStartElementToAnalyse(

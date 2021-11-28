@@ -52,6 +52,5 @@ export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> 
 		} else {
 			throw new Error('Unable to get element xPath');
 		}
-		return false;
 	}
 }

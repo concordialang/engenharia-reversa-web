@@ -30,11 +30,7 @@ export class FeatureGenerator {
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
-		redirectionCallback?: (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			variant: Variant,
-			feature: Feature
-		) => Promise<void>,
+		redirectionCallback?: (feature: Feature) => Promise<void>,
 		feature: Feature | null = null,
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
@@ -48,34 +44,11 @@ export class FeatureGenerator {
 			analysisElement.ownerDocument.body
 		);
 
-		const callback = async (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newVariant: Variant
-		) => {
-			const elementAnalysis = new ElementAnalysis(
-				interactionThatTriggeredRedirect.getElement(),
-				interactionThatTriggeredRedirect.getPageUrl(),
-				ElementAnalysisStatus.Done
-			);
-			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-
-			// @ts-ignore
-			this.addVariantToScenario(newVariant, scenario, feature);
-
-			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
-				scenario.getVariants()
-			);
-			feature?.setUiElements(uiElements);
-
-			if (redirectionCallback) {
-				// Typescrypt bugou em uma verificação abaixo
-				// @ts-ignore
-				await redirectionCallback(interactionThatTriggeredRedirect, newVariant, feature);
-			}
-		};
+		const callback = this.gerateCallback(scenario, feature, redirectionCallback);
 
 		let pathsOfElementsToIgnore: string[] = [];
 		let variant: Variant | null = null;
+
 		if (previousInteractions.length > 0) {
 			const lastInteraction = previousInteractions[previousInteractions.length - 1];
 			//Only enters this block in the case of a redirection
@@ -144,6 +117,39 @@ export class FeatureGenerator {
 		feature.setMaxVariantCount(maxVariantCount);
 
 		return feature;
+	}
+
+	private gerateCallback(
+		scenario: Scenario,
+		feature: Feature,
+		redirectionCallback?: (feature: Feature) => Promise<void>
+	) {
+		const callback = async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => {
+			const elementAnalysis = new ElementAnalysis(
+				interactionThatTriggeredRedirect.getElement(),
+				interactionThatTriggeredRedirect.getPageUrl(),
+				ElementAnalysisStatus.Done
+			);
+			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			// @ts-ignore
+			this.addVariantToScenario(newVariant, scenario, feature);
+
+			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+				scenario.getVariants()
+			);
+			feature?.setUiElements(uiElements);
+
+			if (redirectionCallback) {
+				// @ts-ignore
+				await redirectionCallback(interactionThatTriggeredRedirect, newVariant, feature);
+			}
+		};
+
+		return callback;
 	}
 
 	private addVariantToScenario(

@@ -5,6 +5,7 @@ import { ElementInteraction } from './ElementInteraction';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { Interactor } from './Interactor';
+import { timeBetweenInteractions } from '../config';
 
 export class ElementInteractionExecutor {
 	constructor(
@@ -17,7 +18,8 @@ export class ElementInteractionExecutor {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
-		await sleep(50);
+		await sleep(timeBetweenInteractions);
+
 		const element = interaction.getElement();
 		const type = element.tagName;
 

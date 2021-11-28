@@ -12,6 +12,7 @@ import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
+
 export class Crawler {
 	private lastPageKey: string;
 
@@ -30,7 +31,7 @@ export class Crawler {
 	public async crawl() {
 		const _this = this;
 
-		//this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
+		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
 
 		this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
 			await _this.pageStorage.set(

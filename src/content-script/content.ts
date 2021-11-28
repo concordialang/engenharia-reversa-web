@@ -34,8 +34,6 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
-
 	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
