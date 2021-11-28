@@ -81,13 +81,16 @@ export class VariantGeneratorUtil {
 		return false;
 	}
 
+	public isVisible(elm: HTMLElement) {
+		if (elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
+			return false;
+		}
+
+		return true;
+	}
+
 	public isEnabled(elm: InteractableElement): boolean {
-		if (
-			elm.disabled ||
-			elm.hidden ||
-			elm.style.display === 'none' ||
-			elm.style.visibility === 'hidden'
-		) {
+		if (elm.disabled || !this.isVisible(elm)) {
 			return false;
 		}
 

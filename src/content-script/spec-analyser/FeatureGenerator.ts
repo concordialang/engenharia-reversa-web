@@ -51,10 +51,13 @@ export class FeatureGenerator {
 
 		if (previousInteractions.length > 0) {
 			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+
+			const isNextInteractionOnAnotherPage = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+				lastInteraction
+			);
+
 			//Only enters this block in the case of a redirection
-			if (
-				await this.elementInteractionGraph.isNextInteractionOnAnotherPage(lastInteraction)
-			) {
+			if (isNextInteractionOnAnotherPage) {
 				variant = lastInteraction.getVariant();
 				pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
 					return getPathTo(interaction.getElement());

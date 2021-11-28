@@ -146,6 +146,7 @@ export class VariantGenerator {
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>
 		) => {
 			await this.createVariantSentence(elm, variant, feature, observer, firstAnalyzeSentence);
+
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant);
 			}
@@ -263,7 +264,11 @@ export class VariantGenerator {
 		ignoreFormElements: boolean,
 		checksChildsTableRow: boolean
 	): Promise<boolean> {
-		if (elm.firstElementChild && elm.firstElementChild.nodeName !== HTMLElementType.OPTION) {
+		if (
+			elm.firstElementChild &&
+			elm.firstElementChild.nodeName !== HTMLElementType.OPTION &&
+			this.varUtil.isVisible(elm)
+		) {
 			if (elm instanceof HTMLTableRowElement) {
 				return checksChildsTableRow;
 			}
