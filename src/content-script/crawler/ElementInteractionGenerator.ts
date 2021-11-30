@@ -108,11 +108,17 @@ export class ElementInteractionGenerator {
 			return null;
 		}
 
+		let index: number = element.options.length - 1;
+
+		if (element.options.length > 2) {
+			index = generateRandomNumber(2, index);
+		}
+
 		const interaction = new ElementInteraction<HTMLSelectElement>(
 			element,
 			HTMLEventType.Change,
 			this.browserContext.getUrl(),
-			Array.from(element.options).reverse()[0].value // last option value
+			element.options[index].value
 		);
 
 		return interaction;

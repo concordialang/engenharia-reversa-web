@@ -57,11 +57,21 @@ export class Variant {
 		});
 	}
 
-	public getNumberOfAnalyzedButtons() {
+	public getButtonsElements(): HTMLElement[] {
+		let sourceElements: HTMLElement[] = [];
+
 		const btnSentences = this.sentences.filter(
 			(sentence) => sentence.uiElement?.getType() === 'button'
 		);
 
-		return btnSentences.length;
+		for (let sentence of btnSentences) {
+			let elm = sentence.uiElement?.getSourceElement();
+
+			if (elm) {
+				sourceElements.push(elm as HTMLElement);
+			}
+		}
+
+		return sourceElements;
 	}
 }

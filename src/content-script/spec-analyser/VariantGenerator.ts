@@ -451,23 +451,20 @@ export class VariantGenerator {
 			(interactedElm) => interactedElm.xpath === xpathElement
 		);
 
-		let isCancelBtn = false;
+		// true when it is a cancel button valid to interaction
+		let isInteractableCancelBtn = this.treatInteractableBtnsAfterFinalActionButton(
+			elm,
+			xpathElement,
+			wasInteracted,
+			variant,
+			feature
+		);
 
-		if (
-			!wasInteracted &&
-			this.varUtil.isButton(elm) &&
-			(variant.finalActionButtonFound || feature.analysesOnlyCancelBtns)
-		) {
-			isCancelBtn = this.varUtil.isCancelButton(elm);
-
-			this.saveBtnAfterFinalActionButton(feature, xpathElement, isCancelBtn);
-		}
-
-		if (feature.analysesOnlyCancelBtns && !isCancelBtn) {
+		if (feature.analysesOnlyCancelBtns && !isInteractableCancelBtn) {
 			return false;
 		}
 
-		if (!feature.analysesOnlyCancelBtns && isCancelBtn) {
+		if (!feature.analysesOnlyCancelBtns && isInteractableCancelBtn) {
 			return false;
 		}
 
@@ -476,7 +473,13 @@ export class VariantGenerator {
 		}
 
 		let isFinalActionBtn = false;
-		if (variant.lastAnalysisInputFieldFound) {
+
+		/*
+			tries to find the final action button if:
+			- the last input field was found
+			- that the feature has not yet started to analyze buttons placed after the final action button
+		*/
+		if (variant.lastAnalysisInputFieldFound && !feature.analysesBtnsAfterFinalActionBtn) {
 			isFinalActionBtn = this.varUtil.isFinalActionButton(elm);
 		}
 
@@ -484,28 +487,24 @@ export class VariantGenerator {
 			variant.finalActionButtonFound = true;
 		}
 
+		// final action buttons can interact more the one time
 		if (wasInteracted && !isFinalActionBtn) {
-			return false;
-		}
-
-		if (isFinalActionBtn && feature.analysesBtnsAfterFinalActionBtn) {
 			return false;
 		}
 
 		if (this.varUtil.isRadionButton(elm)) {
 			const anyOfGroupHasInteracted = this.varUtil.anyOfRadioofGroupHasInteracted(
-				feature,
+				feature.interactedElements,
 				variant.getName(),
 				elm as HTMLInputElement
 			);
+
 			if (anyOfGroupHasInteracted) {
 				return false;
 			}
-		}
-
-		if (this.varUtil.isButton(elm)) {
+		} else if (this.varUtil.isButton(elm)) {
 			const anyButtonHasInteracted = this.varUtil.anyButtonHasInteracted(
-				feature,
+				feature.interactedElements,
 				variant.getName()
 			);
 
@@ -541,7 +540,7 @@ export class VariantGenerator {
 			if (this.varUtil.isRadionButton(elm) && (elm as HTMLInputElement).name) {
 				interactedElm.radioGroupName = (elm as HTMLInputElement).name;
 				interactedElm.elmType = 'radio';
-			} else if (this.varUtil.isButton(interactedElm)) {
+			} else if (this.varUtil.isButton(elm)) {
 				interactedElm.elmType = 'button';
 			}
 
@@ -590,5 +589,34 @@ export class VariantGenerator {
 
 			feature.btnsAfterFinalActionBtn.push(btnAfter);
 		}
+	}
+
+	/*
+		Checks whether the element is an interactable button placed after the final action button
+		returns true if it is a cancel button
+	*/
+	private treatInteractableBtnsAfterFinalActionButton(
+		elm: HTMLElement,
+		xpathElement: string,
+		wasInteracted: boolean,
+		variant: Variant,
+		feature: Feature
+	): boolean {
+		let isCancelBtn = false;
+
+		if (
+			!wasInteracted &&
+			this.varUtil.isBtnAfterFinalActionButton(
+				elm,
+				variant.finalActionButtonFound,
+				feature.analysesBtnsAfterFinalActionBtn
+			)
+		) {
+			isCancelBtn = this.varUtil.isCancelButton(elm);
+
+			this.saveBtnAfterFinalActionButton(feature, xpathElement, isCancelBtn);
+		}
+
+		return isCancelBtn;
 	}
 }

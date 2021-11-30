@@ -27,7 +27,7 @@ export class ElementInteractionExecutor {
 
 		if (type == HTMLElementType.INPUT) {
 			const inputType = element.getAttribute('type');
-			if (inputType == HTMLInputType.Submit) {
+			if (inputType == HTMLInputType.Submit || inputType == HTMLInputType.Button) {
 				result = await this.interactor.executeButton(
 					<ElementInteraction<HTMLButtonElement>>interaction,
 					redirectionCallback

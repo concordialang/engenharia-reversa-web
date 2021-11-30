@@ -37,20 +37,43 @@ const dictionary = {
 		constant: 'Constante',
 		stringsFinalActionButtons: [
 			'Confirmar',
+			'Confirma',
 			'Salvar',
+			'Salva',
 			'Gravar',
+			'Grava',
 			'Concluir',
+			'Conclui',
 			'Finalizar',
+			'Finaliza',
 			'Armazenar',
+			'Armazena',
 			'Cadastrar',
+			'Cadastra',
 			'Gerar',
+			'Gera',
 			'Registrar',
+			'Registra',
 			'Manter',
-			'Sim',
+			'Mantém',
+			'Mantem',
 			'Listar',
+			'Lista',
 			'Pesquisar',
+			'Pesquisa',
+			'Sim',
 		],
-		stringsCancelButtons: ['Cancelar', 'Voltar', 'Fechar', 'Retornar', 'Não'],
+		stringsCancelButtons: [
+			'Cancelar',
+			'Cancela',
+			'Voltar',
+			'Volta',
+			'Fechar',
+			'Fecha',
+			'Retornar',
+			'Retorna',
+			'Não',
+		],
 	},
 };
 
@@ -61,7 +84,7 @@ dictionary.pt.stringsCancelButtons = dictionary.pt.stringsCancelButtons.concat(
 	dictionary.en.stringsCancelButtons
 );
 
-export function getDictionary(language: string) {
+export function getDictionary(language?: string) {
 	switch (language) {
 		case 'pt':
 			return dictionary.pt;

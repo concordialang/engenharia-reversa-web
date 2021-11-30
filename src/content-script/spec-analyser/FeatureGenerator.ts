@@ -15,6 +15,7 @@ import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 import { limitOfVariants } from '../config';
+import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 
 export class FeatureGenerator {
 	constructor(
@@ -264,7 +265,9 @@ export class FeatureGenerator {
 		}
 
 		// analyze buttons
-		const buttons = Array.from(element.getElementsByTagName('button'));
+		const elms = Array.from(element.querySelectorAll('button, input'));
+		const buttons = this.buttonsFilter(elms);
+
 		if (buttons.length > 0) {
 			const variantCountByButtons = this.discoverVariantCountByButtons(buttons);
 
@@ -298,7 +301,23 @@ export class FeatureGenerator {
 		return maxCountGroup ? maxCountGroup : 1;
 	}
 
-	private discoverVariantCountByButtons(buttons: HTMLButtonElement[]): number {
+	private buttonsFilter(elms) {
+		const buttons = elms.filter((elm) => {
+			let htmlElm = elm as HTMLElement;
+
+			if (
+				(elm instanceof HTMLInputElement &&
+					(elm.type == 'button' || elm.type == 'submit')) ||
+				elm instanceof HTMLButtonElement
+			) {
+				return htmlElm;
+			}
+		});
+
+		return buttons;
+	}
+
+	private discoverVariantCountByButtons(buttons): number {
 		let variantCountByButton = 0;
 
 		for (let button of buttons) {
@@ -323,13 +342,17 @@ export class FeatureGenerator {
 			return false;
 		}
 
-		const analyzedBtnsCount = variant.getNumberOfAnalyzedButtons();
+		let variantBtnElements = variant.getButtonsElements();
 
-		if (analyzedBtnsCount >= 2 || analyzedBtnsCount <= 0) {
+		if (variantBtnElements.length != 1) {
 			return false;
 		}
 
-		return true;
+		const variantGeneratorUtil = new VariantGeneratorUtil();
+
+		const isFinalActionBtn = variantGeneratorUtil.isFinalActionButton(variantBtnElements[0]);
+
+		return isFinalActionBtn;
 	}
 
 	/**

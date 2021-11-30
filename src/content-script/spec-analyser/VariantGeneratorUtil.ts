@@ -1,4 +1,5 @@
-import { Feature } from './Feature';
+import { getDictionary } from '../dictionary';
+import { HTMLInputType } from '../enums/HTMLInputType';
 
 type InteractableElement =
 	| HTMLInputElement
@@ -8,10 +9,13 @@ type InteractableElement =
 
 export class VariantGeneratorUtil {
 	private analysisElement?: HTMLElement;
-	private analysisInputFields?;
 	private lastAnalysisInputField?: HTMLElement;
+	private analysisInputFields?;
+	private dictionary?;
 
-	constructor(private dictionary) {}
+	constructor(dictionary?) {
+		this.dictionary = dictionary ? dictionary : getDictionary();
+	}
 
 	public addAnalysisElement(analysisElement: HTMLElement) {
 		if (analysisElement) {
@@ -23,9 +27,21 @@ export class VariantGeneratorUtil {
 
 	public updateAnalysisInputFields() {
 		if (this.analysisElement) {
-			this.analysisInputFields = Array.from(
+			let inputFields = Array.from(
 				this.analysisElement.querySelectorAll('input, textarea, select')
 			);
+
+			this.analysisInputFields = inputFields.filter((field) => {
+				let htmlField = field as HTMLElement;
+
+				if (
+					!(htmlField instanceof HTMLInputElement) ||
+					(htmlField.type !== HTMLInputType.Submit &&
+						htmlField.type !== HTMLInputType.Button)
+				) {
+					return htmlField;
+				}
+			});
 		}
 	}
 
@@ -150,6 +166,18 @@ export class VariantGeneratorUtil {
 		return isFinalActionBtn;
 	}
 
+	public isBtnAfterFinalActionButton(
+		elm: HTMLElement,
+		finalActionButtonFound: boolean,
+		analysesBtnsAfterFinalActionBtn: boolean
+	) {
+		if (this.isButton(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	// checks whether the element is a cancel button (buttons that characterize the final action of a variant)
 	public isCancelButton(elm: HTMLElement): boolean {
 		if (!this.isButton(elm)) {
@@ -187,11 +215,11 @@ export class VariantGeneratorUtil {
 
 	// checks if some group radio button received interaction in this variant
 	public anyOfRadioofGroupHasInteracted(
-		feature: Feature,
+		interactedElements,
 		variantName: string,
 		radio: HTMLInputElement
 	): boolean {
-		const anyInteracted = feature.interactedElements.some((interactedElm) => {
+		const anyInteracted = interactedElements.some((interactedElm) => {
 			return (
 				interactedElm.variantName === variantName &&
 				interactedElm.radioGroupName == radio.name
@@ -202,8 +230,8 @@ export class VariantGeneratorUtil {
 	}
 
 	// checks if some button has interacted in the variant
-	public anyButtonHasInteracted(feature: Feature, variantName: string): boolean {
-		const anyInteracted = feature.interactedElements.some((interactedElm) => {
+	public anyButtonHasInteracted(interactedElements, variantName: string): boolean {
+		const anyInteracted = interactedElements.some((interactedElm) => {
 			return interactedElm.variantName === variantName && interactedElm.elmType === 'button';
 		});
 
