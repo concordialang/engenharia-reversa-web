@@ -1,4 +1,4 @@
-import { getElementByXpath, getPathTo } from '../util';
+import { getPathTo } from '../util';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
@@ -52,6 +52,5 @@ export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> 
 		} else {
 			throw new Error('Unable to get element xPath');
 		}
-		return false;
 	}
 }

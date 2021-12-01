@@ -1,5 +1,5 @@
 import { Spec } from './spec-analyser/Spec';
-import { FeatureManager } from './spec-analyser/FeatureManager';
+import { FeatureGenerator } from './spec-analyser/FeatureGenerator';
 import { ElementAnalysisStorage } from './storage/ElementAnalysisStorage';
 import { VariantGenerator } from './spec-analyser/VariantGenerator';
 import { GraphStorage } from './storage/GraphStorage';
@@ -33,8 +33,6 @@ getTabId(communicationChannel).then((tabId) => {
 	tabId = 'tab-' + tabId;
 
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
-
-	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
 
 	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
@@ -89,7 +87,7 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 
-	const featureManager = new FeatureManager(
+	const featureGenerator = new FeatureGenerator(
 		variantGenerator,
 		featureUtil,
 		elementAnalysisStorage,
@@ -99,7 +97,7 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
-		featureManager,
+		featureGenerator,
 		elementAnalysisStorage,
 		browserContext,
 		featureStorage,

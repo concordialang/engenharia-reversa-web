@@ -1,6 +1,5 @@
 import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
 import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
-import Mutex from '../src/content-script/mutex/Mutex';
 import { GraphStorage } from '../src/content-script/storage/GraphStorage';
 import { LocalStorageMock } from './util/LocalStorageMock';
 import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnalysisStatus';
@@ -93,8 +92,6 @@ describe('ElementInteractionGraph', () => {
 			ElementInteraction
 		);
 		const graphStorage = new GraphStorage(storage);
-
-		const mutex = new Mutex('test-graph');
 
 		elementInteractionGraph = new ElementInteractionGraph(
 			'graph',

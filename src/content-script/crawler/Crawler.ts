@@ -14,6 +14,7 @@ import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { Spec } from '../spec-analyser/Spec';
 import { Feature } from '../spec-analyser/Feature';
+
 export class Crawler {
 	private lastPageKey: string;
 
@@ -34,7 +35,7 @@ export class Crawler {
 	public async crawl() {
 		const _this = this;
 
-		//this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
+		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
 
 		this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
 			await _this.pageStorage.set(

@@ -15,7 +15,7 @@ import { ChromeCommunicationChannel } from '../src/shared/comm/ChromeCommunicati
 import { Message } from '../src/shared/comm/Message';
 import { Command } from '../src/shared/comm/Command';
 import { ElementAnalysis } from '../src/content-script/crawler/ElementAnalysis';
-import { FeatureManager } from '../src/content-script/spec-analyser/FeatureManager';
+import { FeatureGenerator } from '../src/content-script/spec-analyser/FeatureGenerator';
 import { UIElementGenerator } from '../src/content-script/spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from '../src/content-script/spec-analyser/VariantSentencesGenerator';
 import { VariantGenerator } from '../src/content-script/spec-analyser/VariantGenerator';
@@ -374,8 +374,6 @@ describe('Crawler', () => {
 
 		const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-		const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
-
 		const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
@@ -442,7 +440,7 @@ describe('Crawler', () => {
 
 		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 
-		const featureManager = new FeatureManager(
+		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			analyzedElementStorage,
@@ -452,7 +450,7 @@ describe('Crawler', () => {
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
-			featureManager,
+			featureGenerator,
 			analyzedElementStorage,
 			browserContext,
 			featureStorage,

@@ -1,10 +1,9 @@
-import Mutex from '../src/content-script/mutex/Mutex';
 import { BrowserContext } from '../src/content-script/crawler/BrowserContext';
 import { ElementInteractionExecutor } from '../src/content-script/crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../src/content-script/crawler/ElementInteractionGenerator';
 import { ElementInteractionGraph } from '../src/content-script/crawler/ElementInteractionGraph';
 import { PageAnalyzer } from '../src/content-script/crawler/PageAnalyzer';
-import { FeatureManager } from '../src/content-script/spec-analyser/FeatureManager';
+import { FeatureGenerator } from '../src/content-script/spec-analyser/FeatureGenerator';
 import { FeatureUtil } from '../src/content-script/spec-analyser/FeatureUtil';
 import { Spec } from '../src/content-script/spec-analyser/Spec';
 import { UIElementGenerator } from '../src/content-script/spec-analyser/UIElementGenerator';
@@ -122,8 +121,6 @@ describe('Page Analyzer', () => {
 
 		const tabId = 'tab-test';
 
-		const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex-' + tabId);
-
 		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
@@ -176,7 +173,7 @@ describe('Page Analyzer', () => {
 
 		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 
-		const featureManager = new FeatureManager(
+		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
@@ -186,7 +183,7 @@ describe('Page Analyzer', () => {
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
-			featureManager,
+			featureGenerator,
 			elementAnalysisStorage,
 			browserContext,
 			new LocalObjectStorage<Feature>(window.localStorage, Feature),

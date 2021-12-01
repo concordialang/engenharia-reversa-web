@@ -57,14 +57,34 @@ export class VariantSentencesGenerator {
 		);
 	}
 
-	public gerateThenTypeSentence(featureName: string): VariantSentence {
+	public gerateThenTypeSentence(
+		featureName: string,
+		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | null
+	): VariantSentence {
+		let statePostCondition = featureName.toLocaleLowerCase();
+
+		if (lastButtonInteracted !== null) {
+			let textButton = '';
+
+			if (lastButtonInteracted.innerText) {
+				textButton = lastButtonInteracted.innerText;
+			} else if (
+				lastButtonInteracted instanceof HTMLInputElement &&
+				lastButtonInteracted.value
+			) {
+				textButton = lastButtonInteracted.value;
+			}
+
+			statePostCondition += textButton != '' ? ' | ' + textButton.toLocaleLowerCase() : '';
+		}
+
 		return new VariantSentence(
 			VariantSentenceType.THEN,
 			VariantSentenceActions.HAVE,
 			undefined,
 			undefined,
 			undefined,
-			featureName.toLocaleLowerCase()
+			statePostCondition
 		);
 	}
 

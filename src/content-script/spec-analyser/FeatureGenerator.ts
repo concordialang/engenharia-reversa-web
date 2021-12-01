@@ -15,10 +15,10 @@ import { Spec } from './Spec';
 import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
+import { limitOfVariants } from '../config';
+import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 
-const limitOfVariants = 50;
-
-export class FeatureManager {
+export class FeatureGenerator {
 	constructor(
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
@@ -28,16 +28,12 @@ export class FeatureManager {
 		private specStorage: ObjectStorage<Spec>
 	) {}
 
-	public async generateFeature(
+	public async generate(
 		spec: Spec,
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
-		redirectionCallback?: (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			variant: Variant,
-			feature: Feature
-		) => Promise<void>,
+		redirectionCallback?: (feature: Feature) => Promise<void>,
 		feature: Feature | null = null,
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
@@ -51,40 +47,20 @@ export class FeatureManager {
 			analysisElement.ownerDocument.body
 		);
 
-		const callback = async (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newVariant: Variant
-		) => {
-			const elementAnalysis = new ElementAnalysis(
-				interactionThatTriggeredRedirect.getElement(),
-				interactionThatTriggeredRedirect.getPageUrl(),
-				ElementAnalysisStatus.Done
-			);
-			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-
-			// @ts-ignore
-			this.addVariantToScenario(newVariant, scenario, feature);
-
-			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
-				scenario.getVariants()
-			);
-			feature?.setUiElements(uiElements);
-
-			if (redirectionCallback) {
-				// Typescrypt bugou em uma verificação abaixo
-				// @ts-ignore
-				await redirectionCallback(interactionThatTriggeredRedirect, newVariant, feature);
-			}
-		};
+		const callback = this.generateCallback(scenario, feature, redirectionCallback);
 
 		let pathsOfElementsToIgnore: string[] = [];
 		let variant: Variant | null = null;
+
 		if (previousInteractions.length > 0) {
 			const lastInteraction = previousInteractions[previousInteractions.length - 1];
+
+			const isNextInteractionOnAnotherPage = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+				lastInteraction
+			);
+
 			//Only enters this block in the case of a redirection
-			if (
-				await this.elementInteractionGraph.isNextInteractionOnAnotherPage(lastInteraction)
-			) {
+			if (isNextInteractionOnAnotherPage) {
 				variant = lastInteraction.getVariant();
 				pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
 					return getPathTo(interaction.getElement());
@@ -149,6 +125,36 @@ export class FeatureManager {
 		feature.setMaxVariantCount(maxVariantCount);
 
 		return feature;
+	}
+
+	private generateCallback(
+		scenario: Scenario,
+		feature: Feature,
+		redirectionCallback?: (feature: Feature) => Promise<void>
+	) {
+		return async (
+			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
+			newVariant: Variant
+		) => {
+			const elementAnalysis = new ElementAnalysis(
+				interactionThatTriggeredRedirect.getElement(),
+				interactionThatTriggeredRedirect.getPageUrl(),
+				ElementAnalysisStatus.Done
+			);
+			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			// @ts-ignore
+			this.addVariantToScenario(newVariant, scenario, feature);
+
+			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+				scenario.getVariants()
+			);
+			feature.setUiElements(uiElements);
+
+			if (redirectionCallback) {
+				await redirectionCallback(feature);
+			}
+		};
 	}
 
 	private addVariantToScenario(
@@ -260,7 +266,9 @@ export class FeatureManager {
 		}
 
 		// analyze buttons
-		const buttons = Array.from(element.getElementsByTagName('button'));
+		const elms = Array.from(element.querySelectorAll('button, input'));
+		const buttons = this.buttonsFilter(elms);
+
 		if (buttons.length > 0) {
 			const variantCountByButtons = this.discoverVariantCountByButtons(buttons);
 
@@ -294,7 +302,21 @@ export class FeatureManager {
 		return maxCountGroup ? maxCountGroup : 1;
 	}
 
-	private discoverVariantCountByButtons(buttons: HTMLButtonElement[]): number {
+	private buttonsFilter(elms) {
+		return elms.filter((elm) => {
+			let htmlElm = elm as HTMLElement;
+
+			if (
+				(elm instanceof HTMLInputElement &&
+					(elm.type == 'button' || elm.type == 'submit')) ||
+				elm instanceof HTMLButtonElement
+			) {
+				return htmlElm;
+			}
+		});
+	}
+
+	private discoverVariantCountByButtons(buttons): number {
 		let variantCountByButton = 0;
 
 		for (let button of buttons) {
@@ -319,13 +341,17 @@ export class FeatureManager {
 			return false;
 		}
 
-		const analyzedBtnsCount = variant.getNumberOfAnalyzedButtons();
+		let variantBtnElements = variant.getButtonsElements();
 
-		if (analyzedBtnsCount >= 2 || analyzedBtnsCount <= 0) {
+		if (variantBtnElements.length != 1) {
 			return false;
 		}
 
-		return true;
+		const variantGeneratorUtil = new VariantGeneratorUtil();
+
+		const isFinalActionBtn = variantGeneratorUtil.isFinalActionButton(variantBtnElements[0]);
+
+		return isFinalActionBtn;
 	}
 
 	/**
