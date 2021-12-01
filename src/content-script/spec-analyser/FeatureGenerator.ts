@@ -24,8 +24,7 @@ export class FeatureGenerator {
 		private featureUtil: FeatureUtil,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private browserContext: BrowserContext,
-		private elementInteractionGraph: ElementInteractionGraph,
-		private specStorage: ObjectStorage<Spec>
+		private elementInteractionGraph: ElementInteractionGraph
 	) {}
 
 	public async generate(
@@ -84,7 +83,6 @@ export class FeatureGenerator {
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
 				spec.addFeature(feature);
-				await this.specStorage.set('Spec', spec);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');

@@ -171,15 +171,12 @@ describe('Page Analyzer', () => {
 			variantGeneratorUtil
 		);
 
-		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
-
 		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
 			browserContext,
-			elementInteractionGraph,
-			specStorage
+			elementInteractionGraph
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
@@ -188,8 +185,7 @@ describe('Page Analyzer', () => {
 			browserContext,
 			new LocalObjectStorage<Feature>(window.localStorage, Feature),
 			elementInteractionExecutor,
-			elementInteractionGraph,
-			specStorage
+			elementInteractionGraph
 		);
 		return pageAnalyzer;
 	}

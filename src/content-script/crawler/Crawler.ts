@@ -98,12 +98,13 @@ export class Crawler {
 		}
 
 		try {
-			let spec: Spec | null = await this.specStorage.get('Spec');
+			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());
 			if (!spec) {
-				spec = new Spec('pt', this.featureStorage);
-				this.specStorage.set('Spec', spec);
+				spec = new Spec('pt', this.featureStorage, this.specStorage);
+				this.specStorage.set(Spec.getStorageKey(), spec);
 			} else {
 				spec.setFeatureStorage(this.featureStorage);
+				spec.setSpecStorage(this.specStorage);
 			}
 			await this.pageAnalyzer.analyze(
 				spec,

@@ -23,8 +23,7 @@ export class PageAnalyzer {
 		private browserContext: BrowserContext,
 		private featureStorage: ObjectStorage<Feature>,
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private elementInteractionGraph: ElementInteractionGraph,
-		private specStorage: ObjectStorage<Spec>
+		private elementInteractionGraph: ElementInteractionGraph
 	) {
 		this.redirectCallback = async (feature: Feature) => {
 			await this.saveFeatureToSpec(feature);
@@ -187,7 +186,6 @@ export class PageAnalyzer {
 		}
 		if (this.spec) {
 			this.spec.addFeature(feature);
-			await this.specStorage.set('Spec', this.spec);
 		}
 	}
 

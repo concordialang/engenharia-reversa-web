@@ -9,11 +9,16 @@ export class Spec {
 	@Exclude()
 	private featureStorage: ObjectStorage<Feature> | null = null;
 
+	@Exclude()
+	private specStorage: ObjectStorage<Spec> | null = null;
+
 	constructor(
 		public readonly language: string,
-		featureStorage: ObjectStorage<Feature> | null = null
+		featureStorage: ObjectStorage<Feature> | null = null,
+		specStorage: ObjectStorage<Spec> | null = null
 	) {
 		this.featureStorage = featureStorage;
+		this.specStorage = specStorage;
 	}
 
 	public addFeature(feature: Feature) {
@@ -32,10 +37,17 @@ export class Spec {
 		if (this.featureStorage) {
 			this.featureStorage.set(feature.getId(), feature);
 		}
+		if (this.specStorage) {
+			this.specStorage.set(Spec.getStorageKey(), this);
+		}
 	}
 
 	public setFeatureStorage(featureStorage: ObjectStorage<Feature>): void {
 		this.featureStorage = featureStorage;
+	}
+
+	public setSpecStorage(specStorage: ObjectStorage<Spec>): void {
+		this.specStorage = specStorage;
 	}
 
 	public getFeatures() {
@@ -44,5 +56,9 @@ export class Spec {
 
 	public featureCount() {
 		return this.features.length;
+	}
+
+	public static getStorageKey(): string {
+		return 'Spec';
 	}
 }
