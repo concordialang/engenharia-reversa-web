@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { VariantSentence } from './VariantSentence';
 import 'reflect-metadata';
+import { HTMLInputType } from '../enums/HTMLInputType';
 
 export class Variant {
 	private name!: string;
@@ -73,5 +74,26 @@ export class Variant {
 		}
 
 		return sourceElements;
+	}
+
+	public getLastButtonInteracted(): HTMLButtonElement | HTMLInputElement | null {
+		const buttons = this.getButtonsElements();
+
+		const length = buttons.length;
+
+		if (length > 0) {
+			const lastElm = buttons[length - 1];
+
+			if (
+				lastElm instanceof HTMLButtonElement ||
+				(lastElm instanceof HTMLInputElement &&
+					(lastElm.type === HTMLInputType.Submit ||
+						lastElm.type === HTMLInputType.Button))
+			) {
+				return lastElm;
+			}
+		}
+
+		return null;
 	}
 }

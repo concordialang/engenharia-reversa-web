@@ -61,8 +61,14 @@ export class FeatureUtil {
 		return this.variantSentencesGenerator.gerateFromMutations(mutation);
 	}
 
-	createThenTypeVariantSentence(featureName: string): VariantSentence {
-		return this.variantSentencesGenerator.gerateThenTypeSentence(featureName);
+	createThenTypeVariantSentence(
+		featureName: string,
+		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | null
+	): VariantSentence {
+		return this.variantSentencesGenerator.gerateThenTypeSentence(
+			featureName,
+			lastButtonInteracted
+		);
 	}
 
 	private titleBeforeElement(f: HTMLElement): HTMLElement | null {

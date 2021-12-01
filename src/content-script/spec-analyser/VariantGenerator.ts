@@ -61,7 +61,12 @@ export class VariantGenerator {
 			pathsOfElementsToIgnore
 		);
 
-		const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(feature.getName());
+		const lastButtonInteracted = variant.getLastButtonInteracted();
+
+		const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(
+			feature.getName(),
+			lastButtonInteracted
+		);
 		if (thenTypeSentence) {
 			variant.setVariantSentence(thenTypeSentence);
 		}
