@@ -5,6 +5,7 @@ import { Variant } from '../../src/content-script/spec-analyser/Variant';
 import { VariantSentence } from '../../src/content-script/spec-analyser/VariantSentence';
 import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
 import { ElementAnalysis } from '../../src/content-script/crawler/ElementAnalysis';
+import { Spec } from '../../src/content-script/spec-analyser/Spec';
 
 export function assertElementAnalysisAreEqual(expected: ElementAnalysis, actual: ElementAnalysis) {
 	expect(actual.getElement()).toBe(expected.getElement());
@@ -55,6 +56,15 @@ export function assertFeaturesAreEqual(expected: Feature, actual: Feature) {
 	const actualUiElements = actual.getUiElements();
 	for (let i = 0; i < expectedUiElements.length; i++) {
 		assertUIElementsAreEqual(actualUiElements[i], expectedUiElements[i]);
+	}
+}
+
+export function assertSpecsAreEqual(expected: Spec, actual: Spec) {
+	expect(actual.language).toBe(expected.language);
+	const expectedFeatures = expected.getFeatures();
+	const actualFeatures = actual.getFeatures();
+	for (let i = 0; i < expectedFeatures.length; i++) {
+		assertFeaturesAreEqual(actualFeatures[i], expectedFeatures[i]);
 	}
 }
 

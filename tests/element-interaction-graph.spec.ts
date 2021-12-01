@@ -100,8 +100,7 @@ describe('ElementInteractionGraph', () => {
 			'graph',
 			elementInteractionStorage,
 			elementAnalysisStorage,
-			graphStorage,
-			mutex
+			graphStorage
 		);
 
 		interactionA = await createElementInteraction('elementA', HTMLEventType.Click, url1);

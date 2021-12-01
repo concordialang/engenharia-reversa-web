@@ -48,7 +48,6 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	const language = 'pt';
-	const spec: Spec = new Spec(language, featureStorage);
 	const dictionary = getDictionary(language);
 
 	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
@@ -88,23 +87,25 @@ getTabId(communicationChannel).then((tabId) => {
 		variantGeneratorUtil
 	);
 
+	const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
+
 	const featureManager = new FeatureManager(
 		variantGenerator,
 		featureUtil,
 		elementAnalysisStorage,
-		spec,
 		browserContext,
-		elementInteractionGraph
+		elementInteractionGraph,
+		specStorage
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
 		featureManager,
 		elementAnalysisStorage,
-		spec,
 		browserContext,
 		featureStorage,
 		elementInteractionExecutor,
-		elementInteractionGraph
+		elementInteractionGraph,
+		specStorage
 	);
 
 	const crawler: Crawler = new Crawler(
@@ -114,7 +115,9 @@ getTabId(communicationChannel).then((tabId) => {
 		visitedURLGraph,
 		pageAnalyzer,
 		communicationChannel,
-		elementAnalysisStorage
+		elementAnalysisStorage,
+		featureStorage,
+		specStorage
 	);
 
 	communicationChannel.setMessageListener(function (message: Message) {

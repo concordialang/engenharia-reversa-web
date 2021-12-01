@@ -20,14 +20,16 @@ export class PageAnalyzer {
 		feature: Feature
 	) => Promise<void>;
 
+	private spec: Spec | null = null;
+
 	constructor(
 		private featureManager: FeatureManager,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private spec: Spec,
 		private browserContext: BrowserContext,
 		private featureStorage: ObjectStorage<Feature>,
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private specStorage: ObjectStorage<Spec>
 	) {
 		this.redirectCallback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
@@ -43,7 +45,10 @@ export class PageAnalyzer {
 			if (analysisFinished) {
 				this.setFeatureUiElementsAsAnalyzed(feature);
 			}
-			this.spec.addFeature(feature);
+			if (this.spec) {
+				this.spec.addFeature(feature);
+				await this.specStorage.set('Spec', this.spec);
+			}
 		};
 	}
 
@@ -66,10 +71,12 @@ export class PageAnalyzer {
 	}
 
 	public async analyze(
+		spec: Spec,
 		url: URL,
 		contextElement: HTMLElement,
 		previousInteractions: ElementInteraction<HTMLElement>[] = []
 	): Promise<void> {
+		this.spec = spec;
 		let xPath = getPathTo(contextElement);
 		if (xPath) {
 			let feature: Feature | string | null = null;
@@ -133,6 +140,7 @@ export class PageAnalyzer {
 				if (contextElement.nodeName !== HTMLElementType.FORM) {
 					// generate feature for elements outside forms
 					const featureOuterFormElements = await this.featureManager.generateFeature(
+						this.spec,
 						contextElement,
 						url,
 						true,
@@ -181,8 +189,9 @@ export class PageAnalyzer {
 						url
 					)) == ElementAnalysisStatus.Done;
 
-				if (!isElementAnalyzed) {
+				if (!isElementAnalyzed && this.spec) {
 					feature = await this.featureManager.generateFeature(
+						this.spec,
 						formElement as HTMLElement,
 						url,
 						false,
@@ -197,7 +206,9 @@ export class PageAnalyzer {
 						if (analysisFinished) {
 							this.setFeatureUiElementsAsAnalyzed(feature);
 						}
-						this.spec.addFeature(feature);
+						if (this.spec) {
+							this.spec.addFeature(feature);
+						}
 					}
 				}
 			}

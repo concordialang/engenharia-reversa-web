@@ -48,8 +48,7 @@ describe('VariantGenerator', () => {
 		'graph',
 		elementInteracationStorage,
 		elementAnalysisStorage,
-		graphStorage,
-		interactionsGraphMutex
+		graphStorage
 	);
 
 	const interactor = new Interactor(window);

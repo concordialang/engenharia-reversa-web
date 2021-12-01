@@ -3,6 +3,8 @@ import { UIProperty } from '../../src/content-script/spec-analyser/UIProperty';
 import { Variant } from '../../src/content-script/spec-analyser/Variant';
 import { Scenario } from '../../src/content-script/spec-analyser/Scenario';
 import { Feature } from '../../src/content-script/spec-analyser/Feature';
+import { Spec } from '../../src/content-script/spec-analyser/Spec';
+import { LocalObjectStorage } from '../../src/content-script/storage/LocalObjectStorage';
 import { VariantSentence } from '../../src/content-script/spec-analyser/VariantSentence';
 import { Import } from '../../src/content-script/spec-analyser/Import';
 import { ElementInteraction } from '../../src/content-script/crawler/ElementInteraction';
@@ -46,6 +48,16 @@ export function createValidElementInteraction(
 		variant,
 		feature
 	);
+}
+
+export function createValidSpec(): Spec {
+	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage);
+	const spec = new Spec('pt-BR', featureStorage);
+	const feature1 = createValidFeature();
+	const feature2 = createValidFeature();
+	spec.addFeature(feature1);
+	spec.addFeature(feature2);
+	return spec;
 }
 
 export function createValidFeature(): Feature {

@@ -12,6 +12,8 @@ import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
+import { Spec } from '../spec-analyser/Spec';
+import { Feature } from '../spec-analyser/Feature';
 export class Crawler {
 	private lastPageKey: string;
 
@@ -22,7 +24,9 @@ export class Crawler {
 		private visitedURLGraph: VisitedURLGraph,
 		private pageAnalyzer: PageAnalyzer,
 		private communicationChannel: CommunicationChannel,
-		private elementAnalysisStorage: ElementAnalysisStorage
+		private elementAnalysisStorage: ElementAnalysisStorage,
+		private featureStorage: ObjectStorage<Feature>,
+		private specStorage: ObjectStorage<Spec>
 	) {
 		this.lastPageKey = 'last-page';
 	}
@@ -93,7 +97,15 @@ export class Crawler {
 		}
 
 		try {
+			let spec: Spec | null = await this.specStorage.get('Spec');
+			if (!spec) {
+				spec = new Spec('pt', this.featureStorage);
+				this.specStorage.set('Spec', spec);
+			} else {
+				spec.setFeatureStorage(this.featureStorage);
+			}
 			await this.pageAnalyzer.analyze(
+				spec,
 				this.browserContext.getUrl(),
 				analysisElement,
 				previousInteractions

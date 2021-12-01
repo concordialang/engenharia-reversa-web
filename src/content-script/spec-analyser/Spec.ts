@@ -1,10 +1,20 @@
+import { Exclude, Type } from 'class-transformer';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { Feature } from './Feature';
 
 export class Spec {
+	@Type(() => Feature)
 	private features: Array<Feature> = [];
 
-	constructor(public readonly language: string, private featureStorage: ObjectStorage<Feature>) {}
+	@Exclude()
+	private featureStorage: ObjectStorage<Feature> | null = null;
+
+	constructor(
+		public readonly language: string,
+		featureStorage: ObjectStorage<Feature> | null = null
+	) {
+		this.featureStorage = featureStorage;
+	}
 
 	public addFeature(feature: Feature) {
 		const index = this.features.findIndex((f) => f.getId() === feature.getId());
@@ -19,7 +29,13 @@ export class Spec {
 				this.features.push(feature);
 			}
 		}
-		this.featureStorage.set(feature.getId(), feature);
+		if (this.featureStorage) {
+			this.featureStorage.set(feature.getId(), feature);
+		}
+	}
+
+	public setFeatureStorage(featureStorage: ObjectStorage<Feature>): void {
+		this.featureStorage = featureStorage;
 	}
 
 	public getFeatures() {

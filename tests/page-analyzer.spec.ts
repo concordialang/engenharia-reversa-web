@@ -45,7 +45,13 @@ describe('Page Analyzer', () => {
 		expect(div1).not.toBeNull();
 		if (div1) {
 			try {
-				await pageAnalyzer.analyze(pageUrl, div1);
+				const language = 'pt';
+				const featureStorage = new LocalObjectStorage<Feature>(
+					window.localStorage,
+					Feature
+				);
+				const spec: Spec = new Spec(language, featureStorage);
+				await pageAnalyzer.analyze(spec, pageUrl, div1);
 			} catch (ForcingExecutionStoppageError) {
 				// ignore
 			}
@@ -93,7 +99,11 @@ describe('Page Analyzer', () => {
 			);
 			elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
-			await pageAnalyzer.analyze(pageUrl, div1);
+			const language = 'pt';
+			const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+			const spec: Spec = new Spec(language, featureStorage);
+
+			await pageAnalyzer.analyze(spec, pageUrl, div1);
 
 			expect(set).not.toHaveBeenCalled();
 		}
@@ -122,8 +132,6 @@ describe('Page Analyzer', () => {
 		);
 
 		const language = 'pt';
-		const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
-		const spec: Spec = new Spec(language, featureStorage);
 		const dictionary = getDictionary(language);
 
 		let elementAnalysisStorage: ElementAnalysisStorage;
@@ -137,8 +145,7 @@ describe('Page Analyzer', () => {
 			tabId,
 			elementInteracationStorage,
 			elementAnalysisStorage,
-			graphStorage,
-			interactionsGraphMutex
+			graphStorage
 		);
 
 		const interactor = new Interactor(window);
@@ -167,23 +174,25 @@ describe('Page Analyzer', () => {
 			variantGeneratorUtil
 		);
 
+		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
+
 		const featureManager = new FeatureManager(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
-			spec,
 			browserContext,
-			elementInteractionGraph
+			elementInteractionGraph,
+			specStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
 			featureManager,
 			elementAnalysisStorage,
-			spec,
 			browserContext,
 			new LocalObjectStorage<Feature>(window.localStorage, Feature),
 			elementInteractionExecutor,
-			elementInteractionGraph
+			elementInteractionGraph,
+			specStorage
 		);
 		return pageAnalyzer;
 	}

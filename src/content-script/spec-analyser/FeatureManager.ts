@@ -6,6 +6,7 @@ import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
 import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppageError';
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
+import { ObjectStorage } from '../storage/ObjectStorage';
 import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
@@ -22,12 +23,13 @@ export class FeatureManager {
 		private variantGenerator: VariantGenerator,
 		private featureUtil: FeatureUtil,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private spec: Spec,
 		private browserContext: BrowserContext,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private specStorage: ObjectStorage<Spec>
 	) {}
 
 	public async generateFeature(
+		spec: Spec,
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
@@ -40,7 +42,7 @@ export class FeatureManager {
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
 		if (!feature) {
-			feature = this.initializeNewFeature(analysisElement, ignoreFormElements);
+			feature = this.initializeNewFeature(spec, analysisElement, ignoreFormElements);
 		}
 
 		const scenario = feature.getGeneralScenario();
@@ -105,7 +107,8 @@ export class FeatureManager {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
-				this.spec.addFeature(feature);
+				spec.addFeature(feature);
+				await this.specStorage.set('Spec', spec);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');
@@ -128,12 +131,13 @@ export class FeatureManager {
 	}
 
 	private initializeNewFeature(
+		spec: Spec,
 		analysisElement: HTMLElement,
 		ignoreFormElements: boolean
 	): Feature {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
-			this.spec.featureCount()
+			spec.featureCount()
 		);
 
 		feature.ignoreFormElements = ignoreFormElements;

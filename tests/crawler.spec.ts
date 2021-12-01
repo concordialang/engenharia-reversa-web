@@ -409,8 +409,7 @@ describe('Crawler', () => {
 			tabId,
 			elementInteracationStorage,
 			analyzedElementStorage,
-			graphStorage,
-			interactionsGraphMutex
+			graphStorage
 		);
 
 		const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
@@ -441,23 +440,25 @@ describe('Crawler', () => {
 			variantGeneratorUtil
 		);
 
+		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
+
 		const featureManager = new FeatureManager(
 			variantGenerator,
 			featureUtil,
 			analyzedElementStorage,
-			spec,
 			browserContext,
-			elementInteractionGraph
+			elementInteractionGraph,
+			specStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
 			featureManager,
 			analyzedElementStorage,
-			spec,
 			browserContext,
 			featureStorage,
 			elementInteractionExecutor,
-			elementInteractionGraph
+			elementInteractionGraph,
+			specStorage
 		);
 
 		const crawler: Crawler = new Crawler(
@@ -467,7 +468,9 @@ describe('Crawler', () => {
 			visitedURLGraph,
 			pageAnalyzer,
 			communicationChannel,
-			analyzedElementStorage
+			analyzedElementStorage,
+			featureStorage,
+			specStorage
 		);
 
 		return crawler;
