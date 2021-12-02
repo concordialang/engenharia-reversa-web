@@ -20,7 +20,7 @@ describe('ElementAnalysisStorage', () => {
 		expect(element).not.toBeNull();
 
 		if (element) {
-			const analysis = new ElementAnalysis(element, url, ElementAnalysisStatus.Done);
+			const analysis = new ElementAnalysis(element, url, ElementAnalysisStatus.Done, '1');
 			storage.set(analysis.getId(), analysis);
 
 			const fetchedAnalysis = await storage.get(analysis.getId());

@@ -46,7 +46,12 @@ export class FeatureGenerator {
 			analysisElement.ownerDocument.body
 		);
 
-		const callback = this.generateCallback(scenario, feature, redirectionCallback);
+		const callback = this.generateCallback(
+			scenario,
+			feature,
+			analysisElement,
+			redirectionCallback
+		);
 
 		let pathsOfElementsToIgnore: string[] = [];
 		let variant: Variant | null = null;
@@ -86,6 +91,8 @@ export class FeatureGenerator {
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');
+				} else {
+					this.setElementAnalysisAsDone(analysisElement);
 				}
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
@@ -102,6 +109,16 @@ export class FeatureGenerator {
 		feature.setUiElements(uniqueUiElements);
 
 		return feature;
+	}
+
+	private setElementAnalysisAsDone(element: HTMLElement): void {
+		const elementAnalysis = new ElementAnalysis(
+			element,
+			this.browserContext.getUrl(),
+			ElementAnalysisStatus.Done,
+			this.browserContext.getTabId()
+		);
+		this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 	}
 
 	private initializeNewFeature(
@@ -128,6 +145,7 @@ export class FeatureGenerator {
 	private generateCallback(
 		scenario: Scenario,
 		feature: Feature,
+		analysisElement: HTMLElement,
 		redirectionCallback?: (feature: Feature) => Promise<void>
 	) {
 		return async (
@@ -137,12 +155,16 @@ export class FeatureGenerator {
 			const elementAnalysis = new ElementAnalysis(
 				interactionThatTriggeredRedirect.getElement(),
 				interactionThatTriggeredRedirect.getPageUrl(),
-				ElementAnalysisStatus.Done
+				ElementAnalysisStatus.Done,
+				this.browserContext.getTabId()
 			);
 			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
-			// @ts-ignore
 			this.addVariantToScenario(newVariant, scenario, feature);
+
+			if (!feature.needNewVariants) {
+				this.setElementAnalysisAsDone(analysisElement);
+			}
 
 			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
 				scenario.getVariants()
@@ -181,12 +203,12 @@ export class FeatureGenerator {
 			feature.setMaxVariantCount(feature.getMaxVariantsCount() - 1);
 		}
 
-		this.checskNeedNewVariant(feature);
+		const needsNewVariants = this.needsNewVariants(feature);
+		feature.needNewVariants = needsNewVariants;
 	}
 
-	private checskNeedNewVariant(feature: Feature): void {
-		feature.needNewVariants =
-			feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
+	private needsNewVariants(feature: Feature): boolean {
+		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
 	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {

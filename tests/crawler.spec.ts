@@ -92,7 +92,8 @@ describe('Crawler', () => {
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
-				ElementAnalysisStatus.InProgress
+				ElementAnalysisStatus.InProgress,
+				'1'
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -137,7 +138,8 @@ describe('Crawler', () => {
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
-				ElementAnalysisStatus.InProgress
+				ElementAnalysisStatus.InProgress,
+				'1'
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -182,7 +184,8 @@ describe('Crawler', () => {
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
-				ElementAnalysisStatus.Done
+				ElementAnalysisStatus.Done,
+				'1'
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -227,7 +230,8 @@ describe('Crawler', () => {
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
-				ElementAnalysisStatus.Done
+				ElementAnalysisStatus.Done,
+				'1'
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -277,7 +281,8 @@ describe('Crawler', () => {
 			const analyzedElement = new ElementAnalysis(
 				link1ParentParentElement,
 				new URL(window.location.href),
-				ElementAnalysisStatus.Done
+				ElementAnalysisStatus.Done,
+				'1'
 			);
 			await analyzedElementStorage.set(analyzedElement.getId(), analyzedElement);
 
@@ -421,7 +426,7 @@ describe('Crawler', () => {
 
 		const pageUrl: URL = new URL(window.location.href);
 
-		const browserContext = new BrowserContext(pageUrl, window);
+		const browserContext = new BrowserContext(pageUrl, window, '1');
 		const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 		const uiElementGenerator = new UIElementGenerator();

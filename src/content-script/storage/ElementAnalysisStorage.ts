@@ -10,13 +10,20 @@ export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> 
 		super(localStorage, ElementAnalysis);
 	}
 
+	public async getWithXpathAndUrl(
+		xPathToElement: string,
+		url: URL
+	): Promise<ElementAnalysis | null> {
+		const key = url.href + ':' + xPathToElement;
+		return this.get(key);
+	}
+
 	public async getElementAnalysisStatus(
 		xPathToElement: string,
 		url: URL
 	): Promise<ElementAnalysisStatus> {
-		const key = url.href + ':' + xPathToElement;
-		const analyzed = await this.get(key);
-		if (analyzed) return analyzed.getStatus();
+		const analysis = await this.getWithXpathAndUrl(xPathToElement, url);
+		if (analysis) return analysis.getStatus();
 		return ElementAnalysisStatus.Pending;
 	}
 

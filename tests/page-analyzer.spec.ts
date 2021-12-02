@@ -50,7 +50,7 @@ describe('Page Analyzer', () => {
 					Feature
 				);
 				const spec: Spec = new Spec(language, featureStorage);
-				await pageAnalyzer.analyze(spec, pageUrl, div1);
+				await pageAnalyzer.analyze(spec, pageUrl, div1, [], true);
 			} catch (ForcingExecutionStoppageError) {
 				// ignore
 			}
@@ -65,7 +65,7 @@ describe('Page Analyzer', () => {
 		}
 	});
 
-	it("doesn't analyze element if its analysis status is in progress", async () => {
+	it("doesn't analyze element if its analysis status is in progress and analysis is being done on different tab", async () => {
 		const document = getRootHtmlDocument();
 
 		const innerHTML = `<div id="div1"><input id="input1" type="text"></input></div>`;
@@ -82,10 +82,13 @@ describe('Page Analyzer', () => {
 		const set = jest.fn().mockImplementation((key: string, obj: ElementAnalysis) => {});
 		elementAnalysisStorageMock.set = set;
 
+		const browserContext = new BrowserContext(pageUrl, window, '2');
+
 		const pageAnalyzer = buildPageAnalyzer({
 			document: document,
 			pageUrl: pageUrl,
 			elementAnalysisStorage: elementAnalysisStorageMock,
+			browserContext: browserContext,
 		});
 
 		const div1 = document.getElementById('div1');
@@ -94,7 +97,8 @@ describe('Page Analyzer', () => {
 			const elementAnalysis = new ElementAnalysis(
 				div1,
 				pageUrl,
-				ElementAnalysisStatus.InProgress
+				ElementAnalysisStatus.InProgress,
+				'1'
 			);
 			elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 
@@ -114,6 +118,7 @@ describe('Page Analyzer', () => {
 					document?: HTMLDocument;
 					pageUrl?: URL;
 					elementAnalysisStorage?: ElementAnalysisStorage;
+					browserContext?: BrowserContext;
 			  }
 			| undefined = {}
 	): PageAnalyzer {
@@ -154,7 +159,13 @@ describe('Page Analyzer', () => {
 
 		const pageUrl: URL = new URL(window.location.href);
 
-		const browserContext = new BrowserContext(pageUrl, window);
+		let browserContext: BrowserContext;
+		if (options.browserContext) {
+			browserContext = options.browserContext;
+		} else {
+			browserContext = new BrowserContext(pageUrl, window, '1');
+		}
+
 		const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 		const uiElementGenerator = new UIElementGenerator();

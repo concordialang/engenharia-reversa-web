@@ -1,8 +1,5 @@
 export class BrowserContext {
-	constructor(private url: URL, private window: Window) {
-		this.url = url;
-		this.window = window;
-	}
+	constructor(private url: URL, private window: Window, private tabId: string) {}
 
 	public getUrl(): URL {
 		return this.url;
@@ -10,5 +7,9 @@ export class BrowserContext {
 
 	public getWindow(): Window {
 		return this.window;
+	}
+
+	public getTabId(): string {
+		return this.tabId;
 	}
 }

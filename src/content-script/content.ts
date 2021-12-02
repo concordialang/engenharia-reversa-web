@@ -68,7 +68,7 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const pageUrl: URL = new URL(window.location.href);
 
-	const browserContext = new BrowserContext(pageUrl, window);
+	const browserContext = new BrowserContext(pageUrl, window, tabId);
 	const elementInteractionGenerator = new ElementInteractionGenerator(browserContext);
 
 	const uiElementGenerator = new UIElementGenerator();

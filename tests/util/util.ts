@@ -20,7 +20,8 @@ export function createValidElementAnalysis(element?: HTMLElement): ElementAnalys
 	return new ElementAnalysis(
 		element,
 		new URL('https://www.google.com'),
-		ElementAnalysisStatus.Done
+		ElementAnalysisStatus.Done,
+		'1'
 	);
 }
 

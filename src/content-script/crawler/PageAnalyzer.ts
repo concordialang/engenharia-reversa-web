@@ -34,7 +34,8 @@ export class PageAnalyzer {
 		spec: Spec,
 		url: URL,
 		contextElement: HTMLElement,
-		previousInteractions: ElementInteraction<HTMLElement>[] = []
+		previousInteractions: ElementInteraction<HTMLElement>[] = [],
+		stopBeforeAnalysisStarts: boolean = false
 	): Promise<void> {
 		this.spec = spec;
 		let xPath = getPathTo(contextElement);
@@ -54,12 +55,23 @@ export class PageAnalyzer {
 			feature = await this.recoveryFeatureOfLastInteraction(lastInteraction);
 		}
 
-		const elementAnalysisStatus = await this.elementAnalysisStorage.getElementAnalysisStatus(
-			xPath,
-			url
-		);
+		const elementAnalysis = await this.elementAnalysisStorage.getWithXpathAndUrl(xPath, url);
 
-		if (elementAnalysisStatus == ElementAnalysisStatus.Pending || feature?.needNewVariants) {
+		let elementAnalysisStatus: ElementAnalysisStatus;
+		let analysisTab: string | null = null;
+		if (elementAnalysis) {
+			elementAnalysisStatus = elementAnalysis.getStatus();
+			analysisTab = elementAnalysis.getTabId();
+		} else {
+			elementAnalysisStatus = ElementAnalysisStatus.Pending;
+			analysisTab = null;
+		}
+
+		if (
+			elementAnalysisStatus == ElementAnalysisStatus.Pending ||
+			(elementAnalysisStatus == ElementAnalysisStatus.InProgress &&
+				analysisTab == this.browserContext.getTabId())
+		) {
 			//Only re-executes previous interactions when is revisting the page after a redirect
 			if (lastInteraction) {
 				await this.executePreviousInteraction(previousInteractions, lastInteraction);
@@ -68,9 +80,14 @@ export class PageAnalyzer {
 			const elementAnalysis = new ElementAnalysis(
 				contextElement,
 				this.browserContext.getUrl(),
-				ElementAnalysisStatus.InProgress
+				ElementAnalysisStatus.InProgress,
+				this.browserContext.getTabId()
 			);
 			this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+
+			if (stopBeforeAnalysisStarts) {
+				return;
+			}
 
 			await this.analyseFormElements(url, contextElement, feature, previousInteractions);
 
@@ -145,17 +162,12 @@ export class PageAnalyzer {
 	}
 
 	private async recoveryFeatureOfLastInteraction(lastInteraction): Promise<Feature | null> {
-		let feature: Feature | null = null;
-
 		let interactionFeature: Feature | string | null = lastInteraction.getFeature();
 		if (typeof interactionFeature === 'string') {
 			interactionFeature = await this.featureStorage.get(interactionFeature);
 		}
-		if (interactionFeature?.needNewVariants) {
-			feature = interactionFeature;
-		}
 
-		return feature;
+		return interactionFeature;
 	}
 
 	private async executePreviousInteraction(previousInteractions, lastInteraction) {
@@ -197,7 +209,8 @@ export class PageAnalyzer {
 				const analysis = new ElementAnalysis(
 					element,
 					this.browserContext.getUrl(),
-					ElementAnalysisStatus.Done
+					ElementAnalysisStatus.Done,
+					this.browserContext.getTabId()
 				);
 				this.elementAnalysisStorage.set(analysis.getId(), analysis);
 			}

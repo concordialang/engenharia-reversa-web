@@ -14,10 +14,13 @@ export class ElementAnalysis {
 
 	private status: ElementAnalysisStatus;
 
-	constructor(element: HTMLElement, pageUrl: URL, status: ElementAnalysisStatus) {
+	private tabId: string;
+
+	constructor(element: HTMLElement, pageUrl: URL, status: ElementAnalysisStatus, tabId: string) {
 		this.element = element;
 		this.pageUrl = pageUrl;
 		this.status = status;
+		this.tabId = tabId;
 	}
 
 	public getPathToElement(): string {
@@ -56,5 +59,9 @@ export class ElementAnalysis {
 
 	public getStatus(): ElementAnalysisStatus {
 		return this.status;
+	}
+
+	public getTabId(): string {
+		return this.tabId;
 	}
 }

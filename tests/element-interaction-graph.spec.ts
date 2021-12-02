@@ -182,7 +182,7 @@ describe('ElementInteractionGraph', () => {
 		const element = document.createElement(elementType);
 		element.setAttribute('id', elementId);
 		const elementInteraction = new ElementInteraction<HTMLElement>(element, eventType, url);
-		const elementAnalysis = new ElementAnalysis(element, url, analysisStatus);
+		const elementAnalysis = new ElementAnalysis(element, url, analysisStatus, '1');
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 		return elementInteraction;
 	}
