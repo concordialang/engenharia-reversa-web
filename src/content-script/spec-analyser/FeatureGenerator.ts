@@ -328,7 +328,7 @@ export class FeatureGenerator {
 
 			if (
 				(elm instanceof HTMLInputElement &&
-					(elm.type == 'button' || elm.type == 'submit')) ||
+					(elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) ||
 				elm instanceof HTMLButtonElement
 			) {
 				return htmlElm;

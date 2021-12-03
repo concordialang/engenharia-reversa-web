@@ -46,6 +46,11 @@ export class ElementInteractionGenerator {
 
 		if (!type) {
 			type = HTMLInputType.Text;
+		} else {
+			const isValidType = (Object as any).values(HTMLInputType).includes(type);
+			if (!isValidType) {
+				return null;
+			}
 		}
 
 		let interaction: ElementInteraction<HTMLInputElement> | null = new ElementInteraction<
@@ -56,7 +61,11 @@ export class ElementInteractionGenerator {
 			interaction.setValue(input.value);
 		} else if (type == HTMLInputType.Checkbox) {
 			interaction.setValue(true);
-		} else if (type == HTMLInputType.Submit || type == HTMLInputType.Button) {
+		} else if (
+			type == HTMLInputType.Submit ||
+			type == HTMLInputType.Button ||
+			type == HTMLInputType.Reset
+		) {
 			interaction = new ElementInteraction(
 				input,
 				HTMLEventType.Click,

@@ -88,7 +88,8 @@ export class Variant {
 				lastElm instanceof HTMLButtonElement ||
 				(lastElm instanceof HTMLInputElement &&
 					(lastElm.type === HTMLInputType.Submit ||
-						lastElm.type === HTMLInputType.Button))
+						lastElm.type === HTMLInputType.Button ||
+						lastElm.type === HTMLInputType.Reset))
 			) {
 				return lastElm;
 			}

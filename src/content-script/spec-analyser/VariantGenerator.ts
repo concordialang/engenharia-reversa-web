@@ -483,8 +483,13 @@ export class VariantGenerator {
 			tries to find the final action button if:
 			- the last input field was found
 			- that the feature has not yet started to analyze buttons placed after the final action button
+			- other action button was not found yet
 		*/
-		if (variant.lastAnalysisInputFieldFound && !feature.analysesBtnsAfterFinalActionBtn) {
+		if (
+			variant.lastAnalysisInputFieldFound &&
+			!feature.analysesBtnsAfterFinalActionBtn &&
+			!variant.finalActionButtonFound
+		) {
 			isFinalActionBtn = this.varUtil.isFinalActionButton(elm);
 		}
 
@@ -571,7 +576,8 @@ export class VariantGenerator {
 
 			this.varUtil.updateAnalysisInputFields();
 
-			if (variant.lastAnalysisInputFieldFound) {
+			// check if last field remains the same
+			if (variant.lastAnalysisInputFieldFound && !variant.finalActionButtonFound) {
 				variant.lastAnalysisInputFieldFound = this.varUtil.checksLastAnalysisField();
 			}
 		}

@@ -19,16 +19,16 @@ export class Interactor {
 		} else if (type == HTMLInputType.Checkbox) {
 			this.fillCheckboxInput(interaction);
 		} else {
-			this.fillTextInput(interaction);
+			this.fillStringInput(interaction);
 		}
 
 		//refatorar para verificar se causou redirecionamento
 		return new InteractionResult(false);
 	}
 
-	//TEXT
+	// DEFAULT
 
-	private fillTextInput(interaction: ElementInteraction<HTMLInputElement>): void {
+	private fillStringInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const value = interaction.getValue();
 		if (value) {
 			const element = interaction.getElement();
@@ -37,7 +37,7 @@ export class Interactor {
 		}
 	}
 
-	//RADIO
+	// RADIO
 
 	private fillRadioInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const element = interaction.getElement();
@@ -59,7 +59,7 @@ export class Interactor {
 		}
 	}
 
-	//CHECKBOX
+	// CHECKBOX
 
 	private fillCheckboxInput(interaction: ElementInteraction<HTMLInputElement>): void {
 		const value = interaction.getValue();

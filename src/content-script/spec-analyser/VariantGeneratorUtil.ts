@@ -37,7 +37,8 @@ export class VariantGeneratorUtil {
 				if (
 					!(htmlField instanceof HTMLInputElement) ||
 					(htmlField.type !== HTMLInputType.Submit &&
-						htmlField.type !== HTMLInputType.Button)
+						htmlField.type !== HTMLInputType.Button &&
+						htmlField.type !== HTMLInputType.Reset)
 				) {
 					return htmlField;
 				}
@@ -47,7 +48,8 @@ export class VariantGeneratorUtil {
 
 	public isButton(elm: HTMLElement): boolean {
 		if (
-			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit')) ||
+			(elm instanceof HTMLInputElement &&
+				(elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) ||
 			elm instanceof HTMLButtonElement
 		) {
 			return true;
@@ -239,13 +241,13 @@ export class VariantGeneratorUtil {
 	}
 
 	// checks if it is the last input field to be parsed
-	public isLastFieldAnalyzed(elm: HTMLElement, lastInputFieldAnalized: boolean) {
+	public isLastFieldAnalyzed(elm: HTMLElement, lastInputFieldAnalizedFound: boolean) {
 		if (!this.analysisElement || !this.analysisInputFields) {
 			return false;
 		}
 
-		if (!this.isInputField(elm)) {
-			return lastInputFieldAnalized;
+		if (!this.isInputField(elm) || lastInputFieldAnalizedFound === true) {
+			return lastInputFieldAnalizedFound;
 		}
 
 		const indexField = this.analysisInputFields.findIndex((field) => field === elm);
@@ -267,9 +269,22 @@ export class VariantGeneratorUtil {
 			return false;
 		}
 
-		const lastField = Array.from(
+		let lastFields = Array.from(
 			this.analysisElement.querySelectorAll('input, textarea, select')
-		).reverse()[0];
+		).reverse();
+
+		lastFields = lastFields.filter((field) => {
+			if (
+				!(field instanceof HTMLInputElement) ||
+				(field.type !== HTMLInputType.Submit &&
+					field.type !== HTMLInputType.Button &&
+					field.type !== HTMLInputType.Reset)
+			) {
+				return field;
+			}
+		});
+
+		const lastField = lastFields[0];
 
 		return lastField === this.lastAnalysisInputField;
 	}
