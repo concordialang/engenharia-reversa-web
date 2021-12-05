@@ -129,6 +129,46 @@ export class VariantGeneratorUtil {
 		return text1.toLowerCase().includes(text2.toLowerCase());
 	}
 
+	public isBtnAfterFinalActionButton(
+		elm: HTMLElement,
+		finalActionButtonFound: boolean,
+		analysesBtnsAfterFinalActionBtn: boolean
+	) {
+		if (this.isButton(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private findStringInElementsProperties(elm, strArray) {
+		let wasFound = false;
+
+		const findString = (btnProperty) => {
+			wasFound = strArray.some((str) => {
+				return this.areSimilar(btnProperty, str);
+			});
+		};
+
+		if (elm.innerText) {
+			findString(elm.innerText);
+		}
+
+		if (elm.name && !wasFound) {
+			findString(elm.name);
+		}
+
+		if (elm.id && !wasFound) {
+			findString(elm.id);
+		}
+
+		if (elm.value && !wasFound) {
+			findString(elm.value);
+		}
+
+		return wasFound;
+	}
+
 	// checks whether the element is a final action button (buttons that characterize the final action of a variant)
 	public isFinalActionButton(elm: HTMLElement): boolean {
 		if (!this.isButton(elm)) {
@@ -142,45 +182,16 @@ export class VariantGeneratorUtil {
 		if (button.type === 'submit') {
 			isFinalActionBtn = true;
 		} else {
-			const findFinalActionString = (btnProperty) => {
-				isFinalActionBtn = this.dictionary.stringsFinalActionButtons.some((str) => {
-					return this.areSimilar(btnProperty, str);
-				});
-			};
-
-			if (button.innerText) {
-				findFinalActionString(button.innerText);
-			}
-
-			if (button.name && !isFinalActionBtn) {
-				findFinalActionString(button.name);
-			}
-
-			if (button.id && !isFinalActionBtn) {
-				findFinalActionString(button.id);
-			}
-
-			if (button.value && !isFinalActionBtn) {
-				findFinalActionString(button.value);
-			}
+			isFinalActionBtn = this.findStringInElementsProperties(
+				button,
+				this.dictionary.stringsFinalActionButtons
+			);
 		}
 
 		return isFinalActionBtn;
 	}
 
-	public isBtnAfterFinalActionButton(
-		elm: HTMLElement,
-		finalActionButtonFound: boolean,
-		analysesBtnsAfterFinalActionBtn: boolean
-	) {
-		if (this.isButton(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	// checks whether the element is a cancel button (buttons that characterize the final action of a variant)
+	// checks whether the element is a cancel button (buttons that cause system logout)
 	public isCancelButton(elm: HTMLElement): boolean {
 		if (!this.isButton(elm)) {
 			return false;
@@ -188,31 +199,28 @@ export class VariantGeneratorUtil {
 
 		let button = elm as HTMLInputElement | HTMLButtonElement;
 
-		let isCancelBtn: boolean = false;
-
-		const findCancelString = (btnProperty) => {
-			isCancelBtn = this.dictionary.stringsCancelButtons.some((str) => {
-				return this.areSimilar(btnProperty, str);
-			});
-		};
-
-		if (button.innerText) {
-			findCancelString(button.innerText);
-		}
-
-		if (button.name && !isCancelBtn) {
-			findCancelString(button.name);
-		}
-
-		if (button.id && !isCancelBtn) {
-			findCancelString(button.id);
-		}
-
-		if (button.value && !isCancelBtn) {
-			findCancelString(button.value);
-		}
+		let isCancelBtn: boolean = this.findStringInElementsProperties(
+			button,
+			this.dictionary.stringsCancelButtons
+		);
 
 		return isCancelBtn;
+	}
+
+	// checks whether the element is a logout button (buttons that characterize the final action of a variant)
+	public isLogoutButton(elm: HTMLElement): boolean {
+		if (!this.isButton(elm)) {
+			return false;
+		}
+
+		let button = elm as HTMLInputElement | HTMLButtonElement;
+
+		let isLogoutButton = this.findStringInElementsProperties(
+			button,
+			this.dictionary.stringLogoutButtons
+		);
+
+		return isLogoutButton;
 	}
 
 	// checks if some group radio button received interaction in this variant

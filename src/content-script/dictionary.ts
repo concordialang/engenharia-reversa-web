@@ -25,6 +25,7 @@ const dictionary = {
 			'Submit',
 		],
 		stringsCancelButtons: ['Cancel', 'Back', 'Close', 'Return', 'No'],
+		stringLogoutButtons: ['Logout', 'Exit'],
 	},
 	pt: {
 		feature: 'Funcionalidade',
@@ -74,6 +75,7 @@ const dictionary = {
 			'Retorna',
 			'Não',
 		],
+		stringLogoutButtons: ['Sair', 'Encerrar'],
 	},
 };
 
@@ -82,6 +84,9 @@ dictionary.pt.stringsFinalActionButtons = dictionary.pt.stringsFinalActionButton
 );
 dictionary.pt.stringsCancelButtons = dictionary.pt.stringsCancelButtons.concat(
 	dictionary.en.stringsCancelButtons
+);
+dictionary.pt.stringLogoutButtons = dictionary.pt.stringLogoutButtons.concat(
+	dictionary.en.stringLogoutButtons
 );
 
 export function getDictionary(language?: string) {

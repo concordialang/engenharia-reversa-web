@@ -456,6 +456,10 @@ export class VariantGenerator {
 			(interactedElm) => interactedElm.xpath === xpathElement
 		);
 
+		if (!variant.lastAnalysisInputFieldFound && this.varUtil.isLogoutButton(elm)) {
+			return false;
+		}
+
 		// true when it is a cancel button valid to interaction
 		let isInteractableCancelBtn = this.treatInteractableBtnsAfterFinalActionButton(
 			elm,
