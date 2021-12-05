@@ -116,14 +116,15 @@ getTabId(communicationChannel).then((tabId) => {
 		specStorage
 	);
 
-	communicationChannel.setMessageListener(function (message: Message) {
+	communicationChannel.setMessageListener(async function (message: Message) {
 		if (message.includesAction(Command.CleanGraph)) {
 			clean();
 		}
 		if (message.includesAction(Command.Crawl)) {
 			overrideWindowOpen();
 			overrideJavascriptPopups();
-			crawler.crawl();
+			await crawler.crawl();
+			communicationChannel.sendMessageToAll(new Message([AppEvent.Finished]));
 		}
 	});
 

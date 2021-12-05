@@ -106,6 +106,8 @@ export class ExtensionManager {
 							responseCallback(
 								new Message([], _this.openedTabsLimit - _this.openedTabsCounter)
 							);
+					} else if (message.includesAction(AppEvent.Finished)) {
+						console.log('finished');
 					}
 				}
 			}
