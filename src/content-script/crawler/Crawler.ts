@@ -14,6 +14,7 @@ import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { Spec } from '../spec-analyser/Spec';
 import { Feature } from '../spec-analyser/Feature';
+import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -32,7 +33,7 @@ export class Crawler {
 		this.lastPageKey = 'last-page';
 	}
 
-	public async crawl() {
+	public async crawl(): Promise<boolean> {
 		const _this = this;
 
 		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
@@ -112,8 +113,10 @@ export class Crawler {
 				analysisElement,
 				previousInteractions
 			);
-		} catch (ForcingExecutionStoppageError) {
-			return;
+		} catch (e) {
+			if (e instanceof ForcingExecutionStoppageError) {
+				return false;
+			}
 		}
 
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
@@ -123,6 +126,8 @@ export class Crawler {
 		) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 		}
+
+		return true;
 	}
 
 	private async getUnanalyzedLinks(element: HTMLElement): Promise<HTMLLinkElement[]> {
