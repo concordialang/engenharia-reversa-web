@@ -126,7 +126,9 @@ getTabId(communicationChannel).then((tabId) => {
 			overrideJavascriptPopups();
 			const finished = await crawler.crawl();
 			if (finished) {
-				communicationChannel.sendMessageToAll(new Message([AppEvent.Finished]));
+				communicationChannel.sendMessageToAll(
+					new Message([AppEvent.Finished], JSON.stringify(specStorage))
+				);
 			}
 		}
 	});

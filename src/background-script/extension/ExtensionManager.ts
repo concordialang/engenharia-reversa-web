@@ -1,4 +1,3 @@
-import { stringify } from 'uuid';
 import { AppEvent } from '../../shared/comm/AppEvent';
 import { Command } from '../../shared/comm/Command';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
@@ -107,7 +106,9 @@ export class ExtensionManager {
 								new Message([], _this.openedTabsLimit - _this.openedTabsCounter)
 							);
 					} else if (message.includesAction(AppEvent.Finished)) {
-						console.log('finished');
+						const specStorage = JSON.parse(message.getExtra());
+						const spec = JSON.parse(specStorage.localStorage.Spec);
+						console.log('spec BACKGROUND', spec);
 					}
 				}
 			}
