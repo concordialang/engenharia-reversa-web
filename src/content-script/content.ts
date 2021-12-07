@@ -26,6 +26,7 @@ import { ElementInteractionStorage } from '../content-script/storage/ElementInte
 import { Feature } from './spec-analyser/Feature';
 import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
 import { Interactor } from './crawler/Interactor';
+import { ForcingExecutionStoppageError } from './crawler/ForcingExecutionStoppageError';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -123,8 +124,10 @@ getTabId(communicationChannel).then((tabId) => {
 		if (message.includesAction(Command.Crawl)) {
 			overrideWindowOpen();
 			overrideJavascriptPopups();
-			await crawler.crawl();
-			communicationChannel.sendMessageToAll(new Message([AppEvent.Finished]));
+			const finished = await crawler.crawl();
+			if (finished) {
+				communicationChannel.sendMessageToAll(new Message([AppEvent.Finished]));
+			}
 		}
 	});
 
