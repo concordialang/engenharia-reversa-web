@@ -10,6 +10,7 @@ export enum VariantSentenceActions {
 	CLOSE = 'close',
 	CONNECT = 'connect',
 	DISCONNECT = 'disconnect',
+	DOUBLECLICK = 'doubleClick',
 	DRAG = 'drag',
 	FILL = 'fill',
 	HAVE = 'have',

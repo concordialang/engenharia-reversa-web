@@ -58,6 +58,10 @@ export class Spec {
 		return this.features.length;
 	}
 
+	public setFeatures(features: Feature[]) {
+		this.features = features;
+	}
+
 	public static getStorageKey(): string {
 		return 'Spec';
 	}

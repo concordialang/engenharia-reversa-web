@@ -107,6 +107,7 @@ export class Crawler {
 				spec.setFeatureStorage(this.featureStorage);
 				spec.setSpecStorage(this.specStorage);
 			}
+
 			await this.pageAnalyzer.analyze(
 				spec,
 				this.browserContext.getUrl(),

@@ -6,6 +6,10 @@ import { Extension } from './Extension';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
+import { ConcordiaFiles } from '../ConcordiaFiles';
+import { Spec } from '../../content-script/spec-analyser/Spec';
+import { Feature } from '../../content-script/spec-analyser/Feature';
+import { plainToClass } from 'class-transformer';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -107,8 +111,11 @@ export class ExtensionManager {
 							);
 					} else if (message.includesAction(AppEvent.Finished)) {
 						const specStorage = JSON.parse(message.getExtra());
-						const spec = JSON.parse(specStorage.localStorage.Spec);
-						console.log('spec BACKGROUND', spec);
+						const specObj = JSON.parse(specStorage.localStorage.Spec);
+						const spec = plainToClass(Spec, specObj);
+
+						const concordiaFiles = new ConcordiaFiles();
+						concordiaFiles.gerate(spec);
 					}
 				}
 			}
