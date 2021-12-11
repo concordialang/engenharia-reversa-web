@@ -7,7 +7,13 @@ import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { Message } from '../../shared/comm/Message';
 import { Command } from '../../shared/comm/Command';
-import { commonAncestorElement, getDiff, getFormElements, getPathTo } from '../util';
+import {
+	commonAncestorElement,
+	getDiff,
+	getElementByXpath,
+	getFormElements,
+	getPathTo,
+} from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
@@ -28,7 +34,8 @@ export class Crawler {
 		private communicationChannel: CommunicationChannel,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private featureStorage: ObjectStorage<Feature>,
-		private specStorage: ObjectStorage<Spec>
+		private specStorage: ObjectStorage<Spec>,
+		private analysisElementXPathStorage: ObjectStorage<string>
 	) {
 		this.lastPageKey = 'last-page';
 	}
@@ -189,11 +196,29 @@ export class Crawler {
 		return null;
 	}
 
+	private async getHtmlElementFromString(element: string): Promise<Node> {
+		const template = document.createElement('template');
+		const html = element.trim();
+		template.innerHTML = html;
+		return template.content;
+	}
+
 	private async getAnalysisElement(
 		currentDocument: Document,
 		previousDocument: Document | null = null
 	): Promise<HTMLElement> {
 		let analysisElement: HTMLElement | null = null;
+
+		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
+			this.browserContext.getUrl().href
+		);
+		if (savedAnalysisElementXPath) {
+			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
+			if (!analysisElement) {
+				throw new Error('Analysis element not found');
+			}
+			return analysisElement;
+		}
 
 		if (previousDocument) {
 			const analysisContext: HTMLElement = await getDiff(currentDocument, previousDocument);
@@ -208,6 +233,11 @@ export class Crawler {
 		} else {
 			analysisElement = currentDocument.body;
 		}
+
+		await this.analysisElementXPathStorage.set(
+			this.browserContext.getUrl().href,
+			getPathTo(analysisElement)
+		);
 
 		return analysisElement;
 	}

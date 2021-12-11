@@ -37,6 +37,8 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
+	const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
+
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
 	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
@@ -114,7 +116,8 @@ getTabId(communicationChannel).then((tabId) => {
 		communicationChannel,
 		elementAnalysisStorage,
 		featureStorage,
-		specStorage
+		specStorage,
+		analysisElementXPathStorage
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {
