@@ -462,6 +462,8 @@ describe('Crawler', () => {
 			elementInteractionGraph
 		);
 
+		const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
+
 		const crawler: Crawler = new Crawler(
 			browserContext,
 			pageStorage,
@@ -471,7 +473,8 @@ describe('Crawler', () => {
 			communicationChannel,
 			analyzedElementStorage,
 			featureStorage,
-			specStorage
+			specStorage,
+			analysisElementXPathStorage
 		);
 
 		return crawler;
