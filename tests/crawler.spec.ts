@@ -29,6 +29,7 @@ import { LocalStorageMock } from './util/LocalStorageMock';
 import { Feature } from '../src/content-script/spec-analyser/Feature';
 import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 import { Interactor } from '../src/content-script/crawler/Interactor';
+import { Variant } from '../src/content-script/spec-analyser/Variant';
 
 const chrome = new ChromeMock();
 
@@ -445,12 +446,15 @@ describe('Crawler', () => {
 
 		const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 
+		const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
+
 		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			analyzedElementStorage,
 			browserContext,
-			elementInteractionGraph
+			elementInteractionGraph,
+			variantStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(

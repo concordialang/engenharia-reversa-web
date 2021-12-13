@@ -64,7 +64,6 @@ export class PageAnalyzer {
 			analysisTab = elementAnalysis.getTabId();
 		} else {
 			elementAnalysisStatus = ElementAnalysisStatus.Pending;
-			analysisTab = null;
 		}
 
 		if (
@@ -77,19 +76,24 @@ export class PageAnalyzer {
 				await this.executePreviousInteraction(previousInteractions, lastInteraction);
 			}
 
-			const elementAnalysis = new ElementAnalysis(
+			const elmAnalysis = new ElementAnalysis(
 				contextElement,
 				this.browserContext.getUrl(),
 				ElementAnalysisStatus.InProgress,
 				this.browserContext.getTabId()
 			);
-			this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+			this.elementAnalysisStorage.set(elmAnalysis.getId(), elmAnalysis);
 
 			if (stopBeforeAnalysisStarts) {
 				return;
 			}
 
-			await this.analyseFormElements(url, contextElement, feature, previousInteractions);
+			feature = await this.analyseFormElements(
+				url,
+				contextElement,
+				feature,
+				previousInteractions
+			);
 
 			if (contextElement.nodeName !== HTMLElementType.FORM) {
 				// generate feature for elements outside forms
@@ -99,7 +103,7 @@ export class PageAnalyzer {
 					url,
 					true,
 					this.redirectCallback,
-					null,
+					feature,
 					previousInteractions
 				);
 
@@ -148,10 +152,13 @@ export class PageAnalyzer {
 
 					if (feature) {
 						await this.saveFeatureToSpec(feature);
+						feature = null;
 					}
 				}
 			}
 		}
+
+		return feature;
 	}
 
 	private async isAnalysisFinished(feature: Feature): Promise<boolean> {

@@ -116,6 +116,8 @@ export class ExtensionManager {
 
 						const concordiaFiles = new ConcordiaFiles();
 						concordiaFiles.gerate(spec);
+
+						_this.extensionIsEnabled = false;
 					}
 				}
 			}
