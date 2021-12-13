@@ -24,7 +24,8 @@ export class FeatureGenerator {
 		private featureUtil: FeatureUtil,
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private browserContext: BrowserContext,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private variantStorage: ObjectStorage<Variant>
 	) {}
 
 	public async generate(
@@ -65,7 +66,10 @@ export class FeatureGenerator {
 
 			//Only enters this block in the case of a redirection
 			if (isNextInteractionOnAnotherPage) {
-				variant = lastInteraction.getVariant();
+				const interactionVariant = lastInteraction.getVariant();
+				if (typeof interactionVariant === 'string') {
+					variant = await this.variantStorage.get(interactionVariant);
+				}
 				pathsOfElementsToIgnore = previousInteractions.map((interaction) => {
 					return getPathTo(interaction.getElement());
 				});
@@ -184,6 +188,7 @@ export class FeatureGenerator {
 	): void {
 		if (variantAnalyzed && variantAnalyzed.isValid()) {
 			scenario.addVariant(variantAnalyzed);
+			this.variantStorage.set(variantAnalyzed.getId(), variantAnalyzed);
 
 			// if true, starts analyzing the buttons after the final action button if the variant just found it
 			if (!feature.analysesBtnsAfterFinalActionBtn) {

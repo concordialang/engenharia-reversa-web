@@ -20,7 +20,7 @@ export class ElementInteraction<T extends HTMLElement> {
 	private elementSelector: string | null;
 
 	@Type(() => Variant)
-	private variant?: Variant | null;
+	private variant?: Variant | string | null;
 
 	@Type(() => Feature)
 	private feature?: Feature | string | null;
@@ -74,7 +74,7 @@ export class ElementInteraction<T extends HTMLElement> {
 		return this.elementSelector;
 	}
 
-	public getVariant(): Variant | null {
+	public getVariant(): Variant | string | null {
 		return this.variant ? this.variant : null;
 	}
 
@@ -86,7 +86,7 @@ export class ElementInteraction<T extends HTMLElement> {
 		this.feature = feature;
 	}
 
-	public setVariant(variant: Variant) {
+	public setVariant(variant: Variant | string | null) {
 		this.variant = variant;
 	}
 }

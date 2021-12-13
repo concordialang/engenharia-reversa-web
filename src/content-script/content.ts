@@ -26,6 +26,7 @@ import { ElementInteractionStorage } from '../content-script/storage/ElementInte
 import { Feature } from './spec-analyser/Feature';
 import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
 import { Interactor } from './crawler/Interactor';
+import { Variant } from './spec-analyser/Variant';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -42,9 +43,12 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
 
+	const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
+
 	const elementInteractionStorage = new ElementInteractionStorage(
 		window.localStorage,
-		featureStorage
+		featureStorage,
+		variantStorage
 	);
 
 	const language = 'pt';
@@ -94,7 +98,8 @@ getTabId(communicationChannel).then((tabId) => {
 		featureUtil,
 		elementAnalysisStorage,
 		browserContext,
-		elementInteractionGraph
+		elementInteractionGraph,
+		variantStorage
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
