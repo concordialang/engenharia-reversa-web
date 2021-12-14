@@ -21,6 +21,7 @@ import { ObjectStorage } from '../storage/ObjectStorage';
 import { Spec } from '../spec-analyser/Spec';
 import { Feature } from '../spec-analyser/Feature';
 import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
+import Mutex from '../mutex/Mutex';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -35,6 +36,7 @@ export class Crawler {
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private featureStorage: ObjectStorage<Feature>,
 		private specStorage: ObjectStorage<Spec>,
+		private specMutex: Mutex,
 		private analysisElementXPathStorage: ObjectStorage<string>
 	) {
 		this.lastPageKey = 'last-page';
@@ -108,11 +110,12 @@ export class Crawler {
 		try {
 			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());
 			if (!spec) {
-				spec = new Spec('pt', this.featureStorage, this.specStorage);
+				spec = new Spec('pt', this.featureStorage, this.specStorage, this.specMutex);
 				this.specStorage.set(Spec.getStorageKey(), spec);
 			} else {
 				spec.setFeatureStorage(this.featureStorage);
 				spec.setSpecStorage(this.specStorage);
+				spec.setMutex(this.specMutex);
 			}
 
 			await this.pageAnalyzer.analyze(

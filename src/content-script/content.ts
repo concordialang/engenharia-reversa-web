@@ -111,6 +111,8 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionGraph
 	);
 
+	const specMutex: Mutex = new Mutex('spec-mutex');
+
 	const crawler: Crawler = new Crawler(
 		browserContext,
 		pageStorage,
@@ -121,6 +123,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementAnalysisStorage,
 		featureStorage,
 		specStorage,
+		specMutex,
 		analysisElementXPathStorage
 	);
 
