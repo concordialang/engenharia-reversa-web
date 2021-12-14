@@ -31,6 +31,10 @@ export class Spec {
 		if (this.mutex) {
 			await this.mutex.lock();
 		}
+		const features = await this.getFeaturesFromStorage();
+		if (features) {
+			this.features = features;
+		}
 
 		const index = this.features.findIndex((f) => f.getId() === feature.getId());
 		if (index > -1) {
@@ -78,5 +82,16 @@ export class Spec {
 
 	public static getStorageKey(): string {
 		return 'Spec';
+	}
+
+	private async getFeaturesFromStorage(): Promise<Feature[] | null> {
+		if (this.specStorage) {
+			const latestVersionOfSpec = await this.specStorage.get(Spec.getStorageKey());
+			if (latestVersionOfSpec) {
+				return latestVersionOfSpec.getFeatures();
+			}
+			return [];
+		}
+		return null;
 	}
 }
