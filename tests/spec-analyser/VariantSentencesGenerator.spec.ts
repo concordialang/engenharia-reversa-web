@@ -28,7 +28,7 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('input is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(input, true);
+		const variantSentence: any = featureutil.createVariantSentence(input, false);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
@@ -50,7 +50,7 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('text area is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(textArea, true);
+		const variantSentence: any = featureutil.createVariantSentence(textArea, false);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}
@@ -76,7 +76,7 @@ describe('VariantSentencesGenerator', () => {
 			throw new Error('select is empty');
 		}
 
-		const variantSentence: any = featureutil.createVariantSentence(select, true);
+		const variantSentence: any = featureutil.createVariantSentence(select, false);
 		if (!variantSentence) {
 			throw new Error('variantSentence is empty');
 		}

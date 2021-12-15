@@ -36,8 +36,6 @@ export class VariantGenerator {
 			variant ??
 			this.featureUtil.createVariant(feature.getName(), feature.getVariantsCount());
 
-		let firstAnalyzeSentence = true;
-
 		let startElement: HTMLElement | null = this.getStartElementToAnalyse(
 			analysisElement,
 			feature.ignoreFormElements
@@ -56,7 +54,6 @@ export class VariantGenerator {
 			variant,
 			feature,
 			observer,
-			firstAnalyzeSentence,
 			redirectionCallback,
 			pathsOfElementsToIgnore
 		);
@@ -79,7 +76,6 @@ export class VariantGenerator {
 		variant: Variant,
 		feature: Feature,
 		observer: MutationObserverManager,
-		firstAnalyzeSentence: boolean = true,
 		redirectionCallback?: (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
 			newVariant: Variant
@@ -94,7 +90,6 @@ export class VariantGenerator {
 				variant,
 				feature,
 				observer,
-				firstAnalyzeSentence,
 				redirectionCallback,
 				pathsOfElementsToIgnore
 			);
@@ -150,7 +145,7 @@ export class VariantGenerator {
 		const callback = async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>
 		) => {
-			await this.createVariantSentence(elm, variant, feature, observer, firstAnalyzeSentence);
+			await this.createVariantSentence(elm, variant, feature, observer);
 
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant);
@@ -169,25 +164,17 @@ export class VariantGenerator {
 				await nextElement(elm.nextElementSibling);
 			}
 			return;
+		} else if (result.getTriggeredRedirection()) {
+			return;
 		}
 
-		const sentenceCreated = await this.createVariantSentence(
-			elm,
-			variant,
-			feature,
-			observer,
-			firstAnalyzeSentence
-		);
+		const sentenceCreated = await this.createVariantSentence(elm, variant, feature, observer);
 
 		if (!sentenceCreated) {
 			if (elm.nextElementSibling) {
 				await nextElement(elm.nextElementSibling);
 			}
 			return;
-		}
-
-		if (firstAnalyzeSentence) {
-			firstAnalyzeSentence = false;
 		}
 
 		variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
@@ -219,8 +206,7 @@ export class VariantGenerator {
 		elm: HTMLElement,
 		variant: Variant,
 		feature: Feature,
-		observer: MutationObserverManager,
-		firstAnalyzeSentence: boolean
+		observer: MutationObserverManager
 	): Promise<boolean | null> {
 		// save element in feature interaction array
 		this.saveInteractedElement(elm, variant.getName(), feature);
@@ -228,7 +214,7 @@ export class VariantGenerator {
 		// create variant sentence
 		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(
 			elm,
-			firstAnalyzeSentence
+			variant.whenSentenceCreated
 		);
 
 		if (!variantSentence) {
@@ -236,6 +222,10 @@ export class VariantGenerator {
 		}
 
 		variant.setVariantSentence(variantSentence);
+
+		if (!variant.whenSentenceCreated) {
+			variant.whenSentenceCreated = true;
+		}
 
 		// treat mutational variant sentences
 		await this.treatMutationsSentences(observer, variant);
@@ -349,27 +339,18 @@ export class VariantGenerator {
 		variant: Variant,
 		feature: Feature,
 		observer: MutationObserverManager
-	): Promise<boolean | null> {
+	) {
 		const interaction = await this.generateInteraction(row, variant, feature);
 		if (!interaction) {
-			return null;
+			return;
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
 		if (!result) {
-			return null;
+			return;
 		}
 
-		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(row);
-		if (!variantSentence) {
-			return null;
-		}
-
-		variant.setVariantSentence(variantSentence);
-
-		await this.treatMutationsSentences(observer, variant);
-
-		return true;
+		await this.createVariantSentence(row, variant, feature, observer);
 	}
 
 	// interacts and get mutation sentences (if exists) of the second column of table
@@ -386,29 +367,20 @@ export class VariantGenerator {
 		}
 
 		if (!column) {
-			return null;
+			return;
 		}
 
 		const interaction = await this.generateInteraction(column, variant, feature);
 		if (!interaction) {
-			return null;
+			return;
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
 		if (!result) {
-			return null;
+			return;
 		}
 
-		const variantSentence: VariantSentence | null = this.featureUtil.createVariantSentence(row);
-		if (!variantSentence) {
-			return null;
-		}
-
-		variant.setVariantSentence(variantSentence);
-
-		await this.treatMutationsSentences(observer, variant);
-
-		return true;
+		await this.createVariantSentence(row, variant, feature, observer);
 	}
 
 	// check if the element is ready to receive interaction
