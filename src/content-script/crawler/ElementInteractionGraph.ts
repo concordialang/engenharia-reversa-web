@@ -92,7 +92,7 @@ export class ElementInteractionGraph {
 			if (
 				await this.satisfiesCriteria(currentInteraction, urlCriteria, isInteractionAnalyzed)
 			) {
-				return [currentInteraction, nextInteraction];
+				return [currentInteraction];
 			} else {
 				return [];
 			}
