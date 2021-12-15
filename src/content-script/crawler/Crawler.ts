@@ -136,6 +136,7 @@ export class Crawler {
 			lastUnanalyzed.getPageUrl().href != this.browserContext.getUrl().href
 		) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
+			return false;
 		}
 
 		return true;
