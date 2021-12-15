@@ -13,6 +13,7 @@ export class Variant {
 
 	public lastAnalysisInputFieldFound = false;
 	public finalActionButtonFound = false;
+	public whenSentenceCreated = false;
 
 	constructor(id?: string) {
 		this.sentences = [];

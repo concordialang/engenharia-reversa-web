@@ -9,7 +9,7 @@ import { UiElementsTypes } from '../enums/UiElementsTypes';
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
 
-	public gerate(element: HTMLElement, firstAnalyzedSentence: boolean): VariantSentence | null {
+	public gerate(element: HTMLElement, whenSentenceCreated: boolean): VariantSentence | null {
 		const uiElement: UIElement | null = this.uiElementGenerator.createFromElement(element);
 		if (!uiElement) {
 			return null;
@@ -40,9 +40,9 @@ export class VariantSentencesGenerator {
 				break;
 		}
 
-		const variantType = firstAnalyzedSentence
-			? VariantSentenceType.WHEN
-			: VariantSentenceType.AND;
+		const variantType = whenSentenceCreated
+			? VariantSentenceType.AND
+			: VariantSentenceType.WHEN;
 
 		return new VariantSentence(variantType, action, uiElement);
 	}

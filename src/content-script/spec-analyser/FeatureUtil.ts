@@ -48,9 +48,9 @@ export class FeatureUtil {
 
 	createVariantSentence(
 		element: HTMLElement,
-		firstAnalyzedSentence: boolean = false
+		whenSentenceCreated: boolean = false
 	): VariantSentence | null {
-		return this.variantSentencesGenerator.gerate(element, firstAnalyzedSentence);
+		return this.variantSentencesGenerator.gerate(element, whenSentenceCreated);
 	}
 
 	createGivenTypeVariantSentence(url: URL): VariantSentence | null {
