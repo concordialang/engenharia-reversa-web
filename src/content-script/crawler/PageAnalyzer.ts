@@ -73,7 +73,7 @@ export class PageAnalyzer {
 		) {
 			//Only re-executes previous interactions when is revisting the page after a redirect
 			if (lastInteraction) {
-				await this.executePreviousInteraction(previousInteractions, lastInteraction);
+				await this.executePreviousInteractions(previousInteractions, lastInteraction);
 			}
 
 			const elmAnalysis = new ElementAnalysis(
@@ -177,7 +177,7 @@ export class PageAnalyzer {
 		return interactionFeature;
 	}
 
-	private async executePreviousInteraction(previousInteractions, lastInteraction) {
+	private async executePreviousInteractions(previousInteractions, lastInteraction) {
 		const isNextInteractionOnAnotherPage = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
 			lastInteraction
 		);
@@ -187,11 +187,11 @@ export class PageAnalyzer {
 		}
 
 		for (let interaction of previousInteractions) {
-			const isNext = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
+			const isNextOnAnotherPage = await this.elementInteractionGraph.isNextInteractionOnAnotherPage(
 				interaction
 			);
 
-			if (!isNext) {
+			if (!isNextOnAnotherPage) {
 				await this.elementInteractionExecutor.execute(interaction, undefined, false);
 			}
 		}
