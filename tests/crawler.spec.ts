@@ -468,6 +468,8 @@ describe('Crawler', () => {
 
 		const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
 
+		const specMutex: Mutex = new Mutex('spec-mutex');
+
 		const crawler: Crawler = new Crawler(
 			browserContext,
 			pageStorage,
@@ -478,6 +480,7 @@ describe('Crawler', () => {
 			analyzedElementStorage,
 			featureStorage,
 			specStorage,
+			specMutex,
 			analysisElementXPathStorage
 		);
 

@@ -20,6 +20,7 @@ import { getDictionary } from '../src/content-script/dictionary';
 import { Feature } from '../src/content-script/spec-analyser/Feature';
 import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 import { Interactor } from '../src/content-script/crawler/Interactor';
+import { Variant } from '../src/content-script/spec-analyser/Variant';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -182,12 +183,15 @@ describe('Page Analyzer', () => {
 			variantGeneratorUtil
 		);
 
+		const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
+
 		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
 			browserContext,
-			elementInteractionGraph
+			elementInteractionGraph,
+			variantStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(

@@ -91,7 +91,7 @@ export class FeatureGenerator {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
-				spec.addFeature(feature);
+				await spec.addFeature(feature);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');

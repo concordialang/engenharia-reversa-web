@@ -204,7 +204,7 @@ export class PageAnalyzer {
 			this.setFeatureUiElementsAsAnalyzed(feature);
 		}
 		if (this.spec) {
-			this.spec.addFeature(feature);
+			await this.spec.addFeature(feature);
 		}
 	}
 
