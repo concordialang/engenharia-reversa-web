@@ -47,7 +47,7 @@ export class FeatureGenerator {
 			analysisElement.ownerDocument.body
 		);
 
-		const callback = this.generateCallback(
+		const callback = await this.generatesCallBack(
 			scenario,
 			feature,
 			analysisElement,
@@ -146,7 +146,7 @@ export class FeatureGenerator {
 		return feature;
 	}
 
-	private generateCallback(
+	private async generatesCallBack(
 		scenario: Scenario,
 		feature: Feature,
 		analysisElement: HTMLElement,

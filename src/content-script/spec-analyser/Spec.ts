@@ -28,9 +28,9 @@ export class Spec {
 	}
 
 	public async addFeature(feature: Feature): Promise<void> {
-		if (this.mutex) {
-			await this.mutex.lock();
-		}
+		// if (this.mutex) {
+		// 	await this.mutex.lock();
+		// }
 		const features = await this.getFeaturesFromStorage();
 		if (features) {
 			this.features = features;

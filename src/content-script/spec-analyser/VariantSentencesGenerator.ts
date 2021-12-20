@@ -63,9 +63,9 @@ export class VariantSentencesGenerator {
 	): VariantSentence {
 		let statePostCondition = featureName.toLocaleLowerCase();
 
-		if (lastButtonInteracted !== null) {
-			let textButton = '';
+		let textButton = '';
 
+		if (lastButtonInteracted !== null) {
 			if (lastButtonInteracted.innerText) {
 				textButton = lastButtonInteracted.innerText;
 			} else if (

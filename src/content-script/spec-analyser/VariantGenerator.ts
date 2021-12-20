@@ -142,15 +142,12 @@ export class VariantGenerator {
 			return;
 		}
 
-		const callback = async (
-			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>
-		) => {
-			await this.createVariantSentence(elm, variant, feature, observer);
-
-			if (redirectionCallback) {
-				await redirectionCallback(interactionThatTriggeredRedirect, variant);
-			}
-		};
+		const callback = await this.generatesCallBack(
+			variant,
+			feature,
+			observer,
+			redirectionCallback
+		);
 
 		// interacts with the element
 		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
@@ -605,5 +602,17 @@ export class VariantGenerator {
 		}
 
 		return isCancelBtn;
+	}
+
+	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
+		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
+			const elm = interactionThatTriggeredRedirect.getElement();
+
+			await this.createVariantSentence(elm, variant, feature, observer);
+
+			if (redirectionCallback) {
+				await redirectionCallback(interactionThatTriggeredRedirect, variant);
+			}
+		};
 	}
 }
