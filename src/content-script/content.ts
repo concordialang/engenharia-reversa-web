@@ -99,7 +99,8 @@ getTabId(communicationChannel).then((tabId) => {
 		elementAnalysisStorage,
 		browserContext,
 		elementInteractionGraph,
-		variantStorage
+		variantStorage,
+		featureStorage
 	);
 
 	const pageAnalyzer = new PageAnalyzer(

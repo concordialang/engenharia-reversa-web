@@ -25,7 +25,8 @@ export class FeatureGenerator {
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private browserContext: BrowserContext,
 		private elementInteractionGraph: ElementInteractionGraph,
-		private variantStorage: ObjectStorage<Variant>
+		private variantStorage: ObjectStorage<Variant>,
+		private featureStorage: ObjectStorage<Feature>
 	) {}
 
 	public async generate(
@@ -174,6 +175,8 @@ export class FeatureGenerator {
 				scenario.getVariants()
 			);
 			feature.setUiElements(uiElements);
+
+			this.featureStorage.set(feature.getId(), feature);
 
 			if (redirectionCallback) {
 				await redirectionCallback(feature);
