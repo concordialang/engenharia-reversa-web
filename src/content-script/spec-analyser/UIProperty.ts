@@ -1,5 +1,5 @@
 export class UIProperty {
-	constructor(private name: string, private value: any) {}
+	constructor(private name: string, private value: any, private isXPathId?: boolean) {}
 
 	// name
 	public setName(name: string) {
@@ -17,5 +17,9 @@ export class UIProperty {
 
 	public getValue() {
 		return this.value;
+	}
+
+	public isXPathIdProp() {
+		return this.isXPathId && this.isXPathId === true;
 	}
 }

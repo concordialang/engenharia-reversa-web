@@ -1,9 +1,9 @@
 export enum UiElementsTypes {
-	TEXTBOX = 'textbox',
-	CHECKBOX = 'checkbox',
-	RADIO = 'radio',
-	SELECT = 'select',
-	TEXTAREA = 'textarea',
-	BUTTON = 'button',
-	TEXT = 'text',
+	TextBox = 'textbox',
+	Checkbox = 'checkbox',
+	Radio = 'radio',
+	Select = 'select',
+	TextArea = 'textarea',
+	Button = 'button',
+	Text = 'text',
 }

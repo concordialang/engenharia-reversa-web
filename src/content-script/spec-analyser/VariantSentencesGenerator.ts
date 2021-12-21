@@ -17,22 +17,22 @@ export class VariantSentencesGenerator {
 
 		let action: string = '';
 		switch (uiElement.getType()) {
-			case UiElementsTypes.TEXTBOX:
+			case UiElementsTypes.TextBox:
 				action = VariantSentenceActions.FILL;
 				break;
-			case UiElementsTypes.TEXTAREA:
+			case UiElementsTypes.TextArea:
 				action = VariantSentenceActions.FILL;
 				break;
-			case UiElementsTypes.CHECKBOX:
+			case UiElementsTypes.Checkbox:
 				action = VariantSentenceActions.CHECK;
 				break;
-			case UiElementsTypes.SELECT:
+			case UiElementsTypes.Select:
 				action = VariantSentenceActions.SELECT;
 				break;
-			case UiElementsTypes.RADIO:
+			case UiElementsTypes.Radio:
 				action = VariantSentenceActions.SELECT;
 				break;
-			case UiElementsTypes.BUTTON:
+			case UiElementsTypes.Button:
 				action = VariantSentenceActions.CLICK;
 				break;
 			default:

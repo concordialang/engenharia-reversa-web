@@ -7,6 +7,7 @@ import { VariantSentenceType } from '../content-script/enums/VariantSentenceType
 import { VariantSentenceActions } from '../content-script/enums/VariantSentenceActions';
 import { Scenario } from '../content-script/spec-analyser/Scenario';
 import { UIElement } from '../content-script/spec-analyser/UIElement';
+import { PropertyTypes } from '../content-script/enums/PropertyTypes';
 
 const spaceTab = '\t';
 const doubleSpaceTab = '\t\t';
@@ -70,7 +71,6 @@ export class ConcordiaFiles {
 					content += spaceTab;
 				}
 
-				// content += doubleSpaceTab + `${sentenceTypeDictionary} ${sentence.type === VariantSentenceType.GIVEN ? dictionary.that : ''} ${dictionary.I} ${sentenceActionDictionary} `;
 				content += doubleSpaceTab + `${sentenceTypeDictionary} `;
 
 				if (sentence.type === VariantSentenceType.GIVEN) {
@@ -85,7 +85,7 @@ export class ConcordiaFiles {
 					content += `~${sentence.statePostCondition}~` + doubleLineBreak;
 				} else {
 					if (sentence.action === VariantSentenceActions.CLICK) {
-						content += ` ${dictionary.on} `;
+						content += `${dictionary.on} `;
 					}
 
 					content += `{${sentence.uiElement?.getName()}}` + lineBreak;
@@ -105,10 +105,24 @@ export class ConcordiaFiles {
 			content += `${dictionary.uiElement}: ${uiElm.getName()}` + lineBreak;
 
 			for (let property of uiElm.getProperties()) {
+				let propName = property.getName();
+
+				const propertyNameDictionary =
+					dictionary.uiElmPropertiestypes[propName.toLocaleLowerCase()];
+
+				let value = property.getValue();
+
+				if (
+					propName === PropertyTypes.FORMAT ||
+					(propName === PropertyTypes.VALUE && typeof value === 'string')
+				) {
+					value = `'${value}'`;
+				} else if (propName === PropertyTypes.ID) {
+					value = property.isXPathIdProp() ? `'//${value}'` : `'#${value}'`;
+				}
+
 				content +=
-					spaceTab +
-					`- ${property.getName()} ${dictionary.is} ${property.getValue()}` +
-					lineBreak;
+					spaceTab + `- ${propertyNameDictionary} ${dictionary.is} ${value}` + lineBreak;
 			}
 
 			content += lineBreak;

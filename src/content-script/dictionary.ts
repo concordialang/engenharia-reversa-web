@@ -84,6 +84,19 @@ const dictionary = {
 			uncheck: 'uncheck',
 			wait: 'wait',
 		},
+		uiElmPropertiestypes: {
+			id: 'id',
+			type: 'type',
+			editable: 'editable',
+			datatype: 'dataType',
+			value: 'value',
+			minvalue: 'minValue',
+			maxvalue: 'maxValue',
+			minlength: 'minLength',
+			maxlength: 'maxLength',
+			format: 'format',
+			required: 'required',
+		},
 	},
 	pt: {
 		language: 'language', // is not translated for now
@@ -180,6 +193,19 @@ const dictionary = {
 			uncheck: 'desmarco',
 			wait: 'espero',
 		},
+		uiElmPropertiestypes: {
+			id: 'id',
+			type: 'tipo',
+			editable: 'editável',
+			datatype: 'tipo de dado',
+			value: 'valor',
+			minvalue: 'valor mínimo',
+			maxvalue: 'valor máximo',
+			minlength: 'comprimento mínimo',
+			maxlength: 'comprimento máximo',
+			format: 'formato',
+			required: 'obrigatório',
+		},
 	},
 };
 
@@ -197,8 +223,6 @@ export function getDictionary(language?: string) {
 	switch (language) {
 		case 'pt':
 			return dictionary.pt;
-		case 'en':
-			return dictionary.en;
 		default:
 			return dictionary.en;
 	}

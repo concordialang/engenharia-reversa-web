@@ -6,6 +6,7 @@ import { ValidUiElementsNodes } from '../enums/ValidUiElementsNodes';
 import { PropertyTypes } from '../enums/PropertyTypes';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 import { DataTypes } from '../enums/DataTypes';
+import { HTMLInputType } from '../enums/HTMLInputType';
 
 const DEFAULT_MAX_LENGTH = 524288;
 
@@ -21,7 +22,9 @@ export class UIElementGenerator {
 		if (
 			elm instanceof HTMLButtonElement ||
 			(elm instanceof HTMLInputElement &&
-				(elm.type === 'button' || elm.type === 'submit' || elm.type === 'reset'))
+				(elm.type === HTMLInputType.Button ||
+					elm.type === HTMLInputType.Submit ||
+					elm.type === HTMLInputType.Reset))
 		) {
 			uiElement = this.createFromButton(elm);
 		} else if (
@@ -41,7 +44,7 @@ export class UIElementGenerator {
 		let uiElm = new UIElement(elm);
 
 		// id
-		uiElm.setProperty(new UIProperty(PropertyTypes.ID, this.generateId(elm)));
+		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
 		uiElm.setName(this.generateName(elm, uiElm.getId()));
@@ -101,7 +104,7 @@ export class UIElementGenerator {
 		let uiElm = new UIElement(elm);
 
 		// id
-		uiElm.setProperty(new UIProperty(PropertyTypes.ID, this.generateId(elm)));
+		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
 		uiElm.setName(this.generateNameForButton(elm, uiElm.getId()));
@@ -126,7 +129,7 @@ export class UIElementGenerator {
 		let uiElm = new UIElement(elm);
 
 		// id
-		uiElm.setProperty(new UIProperty(PropertyTypes.ID, this.generateId(elm)));
+		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
 		uiElm.setName(uiElm.getId());
@@ -145,11 +148,11 @@ export class UIElementGenerator {
 	): string {
 		let name: string = '';
 
-		if (elm.name && !(elm instanceof HTMLInputElement && elm.type === 'radio')) {
+		if (elm.name && !(elm instanceof HTMLInputElement && elm.type === HTMLInputType.Radio)) {
 			name = formatToFirstCapitalLetter(elm.name);
 		} else if (
 			elm instanceof HTMLInputElement &&
-			(elm.type === 'radio' || elm.type === 'checkbox') &&
+			(elm.type === HTMLInputType.Radio || elm.type === HTMLInputType.Checkbox) &&
 			elm.nextElementSibling instanceof HTMLLabelElement
 		) {
 			name = this.generateNameFromLabel(elm.nextElementSibling, elm, false);
@@ -212,16 +215,18 @@ export class UIElementGenerator {
 		return name;
 	}
 
-	public generateId(elm: HTMLElement): string {
+	private generatePropertyId(elm: HTMLElement): UIProperty {
 		let id = '';
+		let isIdXPath = false;
 
 		if (elm.id) {
 			id = elm.id;
 		} else {
 			id = getPathTo(elm);
+			isIdXPath = true;
 		}
 
-		return id;
+		return new UIProperty(PropertyTypes.ID, id, isIdXPath);
 	}
 
 	private generateType(elm: HTMLElement): string {
@@ -231,31 +236,31 @@ export class UIElementGenerator {
 			case HTMLElementType.INPUT:
 				let inputType = (elm as HTMLInputElement).type;
 
-				if (inputType == 'checkbox') {
-					uiElmType = UiElementsTypes.CHECKBOX;
-				} else if (inputType == 'radio') {
-					uiElmType = UiElementsTypes.RADIO;
+				if (inputType == HTMLInputType.Checkbox) {
+					uiElmType = UiElementsTypes.Checkbox;
+				} else if (inputType == HTMLInputType.Radio) {
+					uiElmType = UiElementsTypes.Radio;
 				} else if (
-					inputType === 'button' ||
-					inputType === 'submit' ||
-					inputType === 'reset'
+					inputType === HTMLInputType.Button ||
+					inputType === HTMLInputType.Submit ||
+					inputType === HTMLInputType.Reset
 				) {
-					uiElmType = UiElementsTypes.BUTTON;
+					uiElmType = UiElementsTypes.Button;
 				} else {
-					uiElmType = UiElementsTypes.TEXTBOX;
+					uiElmType = UiElementsTypes.TextBox;
 				}
 				break;
 
 			case HTMLElementType.SELECT:
-				uiElmType = UiElementsTypes.SELECT;
+				uiElmType = UiElementsTypes.Select;
 				break;
 
 			case HTMLElementType.TEXTAREA:
-				uiElmType = UiElementsTypes.TEXTAREA;
+				uiElmType = UiElementsTypes.TextArea;
 				break;
 
 			case HTMLElementType.BUTTON:
-				uiElmType = UiElementsTypes.BUTTON;
+				uiElmType = UiElementsTypes.Button;
 				break;
 		}
 
@@ -272,11 +277,11 @@ export class UIElementGenerator {
 		if (elm.nodeName == ValidUiElementsNodes.INPUT) {
 			let inputType = (elm as HTMLInputElement).type;
 
-			if (inputType == 'date') {
+			if (inputType == HTMLInputType.Date) {
 				uiElmDataType = DataTypes.DATE;
-			} else if (inputType == 'time') {
+			} else if (inputType == HTMLInputType.Time) {
 				uiElmDataType = DataTypes.TIME;
-			} else if (inputType == 'datetime-local') {
+			} else if (inputType == HTMLInputType.DateTimeLocal) {
 				uiElmDataType = DataTypes.DATETIME;
 			} else {
 				uiElmDataType = DataTypes.STRING;
