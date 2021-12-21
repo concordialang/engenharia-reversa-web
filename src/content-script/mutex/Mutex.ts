@@ -1,17 +1,26 @@
 import Mutex from 'idb-mutex';
+import { IndexedDBObjectStorage } from '../storage/IndexedDBObjectStorage';
+import { sleep } from '../util';
 
 export default class {
-	private mutexVendor: Mutex;
+	private storage: IndexedDBObjectStorage<boolean>;
 
-	constructor(id: string) {
-		this.mutexVendor = new Mutex(id);
+	constructor(private id: string) {
+		this.storage = new IndexedDBObjectStorage('mutex', id);
 	}
 
-	public lock(): Promise<void> {
-		return this.mutexVendor.lock();
+	public async lock(): Promise<void> {
+		while (await this.isLocked()) {
+			sleep(1);
+		}
+		await this.storage.set('mutex-lock-' + this.id, true);
 	}
 
-	public unlock(): Promise<{}> {
-		return this.mutexVendor.unlock();
+	public async unlock(): Promise<void> {
+		await this.storage.set('mutex-lock-' + this.id, false);
+	}
+
+	private async isLocked(): Promise<boolean> {
+		return (await this.storage.get('mutex-lock-' + this.id)) === true;
 	}
 }
