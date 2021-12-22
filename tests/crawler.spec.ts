@@ -454,7 +454,8 @@ describe('Crawler', () => {
 			analyzedElementStorage,
 			browserContext,
 			elementInteractionGraph,
-			variantStorage
+			variantStorage,
+			featureStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(

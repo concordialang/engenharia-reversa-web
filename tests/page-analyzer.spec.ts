@@ -185,13 +185,16 @@ describe('Page Analyzer', () => {
 
 		const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
 
+		const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+
 		const featureGenerator = new FeatureGenerator(
 			variantGenerator,
 			featureUtil,
 			elementAnalysisStorage,
 			browserContext,
 			elementInteractionGraph,
-			variantStorage
+			variantStorage,
+			featureStorage
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
