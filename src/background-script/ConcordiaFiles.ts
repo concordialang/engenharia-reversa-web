@@ -4,6 +4,15 @@ import { Spec } from '../content-script/spec-analyser/Spec';
 import { Feature } from '../content-script/spec-analyser/Feature';
 import { getDictionary } from '../content-script/dictionary';
 import { VariantSentenceType } from '../content-script/enums/VariantSentenceType';
+import { VariantSentenceActions } from '../content-script/enums/VariantSentenceActions';
+import { Scenario } from '../content-script/spec-analyser/Scenario';
+import { UIElement } from '../content-script/spec-analyser/UIElement';
+import { PropertyTypes } from '../content-script/enums/PropertyTypes';
+
+const spaceTab = '\t';
+const doubleSpaceTab = '\t\t';
+const lineBreak = '\n';
+const doubleLineBreak = '\n\n';
 
 export class ConcordiaFiles {
 	public async gerate(spec) {
@@ -25,25 +34,35 @@ export class ConcordiaFiles {
 
 		const mainScenario = feature.getGeneralScenario();
 
-		const space = ' ';
-		const doubleSpaces = '  ';
-		const spaceTab = '\t';
-		const doubleSpaceTab = '\t\t';
-		const doubleColon = ': ';
-		const lineBreak = '\n';
-		const doubleLineBreak = '\n\n';
+		let content = `#${dictionary.language}: ${language}` + doubleLineBreak;
 
-		let content = '#language: ' + language + doubleLineBreak;
+		// feature
+		content += `${dictionary.feature}: ${feature.getName()}` + doubleLineBreak;
 
-		content += dictionary.feature + doubleColon + feature.getName() + doubleLineBreak;
+		// scenario
+		content += `${dictionary.scenario}: ${mainScenario.getName()}` + doubleLineBreak;
 
-		content += dictionary.scenario + doubleColon + mainScenario.getName() + doubleLineBreak;
+		// variants
+		content = await this.generateVariants(content, mainScenario, dictionary);
 
-		for (let variant of mainScenario.getVariants()) {
-			content += spaceTab + dictionary.variant + doubleColon + variant.getName() + lineBreak;
+		// uiElements
+		content = await this.generateUiElements(content, feature.getUiElements(), dictionary);
+
+		return content;
+	}
+
+	private async generateVariants(
+		content: string,
+		scenario: Scenario,
+		dictionary
+	): Promise<string> {
+		// variants
+		for (let variant of scenario.getVariants()) {
+			content += spaceTab + `${dictionary.variant}: ${variant.getName()}` + lineBreak;
 
 			const sentences = variant.getSentences();
 
+			// variant sentences
 			for (let sentence of sentences) {
 				const sentenceTypeDictionary = dictionary.variantSentenceTypes[sentence.type];
 				const sentenceActionDictionary = dictionary.variantSentenceActions[sentence.action];
@@ -52,27 +71,61 @@ export class ConcordiaFiles {
 					content += spaceTab;
 				}
 
-				content +=
-					doubleSpaceTab +
-					sentenceTypeDictionary +
-					space +
-					dictionary.I +
-					space +
-					sentenceActionDictionary +
-					space;
+				content += doubleSpaceTab + `${sentenceTypeDictionary} `;
 
 				if (sentence.type === VariantSentenceType.GIVEN) {
-					content += '[' + sentence.url + ']' + lineBreak;
+					content += `${dictionary.that} `;
+				}
+
+				content += `${dictionary.I} ${sentenceActionDictionary} `;
+
+				if (sentence.type === VariantSentenceType.GIVEN) {
+					content += `${dictionary.inThe} [${sentence.url}]` + lineBreak;
 				} else if (sentence.type === VariantSentenceType.THEN) {
-					content += '~' + sentence.statePostCondition + '~' + doubleLineBreak;
+					content += `~${sentence.statePostCondition}~` + doubleLineBreak;
 				} else {
-					content += '{' + sentence.uiElement?.getName() + '}' + lineBreak;
+					if (sentence.action === VariantSentenceActions.CLICK) {
+						content += `${dictionary.on} `;
+					}
+
+					content += `{${sentence.uiElement?.getName()}}` + lineBreak;
 				}
 			}
 		}
 
-		for (let uiElm of feature.getUiElements()) {
-			content += uiElm.getName() + lineBreak;
+		return content;
+	}
+
+	private async generateUiElements(
+		content: string,
+		uiElements: UIElement[],
+		dictionary
+	): Promise<string> {
+		for (let uiElm of uiElements) {
+			content += `${dictionary.uiElement}: ${uiElm.getName()}` + lineBreak;
+
+			for (let property of uiElm.getProperties()) {
+				let propName = property.getName();
+
+				const propertyNameDictionary =
+					dictionary.uiElmPropertiestypes[propName.toLocaleLowerCase()];
+
+				let value = property.getValue();
+
+				if (
+					propName === PropertyTypes.FORMAT ||
+					(propName === PropertyTypes.VALUE && typeof value === 'string')
+				) {
+					value = `'${value}'`;
+				} else if (propName === PropertyTypes.ID) {
+					value = property.isXPathIdProp() ? `'//${value}'` : `'#${value}'`;
+				}
+
+				content +=
+					spaceTab + `- ${propertyNameDictionary} ${dictionary.is} ${value}` + lineBreak;
+			}
+
+			content += lineBreak;
 		}
 
 		return content;

@@ -72,9 +72,9 @@ export class PageAnalyzer {
 				analysisTab == this.browserContext.getTabId())
 		) {
 			//Only re-executes previous interactions when is revisting the page after a redirect
-			if (lastInteraction) {
-				await this.executePreviousInteractions(previousInteractions, lastInteraction);
-			}
+			// if (lastInteraction) {
+			// 	await this.executePreviousInteractions(previousInteractions, lastInteraction);
+			// }
 
 			const elmAnalysis = new ElementAnalysis(
 				contextElement,
