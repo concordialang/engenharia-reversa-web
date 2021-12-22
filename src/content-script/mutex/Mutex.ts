@@ -11,7 +11,7 @@ export default class {
 
 	public async lock(): Promise<void> {
 		while (await this.isLocked()) {
-			sleep(1);
+			await sleep(5);
 		}
 		await this.storage.set('mutex-lock-' + this.id, true);
 	}
