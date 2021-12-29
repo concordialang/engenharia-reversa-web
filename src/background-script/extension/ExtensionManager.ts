@@ -121,6 +121,7 @@ export class ExtensionManager {
 					}
 				}
 			}
+			if (responseCallback) responseCallback(new Message([], null));
 		});
 	}
 
