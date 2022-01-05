@@ -66,6 +66,7 @@ describe('VariantGenerator', () => {
 	const variantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
+		elementInteractionGraph,
 		featureUtil,
 		variantGeneratorUtil
 	);

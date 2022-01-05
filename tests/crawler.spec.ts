@@ -440,6 +440,7 @@ describe('Crawler', () => {
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
+			elementInteractionGraph,
 			featureUtil,
 			variantGeneratorUtil
 		);

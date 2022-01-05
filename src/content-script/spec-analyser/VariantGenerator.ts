@@ -9,11 +9,13 @@ import { VariantSentence } from './VariantSentence';
 import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
+import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
+		private elementInteractionGraph: ElementInteractionGraph,
 		private featureUtil: FeatureUtil,
 		private varUtil: VariantGeneratorUtil
 	) {}
@@ -606,6 +608,9 @@ export class VariantGenerator {
 
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
+			await this.elementInteractionGraph.addElementInteractionToGraph(
+				interactionThatTriggeredRedirect
+			);
 			const elm = interactionThatTriggeredRedirect.getElement();
 
 			this.createVariantSentence(elm, variant, feature, observer);

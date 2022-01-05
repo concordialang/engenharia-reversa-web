@@ -41,7 +41,11 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
 
-	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+	const featureStorage = new IndexedDBObjectStorage<Feature>(
+		'engenharia-reversa-web-feature',
+		'features',
+		Feature
+	);
 
 	const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
 
@@ -87,6 +91,7 @@ getTabId(communicationChannel).then((tabId) => {
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
+		elementInteractionGraph,
 		featureUtil,
 		variantGeneratorUtil
 	);
