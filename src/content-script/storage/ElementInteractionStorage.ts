@@ -3,15 +3,17 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Feature } from '../spec-analyser/Feature';
 import { ObjectStorage } from './ObjectStorage';
 import { Variant } from '../spec-analyser/Variant';
+import { InMemoryStorage } from './InMemoryStorage';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 
 // TODO Trocar o nome da classe
-export class ElementInteractionStorage extends LocalObjectStorage<ElementInteraction<HTMLElement>> {
+export class ElementInteractionStorage extends InMemoryStorage<ElementInteraction<HTMLElement>> {
 	constructor(
-		localStorage: Storage,
+		communicationChannel: CommunicationChannel,
 		private featureStorage: ObjectStorage<Feature>,
 		private variantStorage: ObjectStorage<Variant>
 	) {
-		super(localStorage, ElementInteraction);
+		super(communicationChannel, ElementInteraction);
 	}
 
 	async set(key: string, obj: ElementInteraction<HTMLElement>): Promise<void> {

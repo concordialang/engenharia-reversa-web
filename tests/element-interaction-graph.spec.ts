@@ -8,6 +8,8 @@ import { HTMLEventType } from '../src/content-script/enums/HTMLEventType';
 import { HTMLElementType } from '../src/content-script/enums/HTMLElementType';
 import { ElementAnalysis } from '../src/content-script/crawler/ElementAnalysis';
 import { LocalObjectStorage } from '../src/content-script/storage/LocalObjectStorage';
+import { ChromeCommunicationChannel } from '../src/shared/comm/ChromeCommunicationChannel';
+import { ChromeMock } from './util/ChromeMock';
 
 describe('ElementInteractionGraph', () => {
 	const url1: URL = new URL('https://www.google.com');
@@ -91,7 +93,7 @@ describe('ElementInteractionGraph', () => {
 			storage,
 			ElementInteraction
 		);
-		const graphStorage = new GraphStorage(storage);
+		const graphStorage = new GraphStorage(new ChromeCommunicationChannel(new ChromeMock()));
 
 		elementInteractionGraph = new ElementInteractionGraph(
 			'graph',

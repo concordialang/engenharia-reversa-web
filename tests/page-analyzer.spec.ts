@@ -21,6 +21,8 @@ import { Feature } from '../src/content-script/spec-analyser/Feature';
 import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 import { Interactor } from '../src/content-script/crawler/Interactor';
 import { Variant } from '../src/content-script/spec-analyser/Variant';
+import { ChromeCommunicationChannel } from '../src/shared/comm/ChromeCommunicationChannel';
+import { ChromeMock } from './util/ChromeMock';
 
 describe('Page Analyzer', () => {
 	it('sets element analysis status to "InProgress" when its being analyzed', async () => {
@@ -127,7 +129,7 @@ describe('Page Analyzer', () => {
 
 		const tabId = 'tab-test';
 
-		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
+		const graphStorage: GraphStorage = new GraphStorage(new ChromeCommunicationChannel(new ChromeMock()));
 
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
 			window.localStorage,

@@ -7,4 +7,5 @@ export enum Command {
 	SetValueInMemoryDatabase = 'set-value-in-memory-database',
 	GetValueFromMemoryDatabase = 'get-value-from-memory-database',
 	RemoveValueFromMemoryDatabase = 'remove-value-from-memory-database',
+	GetInteractionsGraphs = 'get-interactions-graphs',
 }

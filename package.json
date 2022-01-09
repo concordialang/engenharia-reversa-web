@@ -68,6 +68,7 @@
 	"dependencies": {
 		"class-transformer": "^0.4.0",
 		"cytoscape": "^3.18.2",
+		"cytoscape-dagre": "^2.3.2",
 		"diff-dom": "^4.2.2",
 		"file-saver": "^2.0.5",
 		"get-xpath": "^3.0.0",
