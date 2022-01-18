@@ -1,10 +1,9 @@
-import { Graph } from '../graph/Graph';
-import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { ElementInteraction } from './ElementInteraction';
-import Mutex from '../mutex/Mutex';
-import { GraphStorage } from '../storage/GraphStorage';
-import { ElementAnalysisStatus } from './ElementAnalysisStatus';
-import { ObjectStorage } from '../storage/ObjectStorage';
+import { ElementAnalysisStatus } from "../../content-script/crawler/ElementAnalysisStatus";
+import { ElementInteraction } from "../../content-script/crawler/ElementInteraction";
+import { Graph } from "../../content-script/graph/Graph";
+import { ElementAnalysisStorage } from "../../content-script/storage/ElementAnalysisStorage";
+import { ObjectStorage } from "../../shared/storage/ObjectStorage";
+import { GraphStorage } from "../storage/GraphStorage";
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -27,18 +26,26 @@ export class ElementInteractionGraph {
 		elementInteraction: ElementInteraction<HTMLElement>
 	): Promise<void> {
 		const interactionId = elementInteraction.getId();
+		console.log(interactionId);
 		await this.elementInteractionStorage.set(interactionId, elementInteraction);
 		const graph = await this.getLatestVersionOfGraph();
+		console.log("asddsadsa");
+		console.log(graph);
+		console.log(typeof graph);
 		if (graph.nodeExists(interactionId)) {
 			return;
 		}
 		graph.addNode(interactionId);
+		console.log("p2423423");
 		const sourceInteraction = await this.getLastInteraction();
+		console.log("32cv1x3c2v1x32cv1x");
 		if (sourceInteraction) {
 			graph.addEdge(sourceInteraction.getId(), interactionId);
 		}
+		
 		this.graphStorage.set(this.elementInteractionGraphKey, graph);
 		await this.elementInteractionStorage.set(this.lastInteractionKey, elementInteraction);
+		console.log("added to graph");
 	}
 
 	private async getLatestVersionOfGraph(): Promise<Graph> {
@@ -61,18 +68,6 @@ export class ElementInteractionGraph {
 
 		if (!graph) {
 			graph = await this.getLatestVersionOfGraph();
-			//@ts-ignore
-			const keys = graph.serialize().nodes;
-			console.log("size:");
-			console.log(keys.length);
-			for(let key of keys) {
-				console.log(key);
-			}
-			//@ts-ignore
-			const links = graph.serialize().links;
-			console.log("size links:");
-			console.log(links.length);
-			//console.log(graph.serialize());
 		}
 
 		if (!currentInteractionId) {
@@ -230,3 +225,15 @@ export class ElementInteractionGraph {
 		await this.graphStorage.remove(this.elementInteractionGraphKey);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+

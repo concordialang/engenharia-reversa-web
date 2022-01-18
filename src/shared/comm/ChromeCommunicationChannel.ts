@@ -50,7 +50,11 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 			if (sender.tab) {
 				//lancar excecao se tab vier sem id
 				if (sender.tab.id) {
-					const senderObj = new Tab(sender.tab.id?.toString());
+					let url: URL|null = null;
+					if(sender.tab.url){
+						url = new URL(sender.tab.url);
+					}
+					const senderObj = new Tab(sender.tab.id?.toString(), url);
 					callback(messageObj, senderObj, sendResponse);
 				}
 			} else {

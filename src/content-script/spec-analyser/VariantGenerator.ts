@@ -6,10 +6,15 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo } from '../util';
+import { getPathTo, sleep } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
+import { Command } from '../../shared/comm/Command';
+import { Message } from '../../shared/comm/Message';
+import { classToPlain } from 'class-transformer';
+import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 
 export class VariantGenerator {
 	constructor(
@@ -17,7 +22,8 @@ export class VariantGenerator {
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private featureUtil: FeatureUtil,
-		private varUtil: VariantGeneratorUtil
+		private varUtil: VariantGeneratorUtil,
+		private communicationChannel: CommunicationChannel
 	) {}
 
 	public async generate(
@@ -85,6 +91,8 @@ export class VariantGenerator {
 		pathsOfElementsToIgnore: string[] = []
 	): Promise<void> {
 		if (!elm) return;
+
+		//console.log(getPathTo(elm));
 
 		const nextElement = async (nextElmToBeAnalyzed) => {
 			return this.analyze(
@@ -421,6 +429,12 @@ export class VariantGenerator {
 	*/
 	private canInteract(elm: HTMLElement, variant: Variant, feature: Feature): boolean {
 		const xpathElement = getPathTo(elm);
+		console.log("CAN INTERACT");
+		console.log(feature.interactedElements.length);
+		console.log(feature.getId());
+		console.log(feature.getName());
+		console.log(xpathElement);
+		console.log(feature.interactedElements[feature.interactedElements.length-1]);
 
 		// checks if the element has already received interaction in the feature
 		const wasInteracted = feature.interactedElements.some(
@@ -507,6 +521,8 @@ export class VariantGenerator {
 		feature: Feature
 	): void {
 		const xpathElement = getPathTo(elm);
+		console.log('SALVANDO NA FEATURE');
+		console.log(xpathElement);
 		const indexAnalyzedElm = feature.interactedElements.findIndex(
 			(analyzedElms) => analyzedElms.xpath === xpathElement
 		);
@@ -530,7 +546,9 @@ export class VariantGenerator {
 			}
 
 			feature.interactedElements.push(interactedElm);
+			console.log('SALVOU');
 		}
+		console.log('TERMINOU')
 	}
 
 	private treatMutationsSentences(observer: MutationObserverManager, variant: Variant) {
@@ -607,11 +625,22 @@ export class VariantGenerator {
 	}
 
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
+		const _this = this;
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
-			await this.elementInteractionGraph.addElementInteractionToGraph(
-				interactionThatTriggeredRedirect
-			);
+			if(window.location.href == 'http://localhost/testesTcc/mainTest/mainTestPage2.html'){
+				// while(true){
+
+				// }
+			}
 			const elm = interactionThatTriggeredRedirect.getElement();
+
+			console.log("Vai salvar a interação "+ getPathTo(elm) +" no unload");
+
+			_this.communicationChannel.sendMessageToAll(
+				new Message([Command.AddElementInteractionToGraph], classToPlain(interactionThatTriggeredRedirect))
+			);
+
+			console.log("Salvou a interação "+ getPathTo(elm) +" no unload");
 
 			this.createVariantSentence(elm, variant, feature, observer);
 

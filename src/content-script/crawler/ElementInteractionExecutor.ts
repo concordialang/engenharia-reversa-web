@@ -1,6 +1,6 @@
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLInputType } from '../enums/HTMLInputType';
-import { sleep } from '../util';
+import { getPathTo, sleep } from '../util';
 import { ElementInteraction } from './ElementInteraction';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -64,9 +64,13 @@ export class ElementInteractionExecutor {
 			);
 		}
 
+		console.log("Vai salvar a interação "+ getPathTo(element) +" no main");
+
 		if (saveInteractionInGraph) {
 			await this.elementInteractionGraph.addElementInteractionToGraph(interaction);
 		}
+
+		console.log("Salvou a interação "+ getPathTo(element) +" no main");
 
 		return result;
 	}

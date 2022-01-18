@@ -163,7 +163,11 @@ export class FeatureGenerator {
 				ElementAnalysisStatus.Done,
 				this.browserContext.getTabId()
 			);
+
+			console.log('vai salvar como analisado');
 			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+			console.log('salvou como analisado');
+			
 
 			this.addVariantToScenario(newVariant, scenario, feature);
 
@@ -176,7 +180,16 @@ export class FeatureGenerator {
 			);
 			feature.setUiElements(uiElements);
 
+			console.log("vai salvar a feature");
+
 			this.featureStorage.set(feature.getId(), feature);
+			console.log(feature.interactedElements.length);
+			console.log(feature.getId());
+			console.log(feature.getName());
+
+			console.log(feature.interactedElements[feature.interactedElements.length-1]);
+
+			console.log("salvou a feature");
 
 			if (redirectionCallback) {
 				await redirectionCallback(feature);

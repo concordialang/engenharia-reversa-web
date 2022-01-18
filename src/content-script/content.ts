@@ -28,6 +28,7 @@ import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
 import { Interactor } from './crawler/Interactor';
 import { Variant } from './spec-analyser/Variant';
 import { GraphRenderer } from './graph/GraphRenderer';
+import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -36,19 +37,15 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-	const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
+	const pageStorage = new InMemoryStorage<string>(communicationChannel);
 
-	const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
+	const analysisElementXPathStorage = new InMemoryStorage<string>(communicationChannel);
 
 	const graphStorage: GraphStorage = new GraphStorage(communicationChannel);
 
-	const featureStorage = new IndexedDBObjectStorage<Feature>(
-		'engenharia-reversa-web-feature',
-		'features',
-		Feature
-	);
+	const featureStorage = new InMemoryStorage<Feature>(communicationChannel, Feature);
 
-	const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
+	const variantStorage = new InMemoryStorage<Variant>(communicationChannel, Variant);
 
 	const elementInteractionStorage = new ElementInteractionStorage(
 		communicationChannel,
@@ -59,7 +56,7 @@ getTabId(communicationChannel).then((tabId) => {
 	const language = 'pt';
 	const dictionary = getDictionary(language);
 
-	const elementAnalysisStorage = new ElementAnalysisStorage(window.localStorage);
+	const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
 		tabId,
@@ -94,10 +91,13 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionExecutor,
 		elementInteractionGraph,
 		featureUtil,
-		variantGeneratorUtil
+		variantGeneratorUtil,
+		communicationChannel
 	);
 
-	const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
+	//const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
+	const specStorage = new InMemoryStorage<Spec>(communicationChannel, Spec);
+
 
 	const featureGenerator = new FeatureGenerator(
 		variantGenerator,

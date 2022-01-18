@@ -21,6 +21,10 @@ export class InMemoryDatabase {
 		return this.map.entries();
 	}
 
+	public keys(): IterableIterator<string> {
+		return this.map.keys();
+	}
+
 	public size(): number {
 		return this.map.size;
 	}

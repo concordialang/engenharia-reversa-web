@@ -93,6 +93,8 @@ export class Interactor {
 		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {
+		let timePassed = 0;
+		let timeLimit = 300;
 		const element = interaction.getElement();
 		let triggeredUnload = false;
 		let alreadyExitedFunction = false;
@@ -109,8 +111,6 @@ export class Interactor {
 
 		element.click();
 
-		let timePassed = 0;
-		let timeLimit = 300;
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {

@@ -3,11 +3,13 @@ import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { BrowserContext } from '../crawler/BrowserContext';
+import { InMemoryStorage } from './InMemoryStorage';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 
 // TODO Trocar o nome da classe
-export class ElementAnalysisStorage extends LocalObjectStorage<ElementAnalysis> {
-	constructor(localStorage: Storage) {
-		super(localStorage, ElementAnalysis);
+export class ElementAnalysisStorage extends InMemoryStorage<ElementAnalysis> {
+	constructor(communicationChannel: CommunicationChannel) {
+		super(communicationChannel, ElementAnalysis);
 	}
 
 	public async getWithXpathAndUrl(
