@@ -89,10 +89,8 @@ getTabId(communicationChannel).then((tabId) => {
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
-		elementInteractionGraph,
 		featureUtil,
 		variantGeneratorUtil,
-		communicationChannel
 	);
 
 	//const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
@@ -105,8 +103,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementAnalysisStorage,
 		browserContext,
 		elementInteractionGraph,
-		variantStorage,
-		featureStorage
+		variantStorage
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
@@ -115,7 +112,8 @@ getTabId(communicationChannel).then((tabId) => {
 		browserContext,
 		featureStorage,
 		elementInteractionExecutor,
-		elementInteractionGraph
+		elementInteractionGraph,
+		communicationChannel
 	);
 
 	const specMutex: Mutex = new Mutex('spec-mutex');

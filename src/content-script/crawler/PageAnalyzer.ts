@@ -11,9 +11,12 @@ import { Feature } from '../spec-analyser/Feature';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { ElementInteractionExecutor } from './ElementInteractionExecutor';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { Message } from '../../shared/comm/Message';
+import { Command } from '../../shared/comm/Command';
 
 export class PageAnalyzer {
-	private redirectCallback: (feature: Feature) => Promise<void>;
+	private redirectCallback: (feature: Feature, unloadMessageExtra: any) => Promise<void>;
 
 	private spec: Spec | null = null;
 
@@ -23,10 +26,15 @@ export class PageAnalyzer {
 		private browserContext: BrowserContext,
 		private featureStorage: ObjectStorage<Feature>,
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private communicationChannel: CommunicationChannel
 	) {
-		this.redirectCallback = async (feature: Feature) => {
-			await this.saveFeatureToSpec(feature);
+		this.redirectCallback = async (feature: Feature, unloadMessageExtra: any) => {
+			this.communicationChannel.sendMessageToAll(
+				new Message([Command.ProcessUnload], unloadMessageExtra)
+			);
+
+			//await this.saveFeatureToSpec(feature);
 		};
 	}
 
@@ -161,7 +169,7 @@ export class PageAnalyzer {
 		return feature;
 	}
 
-	private async isAnalysisFinished(feature: Feature): Promise<boolean> {
+	private isAnalysisFinished(feature: Feature): boolean {
 		if (!feature.needNewVariants) {
 			return true;
 		}

@@ -20,10 +20,8 @@ export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
-		private elementInteractionGraph: ElementInteractionGraph,
 		private featureUtil: FeatureUtil,
-		private varUtil: VariantGeneratorUtil,
-		private communicationChannel: CommunicationChannel
+		private varUtil: VariantGeneratorUtil
 	) {}
 
 	public async generate(
@@ -33,7 +31,8 @@ export class VariantGenerator {
 		feature: Feature,
 		redirectionCallback?: (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newVariant: Variant
+			newVariant: Variant,
+			unloadMessageExtra: any
 		) => Promise<void>,
 		variant: Variant | null = null,
 		pathsOfElementsToIgnore: string[] = []
@@ -86,7 +85,8 @@ export class VariantGenerator {
 		observer: MutationObserverManager,
 		redirectionCallback?: (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newVariant: Variant
+			newVariant: Variant,
+			unloadMessageExtra: any
 		) => Promise<void>,
 		pathsOfElementsToIgnore: string[] = []
 	): Promise<void> {
@@ -636,16 +636,14 @@ export class VariantGenerator {
 
 			console.log("Vai salvar a interação "+ getPathTo(elm) +" no unload");
 
-			_this.communicationChannel.sendMessageToAll(
-				new Message([Command.AddElementInteractionToGraph], classToPlain(interactionThatTriggeredRedirect))
-			);
+			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
 
 			console.log("Salvou a interação "+ getPathTo(elm) +" no unload");
 
 			this.createVariantSentence(elm, variant, feature, observer);
 
 			if (redirectionCallback) {
-				await redirectionCallback(interactionThatTriggeredRedirect, variant);
+				await redirectionCallback(interactionThatTriggeredRedirect, variant, unloadMessageExtra);
 			}
 		};
 	}

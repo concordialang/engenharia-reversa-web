@@ -17,6 +17,10 @@ import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 import { limitOfVariants } from '../config';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
+import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { Message } from '../../shared/comm/Message';
+import { Command } from '../../shared/comm/Command';
+import { classToPlain } from 'class-transformer';
 
 export class FeatureGenerator {
 	constructor(
@@ -25,8 +29,7 @@ export class FeatureGenerator {
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private browserContext: BrowserContext,
 		private elementInteractionGraph: ElementInteractionGraph,
-		private variantStorage: ObjectStorage<Variant>,
-		private featureStorage: ObjectStorage<Feature>
+		private variantStorage: ObjectStorage<Variant>
 	) {}
 
 	public async generate(
@@ -34,7 +37,7 @@ export class FeatureGenerator {
 		analysisElement: HTMLElement,
 		url: URL,
 		ignoreFormElements: boolean = false,
-		redirectionCallback?: (feature: Feature) => Promise<void>,
+		redirectionCallback?: (feature: Feature, unloadMessageExtra: any) => Promise<void>,
 		feature: Feature | null = null,
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
@@ -92,6 +95,7 @@ export class FeatureGenerator {
 
 			if (variantAnalyzed) {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
+				this.variantStorage.set(variantAnalyzed.getId(), variantAnalyzed);
 				await spec.addFeature(feature);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
@@ -151,48 +155,31 @@ export class FeatureGenerator {
 		scenario: Scenario,
 		feature: Feature,
 		analysisElement: HTMLElement,
-		redirectionCallback?: (feature: Feature) => Promise<void>
+		redirectionCallback?: (feature: Feature, unloadMessageExtra: any) => Promise<void>
 	) {
 		return async (
 			interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>,
-			newVariant: Variant
+			newVariant: Variant,
+			unloadMessageExtra: any
 		) => {
-			const elementAnalysis = new ElementAnalysis(
-				interactionThatTriggeredRedirect.getElement(),
-				interactionThatTriggeredRedirect.getPageUrl(),
-				ElementAnalysisStatus.Done,
-				this.browserContext.getTabId()
-			);
-
-			console.log('vai salvar como analisado');
-			await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-			console.log('salvou como analisado');
-			
 
 			this.addVariantToScenario(newVariant, scenario, feature);
 
-			if (!feature.needNewVariants) {
-				this.setElementAnalysisAsDone(analysisElement);
-			}
+			//await this.variantStorage.set(newVariant.getId(), newVariant);
+
+			//unloadMessageExtra.newVariant = newVariant;
 
 			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
 				scenario.getVariants()
 			);
 			feature.setUiElements(uiElements);
 
-			console.log("vai salvar a feature");
+			unloadMessageExtra.feature = classToPlain(feature);
 
-			this.featureStorage.set(feature.getId(), feature);
-			console.log(feature.interactedElements.length);
-			console.log(feature.getId());
-			console.log(feature.getName());
-
-			console.log(feature.interactedElements[feature.interactedElements.length-1]);
-
-			console.log("salvou a feature");
+			unloadMessageExtra.analysisElementPath = getPathTo(analysisElement);
 
 			if (redirectionCallback) {
-				await redirectionCallback(feature);
+				await redirectionCallback(feature, unloadMessageExtra);
 			}
 		};
 	}
@@ -204,7 +191,6 @@ export class FeatureGenerator {
 	): void {
 		if (variantAnalyzed && variantAnalyzed.isValid()) {
 			scenario.addVariant(variantAnalyzed);
-			this.variantStorage.set(variantAnalyzed.getId(), variantAnalyzed);
 
 			// if true, starts analyzing the buttons after the final action button if the variant just found it
 			if (!feature.analysesBtnsAfterFinalActionBtn) {
@@ -232,7 +218,7 @@ export class FeatureGenerator {
 		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
-	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
+	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {

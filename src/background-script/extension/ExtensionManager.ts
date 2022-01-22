@@ -7,8 +7,6 @@ import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
 import { ConcordiaFiles } from '../ConcordiaFiles';
-import { Spec } from '../../content-script/spec-analyser/Spec';
-import { Feature } from '../../content-script/spec-analyser/Feature';
 import { plainToClass } from 'class-transformer';
 import { ElementInteractionStorage } from '../../background-script/storage/ElementInteractionStorage';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
@@ -20,6 +18,11 @@ import { ElementInteractionGraph } from '../graph/ElementInteractionGraph';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { Graph } from '../../content-script/graph/Graph';
 import { sleep } from '../../content-script/util';
+import { ElementAnalysisStatus } from '../../content-script/crawler/ElementAnalysisStatus';
+import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../../background-script/storage/ElementAnalysisStorage';
+import { ElementAnalysis } from './ElementAnalysis';
+import { Feature } from './Feature';
+import { Spec } from './Spec';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -180,38 +183,87 @@ export class ExtensionManager {
 						concordiaFiles.gerate(spec);
 
 						_this.extensionIsEnabled = false;
-					} else if (message.includesAction(Command.AddElementInteractionToGraph)) {
+					} else if (message.includesAction(Command.ProcessUnload)) {
 						_this.tabLocked.set(sender.getId(), true);
-						const id = sender.getId();
-						console.log(id);
-						const communicationChannel = new ChromeCommunicationChannel(chrome);
-						const featureStorage = new InMemoryStorage<Feature>(_this.inMemoryDatabase);
-						const variantStorage = new InMemoryStorage<Variant>(_this.inMemoryDatabase);
-						const elementInteractionStorage = new ElementInteractionStorage(_this.inMemoryDatabase, featureStorage, variantStorage);
-						const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
-						const graphStorage = new GraphStorage(_this.inMemoryDatabase);
-						const elementInteractionGraph = new ElementInteractionGraph('tab-' + id, elementInteractionStorage, elementAnalysisStorage, graphStorage);
-						//const interactionJson = message.getExtra();
-						//interactionJson.elementSelector = interactionJson.element;
-						//interactionJson.element = null;
-						try{
-							const interaction = plainToClass(ElementInteraction, message.getExtra());
-							//@ts-ignore
-							console.log(interaction.getElementSelector());
-							console.log(_this.inMemoryDatabase.keys());
-							//@ts-ignore
-							await elementInteractionGraph.addElementInteractionToGraph(interaction);
-							//@ts-ignore
-							console.log(_this.inMemoryDatabase.size());
-						} catch (e){
-							console.log(e);
+
+						const elementInteractionGraph = _this.getElementInteractionGraph(sender);
+						const interaction = plainToClass(ElementInteraction, message.getExtra().interaction);
+						//@ts-ignore
+						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);
+
+						console.log(interaction);
+						//@ts-ignore
+						_this.setInteractionElementAsAnalyzed(interaction, sender);
+
+						const analysisElementPath = message.getExtra().analysisElementPath;
+						const feature = plainToClass(Feature, message.getExtra().feature);
+						//@ts-ignore
+						const url = interaction.getPageUrl();
+						//@ts-ignore
+						if (!feature.needNewVariants) {
+							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
 						}
+
+						//@ts-ignore
+						await _this.saveFeature(feature);
+
+						const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
+						const spec = plainToClass(Spec, specObj);
+						//@ts-ignore
+						await _this.saveFeatureToSpec(feature, spec, url, sender);
+						
 						_this.tabLocked.set(sender.getId(), false);
 					}	
 				}
 			}
 			if (responseCallback) responseCallback(new Message([], null));
 		});
+	}
+
+	private async addElementInteractionToGraph(interaction: ElementInteraction<HTMLElement>, graph: ElementInteractionGraph): Promise<void> {
+		//@ts-ignore
+		console.log(interaction.getElementSelector());
+		console.log(this.inMemoryDatabase.keys());
+		//@ts-ignore
+		await graph.addElementInteractionToGraph(interaction);
+		//@ts-ignore
+		console.log(this.inMemoryDatabase.size());
+	}
+
+	private getElementInteractionGraph(sender: Tab){
+		const id = sender.getId();
+		const communicationChannel = new ChromeCommunicationChannel(chrome);
+		const featureStorage = new InMemoryStorage<Feature>(this.inMemoryDatabase);
+		const variantStorage = new InMemoryStorage<Variant>(this.inMemoryDatabase);
+		const elementInteractionStorage = new ElementInteractionStorage(this.inMemoryDatabase, featureStorage, variantStorage);
+		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
+		const graphStorage = new GraphStorage(this.inMemoryDatabase);
+		return new ElementInteractionGraph('tab-' + id, elementInteractionStorage, elementAnalysisStorage, graphStorage);
+	}
+
+	private async setInteractionElementAsAnalyzed(interaction: ElementInteraction<HTMLElement>, sender: Tab): Promise<void> {
+		const elementAnalysis = new ElementAnalysis(
+			//@ts-ignore
+			interaction.getElementSelector(),
+			interaction.getPageUrl(),
+			ElementAnalysisStatus.Done,
+			sender.getId()
+		);
+		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
+		console.log('vai salvar como analisado');
+		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+		console.log('salvou como analisado');
+	}
+
+	private async setElementAnalysisAsDone(elementPath: string, sender: Tab, url : URL): Promise<void> {
+		const elementAnalysis = new ElementAnalysis(
+			elementPath,
+			url,
+			ElementAnalysisStatus.Done,
+			sender.getId()
+		);
+		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
+		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 	}
 
 	public openNewTab(url: URL): void {
@@ -227,6 +279,58 @@ export class ExtensionManager {
 			});
 		} else {
 			this.urlQueue.push(url);
+		}
+	}
+
+	private async saveFeature(feature: Feature): Promise<void> {
+		console.log("vai salvar a feature");
+
+		const featureStorage = new InMemoryStorage<Feature>(this.inMemoryDatabase);
+		await featureStorage.set(feature.getId(), feature);
+		console.log(feature.interactedElements.length);
+		console.log(feature.getId());
+		console.log(feature.getName());
+
+		console.log(feature.interactedElements[feature.interactedElements.length-1]);
+
+		console.log("salvou a feature");
+	}
+
+	private async saveFeatureToSpec(feature: Feature, spec: Spec, url: URL, sender: Tab): Promise<void> {
+		const analysisFinished = await this.isAnalysisFinished(feature);
+
+		if (analysisFinished) {
+			await this.setFeatureUiElementsAsAnalyzed(feature, url, sender);
+		}
+		if (spec) {
+			await spec.addFeature(feature);
+		}
+	}
+
+	private isAnalysisFinished(feature: Feature): boolean {
+		if (!feature.needNewVariants) {
+			return true;
+		}
+		return false;
+	}
+
+	private async setFeatureUiElementsAsAnalyzed(feature: Feature, url: URL, sender: Tab): Promise<void> {
+		const uiElements = feature.getUiElements();
+		for (let uiElement of uiElements) {
+			const element = uiElement.getSourceElement();
+			if (element) {
+				const analysis = new ElementAnalysis(
+					element,
+					url,
+					ElementAnalysisStatus.Done,
+					sender.getId()
+				);
+				const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
+				await elementAnalysisStorage.set(analysis.getId(), analysis);
+			}
+			// else {
+			// 	throw new Error("UIElement source element doesn't exist");
+			// }
 		}
 	}
 

@@ -4,8 +4,8 @@ import { InMemoryDatabase } from '../extension/InMemoryDatabase';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { ObjectStorage } from '../../shared/storage/ObjectStorage';
 import { Variant } from '../../content-script/spec-analyser/Variant';
-import { Feature } from '../../content-script/spec-analyser/Feature';
 import { plainToClass } from 'class-transformer';
+import { Feature } from '../extension/Feature';
 
 // TODO Trocar o nome da classe
 export class ElementInteractionStorage extends InMemoryStorage<ElementInteraction<HTMLElement>> {
@@ -43,6 +43,7 @@ export class ElementInteractionStorage extends InMemoryStorage<ElementInteractio
 		}
 		let feature = elementInteraction.getFeature();
 		if (typeof feature === 'string') {
+			//@ts-ignore
 			feature = await this.featureStorage.get(feature);
 			elementInteraction.setFeature(feature);
 		}
