@@ -382,7 +382,7 @@ describe('Crawler', () => {
 
 		const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
 
-		const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
+		const graphStorage: GraphStorage = new GraphStorage(new ChromeCommunicationChannel(new ChromeMock()));
 
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
 			window.localStorage,
@@ -440,6 +440,7 @@ describe('Crawler', () => {
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
+			elementInteractionGraph,
 			featureUtil,
 			variantGeneratorUtil
 		);

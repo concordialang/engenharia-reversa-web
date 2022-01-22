@@ -9,11 +9,13 @@ import { VariantSentence } from './VariantSentence';
 import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
+import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
+		private elementInteractionGraph: ElementInteractionGraph,
 		private featureUtil: FeatureUtil,
 		private varUtil: VariantGeneratorUtil
 	) {}
@@ -165,7 +167,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		const sentenceCreated = await this.createVariantSentence(elm, variant, feature, observer);
+		const sentenceCreated = this.createVariantSentence(elm, variant, feature, observer);
 
 		if (!sentenceCreated) {
 			if (elm.nextElementSibling) {
@@ -199,12 +201,12 @@ export class VariantGenerator {
 		return interaction;
 	}
 
-	private async createVariantSentence(
+	private createVariantSentence(
 		elm: HTMLElement,
 		variant: Variant,
 		feature: Feature,
 		observer: MutationObserverManager
-	): Promise<boolean | null> {
+	): boolean | null {
 		// save element in feature interaction array
 		this.saveInteractedElement(elm, variant.getName(), feature);
 
@@ -225,7 +227,7 @@ export class VariantGenerator {
 		}
 
 		// treat mutational variant sentences
-		await this.treatMutationsSentences(observer, variant);
+		this.treatMutationsSentences(observer, variant);
 
 		return true;
 	}
@@ -347,7 +349,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		await this.createVariantSentence(row, variant, feature, observer);
+		this.createVariantSentence(row, variant, feature, observer);
 	}
 
 	// interacts and get mutation sentences (if exists) of the second column of table
@@ -377,7 +379,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		await this.createVariantSentence(row, variant, feature, observer);
+		this.createVariantSentence(row, variant, feature, observer);
 	}
 
 	// check if the element is ready to receive interaction
@@ -531,7 +533,7 @@ export class VariantGenerator {
 		}
 	}
 
-	private async treatMutationsSentences(observer: MutationObserverManager, variant: Variant) {
+	private treatMutationsSentences(observer: MutationObserverManager, variant: Variant) {
 		let mutations: MutationRecord[] = observer.getMutations();
 
 		if (mutations.length == 0) {
@@ -606,9 +608,12 @@ export class VariantGenerator {
 
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
+			await this.elementInteractionGraph.addElementInteractionToGraph(
+				interactionThatTriggeredRedirect
+			);
 			const elm = interactionThatTriggeredRedirect.getElement();
 
-			await this.createVariantSentence(elm, variant, feature, observer);
+			this.createVariantSentence(elm, variant, feature, observer);
 
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant);

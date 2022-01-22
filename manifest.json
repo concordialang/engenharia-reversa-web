@@ -8,7 +8,13 @@
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
-			"js": ["node_modules/hacktimer/HackTimer.min.js", "/dist/content.js"]
+			"js": [
+				"node_modules/hacktimer/HackTimer.min.js", 
+				"/assets/cytoscape.js", 
+				"/assets/dagre.js", 
+				"/assets/cytoscape-dagre.js", 
+				"/dist/content.js"
+			]
 		}
 	],
 	"browser_action": {

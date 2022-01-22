@@ -27,6 +27,7 @@ import { Feature } from './spec-analyser/Feature';
 import { VariantGeneratorUtil } from './spec-analyser/VariantGeneratorUtil';
 import { Interactor } from './crawler/Interactor';
 import { Variant } from './spec-analyser/Variant';
+import { GraphRenderer } from './graph/GraphRenderer';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -39,14 +40,18 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
 
-	const graphStorage: GraphStorage = new GraphStorage(window.localStorage);
+	const graphStorage: GraphStorage = new GraphStorage(communicationChannel);
 
-	const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
+	const featureStorage = new IndexedDBObjectStorage<Feature>(
+		'engenharia-reversa-web-feature',
+		'features',
+		Feature
+	);
 
 	const variantStorage = new LocalObjectStorage<Variant>(window.localStorage, Variant);
 
 	const elementInteractionStorage = new ElementInteractionStorage(
-		window.localStorage,
+		communicationChannel,
 		featureStorage,
 		variantStorage
 	);
@@ -87,6 +92,7 @@ getTabId(communicationChannel).then((tabId) => {
 	const variantGenerator: VariantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
+		elementInteractionGraph,
 		featureUtil,
 		variantGeneratorUtil
 	);
@@ -156,6 +162,11 @@ getTabId(communicationChannel).then((tabId) => {
 			window.localStorage.removeItem(key);
 		}
 		crawler.resetLastPage();
+	}
+
+	if(pageUrl.pathname === '/visualizacao-grafo-url/'){
+		const graphRenderer = new GraphRenderer(communicationChannel, elementInteractionStorage);
+		graphRenderer.render();
 	}
 });
 

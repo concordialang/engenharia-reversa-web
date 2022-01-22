@@ -26,8 +26,8 @@ export function assertElementInteractionsAreEqual(
 	const expectedVariant = expected.getVariant();
 	const actualVariant = actual.getVariant();
 	expect(actualVariant).not.toBeNull();
-	if (actualVariant && expectedVariant) {
-		assertVariantsAreEqual(expectedVariant as Variant, actualVariant as Variant);
+	if (actualVariant instanceof Variant && expectedVariant instanceof Variant) {
+		assertVariantsAreEqual(expectedVariant, actualVariant);
 	}
 
 	const expectedFeature = expected.getFeature();

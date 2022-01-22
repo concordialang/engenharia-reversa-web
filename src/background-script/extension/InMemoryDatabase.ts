@@ -16,4 +16,12 @@ export class InMemoryDatabase {
 	public remove(key: string): void {
 		this.map.delete(key);
 	}
+
+	public entries(): IterableIterator<[string, any]> {
+		return this.map.entries();
+	}
+
+	public size(): number {
+		return this.map.size;
+	}
 }

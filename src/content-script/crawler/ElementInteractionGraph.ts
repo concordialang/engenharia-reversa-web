@@ -29,6 +29,9 @@ export class ElementInteractionGraph {
 		const interactionId = elementInteraction.getId();
 		await this.elementInteractionStorage.set(interactionId, elementInteraction);
 		const graph = await this.getLatestVersionOfGraph();
+		if (graph.nodeExists(interactionId)) {
+			return;
+		}
 		graph.addNode(interactionId);
 		const sourceInteraction = await this.getLastInteraction();
 		if (sourceInteraction) {

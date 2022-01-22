@@ -72,6 +72,9 @@ export class ExtensionManager {
 					const key = data.key;
 					const value = data.value;
 					_this.inMemoryDatabase.set(key, value);
+					if(_this.isGraphKey(key)){
+						_this.communicationChannel.sendMessageToAll(new Message([AppEvent.InteractionGraphUpdated], key));
+					}
 				}
 			} else if (message.includesAction(Command.GetValueFromMemoryDatabase)) {
 				const data = message.getExtra();
@@ -90,6 +93,16 @@ export class ExtensionManager {
 					if (responseCallback) {
 						responseCallback(new Message([], true));
 					}
+				}
+			} else if (message.includesAction(Command.GetInteractionsGraphs)) {
+				const graphs = {};
+				for(let [key, value] of _this.inMemoryDatabase.entries()) {
+					if(_this.isGraphKey(key)){
+						graphs[key] = JSON.parse(value);
+					}
+				}
+				if (responseCallback) {
+					responseCallback(new Message([], graphs));
 				}
 			}
 
@@ -121,6 +134,7 @@ export class ExtensionManager {
 					}
 				}
 			}
+			if (responseCallback) responseCallback(new Message([], null));
 		});
 	}
 
@@ -155,6 +169,11 @@ export class ExtensionManager {
 		// promise.then(function () {
 		// 	_this.removeTab(tab);
 		// });
+	}
+
+	private isGraphKey(key: string): boolean {
+		const regexp = /interactions-graph-tab-[0-9]+/;
+		return regexp.test(key);
 	}
 
 	//teoricamente pode dar problema de concorrência
