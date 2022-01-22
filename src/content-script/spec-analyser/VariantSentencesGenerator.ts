@@ -100,6 +100,8 @@ export class VariantSentencesGenerator {
 				sentences = this.buildAttrDisabledSentence(mutation);
 			} else if (mutation.attributeName === 'readonly') {
 				sentences = this.buildAttrReadOnlySentence(mutation);
+			} else if (mutation.attributeName === 'hidden') {
+				sentences = this.buildAttrHiddenSentence(mutation);
 			}
 		} else if (mutation.type === 'childList') {
 			sentences = this.buildChildListSentence(mutation);
@@ -241,6 +243,30 @@ export class VariantSentencesGenerator {
 				VariantSentenceType.AND,
 				VariantSentenceActions.SEE,
 				[{ property: 'readonly', value: node.readOnly }]
+			);
+		}
+
+		return sentences;
+	}
+
+	private buildAttrHiddenSentence(mutation): VariantSentence[] {
+		let sentences: VariantSentence[] = [];
+
+		const node = mutation.target;
+
+		let oldValue = mutation.oldValue;
+		if (mutation.oldValue === 'true') {
+			oldValue = true;
+		} else if (mutation.oldValue === 'false') {
+			oldValue = false;
+		}
+
+		if (node && oldValue !== node.disabled) {
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				VariantSentenceActions.SEE,
+				[{ property: 'hidden', value: node.readOnly }]
 			);
 		}
 

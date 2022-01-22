@@ -1,5 +1,10 @@
 export class UIProperty {
-	constructor(private name: string, private value: any, private isXPathId?: boolean) {}
+	constructor(
+		private name: string,
+		private value: any,
+		private isXPathId?: boolean,
+		private isInnerTextValue?: boolean
+	) {}
 
 	// name
 	public setName(name: string) {
@@ -21,5 +26,9 @@ export class UIProperty {
 
 	public isXPathIdProp() {
 		return this.isXPathId && this.isXPathId === true;
+	}
+
+	public isInnerTextValueProp() {
+		return this.isInnerTextValue && this.isInnerTextValue === true;
 	}
 }
