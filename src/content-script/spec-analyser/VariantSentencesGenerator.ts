@@ -75,7 +75,7 @@ export class VariantSentencesGenerator {
 				textButton = lastButtonInteracted.value;
 			}
 
-			statePostCondition += textButton != '' ? ' | ' + textButton.toLocaleLowerCase() : '';
+			statePostCondition += textButton != '' ? ' $$ ' + textButton.toLocaleLowerCase() : '';
 		}
 
 		return new VariantSentence(
@@ -254,18 +254,22 @@ export class VariantSentencesGenerator {
 
 		const node = mutation.target;
 
-		let oldValue = mutation.oldValue;
-		if (mutation.oldValue === 'true') {
-			oldValue = true;
-		} else if (mutation.oldValue === 'false') {
-			oldValue = false;
-		}
+		if (node) {
+			let hidden = node.hidden;
 
-		if (node && oldValue !== node.disabled) {
+			let action = '';
+
+			if(hidden === true){
+				action = VariantSentenceActions.NOTSEE;
+			}
+			else {
+				action = VariantSentenceActions.SEE;
+			}
+
 			sentences = this.createSentencesForMutations(
 				node,
 				VariantSentenceType.AND,
-				VariantSentenceActions.SEE,
+				action,
 				[{ property: 'hidden', value: node.readOnly }]
 			);
 		}
@@ -276,7 +280,7 @@ export class VariantSentencesGenerator {
 	private createSentencesForMutations(
 		element: HTMLElement,
 		type: VariantSentenceType,
-		action: VariantSentenceActions,
+		action: string,
 		attr: Array<{ property: string; value: string }> = []
 	): VariantSentence[] {
 		let sentences: VariantSentence[] = [];

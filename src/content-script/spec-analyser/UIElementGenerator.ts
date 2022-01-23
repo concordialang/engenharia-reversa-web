@@ -118,11 +118,12 @@ export class UIElementGenerator {
 
 	private createFromOthers(elm): UIElement | null {
 		if (
-			(elm.nodeName === ValidUiElementsNodes.LABEL ||
-				elm.nodeName === ValidUiElementsNodes.STRONG ||
+			elm.nodeName === ValidUiElementsNodes.LABEL ||
+			((elm.nodeName === ValidUiElementsNodes.STRONG ||
 				elm.nodeName === ValidUiElementsNodes.B ||
-				elm.nodeName === ValidUiElementsNodes.P) &&
-			!elm.innerText
+				elm.nodeName === ValidUiElementsNodes.P ||
+				elm.nodeName === ValidUiElementsNodes.SPAN) &&
+			!elm.innerText)
 		) {
 			return null;
 		}

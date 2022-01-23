@@ -55,7 +55,7 @@ export class ElementInteractionGenerator {
 
 		let interaction: ElementInteraction<HTMLInputElement> | null = new ElementInteraction<
 			HTMLInputElement
-		>(input, HTMLEventType.Change, this.browserContext.getUrl());
+		>(input, HTMLEventType.Click, this.browserContext.getUrl());
 
 		if (type == HTMLInputType.Radio && input.value) {
 			interaction.setValue(input.value);

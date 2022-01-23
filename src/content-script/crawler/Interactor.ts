@@ -54,7 +54,7 @@ export class Interactor {
 				if (chosenRadio) {
 					chosenRadio.checked = true;
 				}
-				this.dispatchEvent(element, HTMLEventType.Change);
+				this.dispatchEvent(element, HTMLEventType.Click);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ export class Interactor {
 		if (value) {
 			const element = interaction.getElement();
 			element.checked = value ? true : false;
-			this.dispatchEvent(element, HTMLEventType.Change);
+			this.dispatchEvent(element, HTMLEventType.Click);
 		}
 	}
 
