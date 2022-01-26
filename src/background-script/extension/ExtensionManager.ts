@@ -23,6 +23,7 @@ import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../
 import { ElementAnalysis } from './ElementAnalysis';
 import { Feature } from './Feature';
 import { Spec } from './Spec';
+import { SpecStorage } from './SpecStorage';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -188,7 +189,12 @@ export class ExtensionManager {
 					} else if (message.includesAction(AppEvent.Finished)) {
 						// const specStorage = JSON.parse(message.getExtra());
 						const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
-						const spec = plainToClass(Spec, specObj);
+						let spec;
+						if(!(specObj instanceof Spec)){
+							spec = plainToClass(Spec, specObj);
+						} else {
+							spec = specObj;
+						}
 						// const specStorage = JSON.parse(message.getExtra());
 						// const specObj = JSON.parse(specStorage.localStorage.Spec);
 						// const spec = plainToClass(Spec, specObj);
@@ -222,7 +228,16 @@ export class ExtensionManager {
 						await _this.saveFeature(feature);
 
 						const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
-						const spec = plainToClass(Spec, specObj);
+						let spec;
+						if(!(specObj instanceof Spec)){
+							spec = plainToClass(Spec, specObj);
+						} else {
+							spec = specObj;
+						}
+						const specStorage = new SpecStorage(_this.inMemoryDatabase);
+
+						//@ts-ignore
+						spec.setSpecStorage(specStorage);
 						//@ts-ignore
 						await _this.saveFeatureToSpec(feature, spec, url, sender);
 						

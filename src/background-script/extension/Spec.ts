@@ -1,4 +1,4 @@
-import { Exclude, Type } from 'class-transformer';
+import { Exclude, plainToClass, Type } from 'class-transformer';
 import Mutex from '../../content-script/mutex/Mutex';
 import { ObjectStorage } from '../../shared/storage/ObjectStorage';
 import { Feature } from './Feature';
@@ -64,8 +64,12 @@ export class Spec {
 		this.featureStorage = featureStorage;
 	}
 
-	public setSpecStorage(specStorage: ObjectStorage<Spec>): void {
+	public setSpecStorage(specStorage: ObjectStorage<Spec>|null): void {
 		this.specStorage = specStorage;
+	}
+
+	public getSpecStorage():  ObjectStorage<Spec>|null {
+		return this.specStorage;
 	}
 
 	public setMutex(mutex: Mutex): void {
@@ -86,7 +90,10 @@ export class Spec {
 
 	private async getFeaturesFromStorage(): Promise<Feature[] | null> {
 		if (this.specStorage) {
-			const latestVersionOfSpec = await this.specStorage.get(Spec.getStorageKey());
+			let latestVersionOfSpec = await this.specStorage.get(Spec.getStorageKey());
+			if(!(latestVersionOfSpec instanceof Spec)){
+				latestVersionOfSpec = plainToClass(Spec, latestVersionOfSpec);
+			}
 			if (latestVersionOfSpec) {
 				return latestVersionOfSpec.getFeatures();
 			}

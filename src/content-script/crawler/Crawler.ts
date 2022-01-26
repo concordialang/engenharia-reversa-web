@@ -128,9 +128,7 @@ export class Crawler {
 				previousInteractions
 			);
 		} catch (e) {
-			if (e instanceof ForcingExecutionStoppageError) {
-				return false;
-			}
+			return false;
 		}
 
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página

@@ -1,4 +1,4 @@
-import { Exclude, Type } from 'class-transformer';
+import { Exclude, plainToClass, Type } from 'class-transformer';
 import Mutex from '../mutex/Mutex';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { Feature } from './Feature';
