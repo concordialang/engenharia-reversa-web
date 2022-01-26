@@ -34,6 +34,7 @@ export class ExtensionManager {
 	private extensionIsEnabled: boolean;
 	private inMemoryDatabase: InMemoryDatabase;
 	private tabLocked: Map<string, boolean>;
+	private tabAjaxCalls: Map<string, string[]>;
 
 	constructor(
 		extension: Extension,
@@ -50,23 +51,31 @@ export class ExtensionManager {
 		this.extensionIsEnabled = false;
 		this.inMemoryDatabase = inMemoryDatabase;
 		this.tabLocked = new Map<string, boolean>();
+		this.tabAjaxCalls = new Map<string, string[]>();
 	}
 
 	public setup(): void {
 		let _this = this;
 		this.extension.setBrowserActionListener(
 			ExtensionBrowserAction.ExtensionIconClicked,
-			function (tab: Tab) {
+			async function (tab: Tab) {
 				if (!_this.extensionIsEnabled) {
 					_this.extensionIsEnabled = true;
 					_this.openedTabs.push(tab);
 					_this.openedTabsCounter++;
+					console.log("still has ajax to complete");
+					//console.log(_this.tabStillHasAjaxToComplete(tab));
+					while(_this.tabStillHasAjaxToComplete(tab)){
+						await sleep(5);
+					}
 					_this.sendOrderToCrawlTab(tab, true);
 				} else {
 					_this.extension.reload();
 				}
 			}
 		);
+		
+		this.listenToAjaxCalls();
 
 		this.communicationChannel.setMessageListener(async function (
 			message: Message,
@@ -163,6 +172,11 @@ export class ExtensionManager {
 							}							
 						}
 						while(_this.tabLocked.get(sender.getId())){
+							await sleep(5);
+						}
+						console.log("still has ajax to complete");
+						console.log(_this.tabStillHasAjaxToComplete(sender));
+						while(_this.tabStillHasAjaxToComplete(sender)){
 							await sleep(5);
 						}
 						_this.sendOrderToCrawlTab(sender);
@@ -377,5 +391,63 @@ export class ExtensionManager {
 			}
 		}
 		return false;
+	}
+
+	private tabStillHasAjaxToComplete(tab: Tab): boolean {
+		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
+		return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
+	}
+
+	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {
+		//@ts-ignore
+		const ajaxCalls = this.tabAjaxCalls.get(tab.getId());
+		console.log(this.tabAjaxCalls);
+		console.log(ajaxCalls);
+		if (ajaxCalls) {
+			return ajaxCalls.length;
+		}
+		return 0;
+	}
+
+	private listenToAjaxCalls(){
+
+		const _this = this;
+
+		const beforeRequest = (details) => {
+			const type = details.type;
+			if(type === 'xmlhttprequest'){
+				const tabRequests = _this.tabAjaxCalls.get(details.tabId) || [];
+				tabRequests.push(details.requestId);
+				_this.tabAjaxCalls.set(details.tabId.toString(), tabRequests);
+				console.log(_this.tabAjaxCalls);
+			}
+		};
+
+		const requestCompleted = (details) => {
+			const type = details.type;
+			if(type === 'xmlhttprequest'){
+				const tabRequests = _this.tabAjaxCalls.get(details.tabId) || [];
+				_this.removeFromArray(tabRequests, details.requestId);
+				_this.tabAjaxCalls.set(details.tabId.toString(), tabRequests);
+				console.log(_this.tabAjaxCalls);
+			}
+		};
+		
+		var filter = {urls: ["<all_urls>"]};
+		
+		chrome.webRequest.onBeforeRequest.addListener(
+		    beforeRequest, filter, []
+		);
+		
+		chrome.webRequest.onCompleted.addListener(
+			requestCompleted, filter, []
+		);
+	}
+
+	private removeFromArray(array: Array<any>, element: any) {
+		const index = array.indexOf(element);
+		if (index > -1) {
+			array.splice(index, 1);
+		}
 	}
 }

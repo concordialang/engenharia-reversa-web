@@ -20,6 +20,6 @@
 	"browser_action": {
 		"default_icon": "/assets/icon.png"
 	},
-	"permissions": ["tabs", "<all_urls>"],
+	"permissions": ["webRequest", "tabs", "<all_urls>"],
 	"web_accessible_resources": ["node_modules/hacktimer/HackTimer.min.js"]
 }
