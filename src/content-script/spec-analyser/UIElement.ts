@@ -2,6 +2,7 @@ import { UIProperty } from './UIProperty';
 import { Type } from 'class-transformer';
 import 'reflect-metadata';
 import { TransformHTMLElement } from '../decorators';
+import { PropertyTypes } from '../enums/PropertyTypes';
 
 export class UIElement {
 	private name: string;
@@ -28,14 +29,6 @@ export class UIElement {
 		return this.name;
 	}
 
-	public setValue(value: string) {
-		this.value = value;
-	}
-
-	public getValue() {
-		return this.value;
-	}
-
 	public setProperty(property: UIProperty) {
 		this.properties.push(property);
 	}
@@ -49,11 +42,27 @@ export class UIElement {
 	}
 
 	public getId() {
-		return this.properties.find((property) => property.getName() === 'id')?.getValue();
+		return this.properties
+			.find((property) => property.getName() === PropertyTypes.ID)
+			?.getValue();
 	}
 
 	public getType() {
-		return this.properties.find((property) => property.getName() === 'type')?.getValue();
+		return this.properties
+			.find((property) => property.getName() === PropertyTypes.TYPE)
+			?.getValue();
+	}
+
+	public getInnexTextValue() {
+		let value = this.properties
+			.find((property) => {
+				return (
+					property.getName() === PropertyTypes.VALUE && property.isInnerTextValueProp()
+				);
+			})
+			?.getValue();
+
+		return value ? value : null;
 	}
 
 	public getSourceElement() {

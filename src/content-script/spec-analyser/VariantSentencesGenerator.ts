@@ -75,7 +75,7 @@ export class VariantSentencesGenerator {
 				textButton = lastButtonInteracted.value;
 			}
 
-			statePostCondition += textButton != '' ? ' | ' + textButton.toLocaleLowerCase() : '';
+			statePostCondition += textButton != '' ? ' $$ ' + textButton.toLocaleLowerCase() : '';
 		}
 
 		return new VariantSentence(
@@ -100,6 +100,8 @@ export class VariantSentencesGenerator {
 				sentences = this.buildAttrDisabledSentence(mutation);
 			} else if (mutation.attributeName === 'readonly') {
 				sentences = this.buildAttrReadOnlySentence(mutation);
+			} else if (mutation.attributeName === 'hidden') {
+				sentences = this.buildAttrHiddenSentence(mutation);
 			}
 		} else if (mutation.type === 'childList') {
 			sentences = this.buildChildListSentence(mutation);
@@ -247,10 +249,38 @@ export class VariantSentencesGenerator {
 		return sentences;
 	}
 
+	private buildAttrHiddenSentence(mutation): VariantSentence[] {
+		let sentences: VariantSentence[] = [];
+
+		const node = mutation.target;
+
+		if (node) {
+			let hidden = node.hidden;
+
+			let action = '';
+
+			if(hidden === true){
+				action = VariantSentenceActions.NOTSEE;
+			}
+			else {
+				action = VariantSentenceActions.SEE;
+			}
+
+			sentences = this.createSentencesForMutations(
+				node,
+				VariantSentenceType.AND,
+				action,
+				[{ property: 'hidden', value: node.readOnly }]
+			);
+		}
+
+		return sentences;
+	}
+
 	private createSentencesForMutations(
 		element: HTMLElement,
 		type: VariantSentenceType,
-		action: VariantSentenceActions,
+		action: string,
 		attr: Array<{ property: string; value: string }> = []
 	): VariantSentence[] {
 		let sentences: VariantSentence[] = [];

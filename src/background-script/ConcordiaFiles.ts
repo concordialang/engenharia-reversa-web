@@ -88,7 +88,13 @@ export class ConcordiaFiles {
 						content += `${dictionary.on} `;
 					}
 
-					content += `{${sentence.uiElement?.getName()}}` + lineBreak;
+					let innerTextValue = sentence.uiElement?.getInnexTextValue();
+
+					content += innerTextValue
+						? `"${innerTextValue}"`
+						: `{${sentence.uiElement?.getName()}}`;
+
+					content += lineBreak;
 				}
 			}
 		}

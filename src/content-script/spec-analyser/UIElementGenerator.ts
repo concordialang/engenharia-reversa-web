@@ -50,7 +50,8 @@ export class UIElementGenerator {
 		uiElm.setName(this.generateName(elm, uiElm.getId()));
 
 		if (elm instanceof HTMLSelectElement && elm.options.length > 0) {
-			uiElm.setValue(Array.from(elm.options).reverse()[0].value); // set last option value
+			let value = Array.from(elm.options).reverse()[0].value; // set last option value
+			uiElm.setProperty(new UIProperty(PropertyTypes.VALUE, value));
 		}
 
 		// type
@@ -117,11 +118,12 @@ export class UIElementGenerator {
 
 	private createFromOthers(elm): UIElement | null {
 		if (
-			(elm.nodeName === ValidUiElementsNodes.LABEL ||
-				elm.nodeName === ValidUiElementsNodes.STRONG ||
+			elm.nodeName === ValidUiElementsNodes.LABEL ||
+			((elm.nodeName === ValidUiElementsNodes.STRONG ||
 				elm.nodeName === ValidUiElementsNodes.B ||
-				elm.nodeName === ValidUiElementsNodes.P) &&
-			!elm.innerText
+				elm.nodeName === ValidUiElementsNodes.P ||
+				elm.nodeName === ValidUiElementsNodes.SPAN) &&
+			!elm.innerText)
 		) {
 			return null;
 		}
@@ -136,7 +138,8 @@ export class UIElementGenerator {
 
 		// value
 		if (elm.innerText) {
-			uiElm.setValue(elm.innerText);
+			let value = elm.innerText;
+			uiElm.setProperty(new UIProperty(PropertyTypes.VALUE, value, undefined, true));
 		}
 
 		return uiElm;

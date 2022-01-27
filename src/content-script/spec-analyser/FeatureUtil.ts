@@ -38,7 +38,7 @@ export class FeatureUtil {
 
 	createVariant(variantName, variantsCount: number): Variant {
 		let id = 1 + variantsCount;
-		let name = variantName + ' - ' + this.dictionary.variant + ' ' + id;
+		let name = id + ' - ' + variantName;
 
 		const variant = new Variant();
 		variant.setName(name);
