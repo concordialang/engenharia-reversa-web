@@ -116,7 +116,7 @@ const dictionary = {
 		is: 'é',
 		that: 'que',
 		inThe: 'em',
-		on: 'em',
+		on: 'na',
 		stringsFinalActionButtons: [
 			'Confirmar',
 			'Salvar',
