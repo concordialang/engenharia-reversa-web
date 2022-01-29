@@ -57,7 +57,7 @@ export class Crawler {
 		});
 
 		//obtem ultima interacao que não está dentro do contexto já analisado
-		const lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+		let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 			this.elementInteractionGraph
 		);
 
@@ -73,6 +73,7 @@ export class Crawler {
 				lastUnanalyzed,
 				false,
 				urlCriteria,
+				null,
 				false
 			);
 			console.log(previousInteractions);
@@ -131,6 +132,10 @@ export class Crawler {
 			return false;
 		}
 
+		lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+			this.elementInteractionGraph
+		);
+
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
 			lastUnanalyzed &&
@@ -180,6 +185,7 @@ export class Crawler {
 			const path = await elementInteractionGraph.pathToInteraction(
 				currentInteraction,
 				true,
+				null,
 				null,
 				false
 			);
@@ -256,13 +262,15 @@ export class Crawler {
 
 		const formElements: NodeListOf<Element> = getFormElements(analysisContext);
 
-		if (formElements.length >= 1) {
+		/*if (formElements.length >= 1) {
 			ancestorElement = commonAncestorElement(Array.from(formElements));
-		} else if (formElements.length == 0) {
+		} else*/ if (formElements.length == 0) {
 			const inputFieldTags = analysisContext.querySelectorAll(
 				'input, select, textarea, button'
 			);
 			ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
+		} else {
+			ancestorElement = analysisContext;
 		}
 
 		return ancestorElement ? ancestorElement : document.body;

@@ -5,6 +5,8 @@ import Mutex from '../mutex/Mutex';
 import { GraphStorage } from '../storage/GraphStorage';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
+import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
+import { PageAnalysisStatus } from './PageAnalysisStatus';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -14,13 +16,15 @@ export class ElementInteractionGraph {
 		private id: string,
 		private elementInteractionStorage: ObjectStorage<ElementInteraction<HTMLElement>>,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private graphStorage: GraphStorage 
+		private graphStorage: GraphStorage,
+		private pageAnalysisStorage: PageAnalysisStorage,
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementAnalysisStorage = elementAnalysisStorage;
 		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
 		this.lastInteractionKey = 'last-interaction-' + this.id;
+		this.pageAnalysisStorage = pageAnalysisStorage;
 	}
 
 	public async addElementInteractionToGraph(
@@ -54,7 +58,8 @@ export class ElementInteractionGraph {
 		currentInteraction: ElementInteraction<HTMLElement>,
 		searchForClosest: boolean,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
-		isInteractionAnalyzed: boolean | null = null,
+		isInteractionElementAnalyzed: boolean | null = null,
+		isInteractionPageAnalyzed: boolean | null = null,
 		graph?: Graph
 	): Promise<ElementInteraction<HTMLElement>[]> {
 		const currentInteractionId = currentInteraction.getId();
@@ -98,14 +103,15 @@ export class ElementInteractionGraph {
 		const satisfiesCriteria = await this.satisfiesCriteria(
 			nextInteraction,
 			urlCriteria,
-			isInteractionAnalyzed
+			isInteractionElementAnalyzed,
+			isInteractionPageAnalyzed
 		);
 
 		if (searchForClosest && satisfiesCriteria) {
 			return [currentInteraction, nextInteraction];
 		} else if (!searchForClosest && !satisfiesCriteria) {
 			if (
-				await this.satisfiesCriteria(currentInteraction, urlCriteria, isInteractionAnalyzed)
+				await this.satisfiesCriteria(currentInteraction, urlCriteria, isInteractionElementAnalyzed, isInteractionPageAnalyzed)
 			) {
 				return [currentInteraction];
 			} else {
@@ -117,7 +123,8 @@ export class ElementInteractionGraph {
 			nextInteraction,
 			searchForClosest,
 			urlCriteria,
-			isInteractionAnalyzed,
+			isInteractionElementAnalyzed,
+			isInteractionPageAnalyzed,
 			graph
 		);
 
@@ -131,7 +138,8 @@ export class ElementInteractionGraph {
 	private async satisfiesCriteria(
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
-		isInteractionAnalyzed: boolean | null = null
+		isInteractionElementAnalyzed: boolean | null = null,
+		isInteractionPageAnalyzed: boolean | null = null
 	): Promise<boolean> {
 		let satisfiesCriteria = true;
 
@@ -139,10 +147,17 @@ export class ElementInteractionGraph {
 			satisfiesCriteria = this.interactionSatisfiesUrlCriteria(interaction, urlCriteria);
 		}
 
-		if (satisfiesCriteria && typeof isInteractionAnalyzed === 'boolean') {
-			satisfiesCriteria = await this.interactionSatisfiesAnalysisCriteria(
+		if (satisfiesCriteria && typeof isInteractionElementAnalyzed === 'boolean') {
+			satisfiesCriteria = await this.interactionSatisfiesElementAnalysisCriteria(
 				interaction,
-				isInteractionAnalyzed
+				isInteractionElementAnalyzed
+			);
+		}
+
+		if (satisfiesCriteria && typeof isInteractionPageAnalyzed === 'boolean') {
+			satisfiesCriteria = await this.interactionSatisfiesPageAnalysisCriteria(
+				interaction,
+				isInteractionPageAnalyzed
 			);
 		}
 
@@ -165,9 +180,9 @@ export class ElementInteractionGraph {
 		return true;
 	}
 
-	private async interactionSatisfiesAnalysisCriteria(
+	private async interactionSatisfiesElementAnalysisCriteria(
 		interaction: ElementInteraction<HTMLElement>,
-		isInteractionAnalyzed: boolean
+		isElementAnalyzed: boolean
 	): Promise<boolean> {
 		const nextInteractionElementSelector = interaction.getElementSelector();
 		if (!nextInteractionElementSelector)
@@ -177,8 +192,26 @@ export class ElementInteractionGraph {
 			interaction.getPageUrl()
 		);
 		if (
-			(isInteractionAnalyzed && analysisStatus == ElementAnalysisStatus.Pending) ||
-			(!isInteractionAnalyzed && analysisStatus != ElementAnalysisStatus.Pending)
+			(isElementAnalyzed && analysisStatus == ElementAnalysisStatus.Pending) ||
+			(!isElementAnalyzed && analysisStatus != ElementAnalysisStatus.Pending)
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private async interactionSatisfiesPageAnalysisCriteria(
+		interaction: ElementInteraction<HTMLElement>,
+		isPageAnalyzed: boolean
+	): Promise<boolean> {
+		const nextInteractionUrl = interaction.getPageUrl();
+		const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
+			nextInteractionUrl
+		);
+		if (
+			(isPageAnalyzed && analysisStatus == PageAnalysisStatus.Pending) ||
+			(!isPageAnalyzed && analysisStatus != PageAnalysisStatus.Pending)
 		) {
 			return false;
 		}

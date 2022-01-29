@@ -15,13 +15,16 @@ import { Message } from '../../shared/comm/Message';
 import { classToPlain } from 'class-transformer';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
+import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 
 export class VariantGenerator {
 	constructor(
 		private elementInteractionGenerator: ElementInteractionGenerator,
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private featureUtil: FeatureUtil,
-		private varUtil: VariantGeneratorUtil
+		private varUtil: VariantGeneratorUtil,
+		private elementAnalysisStorage: ElementAnalysisStorage
 	) {}
 
 	public async generate(

@@ -104,6 +104,7 @@ export class ExtensionManager {
 			} else if (message.includesAction(Command.GetValueFromMemoryDatabase)) {
 				const data = message.getExtra();
 				if (data) {
+					console.log(_this.inMemoryDatabase);
 					const key = data.key;
 					let value = _this.inMemoryDatabase.get(key);
 					if (responseCallback) {
@@ -116,6 +117,7 @@ export class ExtensionManager {
 			} else if (message.includesAction(Command.RemoveValueFromMemoryDatabase)) {
 				const data = message.getExtra();
 				if (data) {
+					console.log(_this.inMemoryDatabase);
 					const key = data.key;
 					_this.inMemoryDatabase.remove(key);
 					if (responseCallback) {

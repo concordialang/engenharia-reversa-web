@@ -29,6 +29,7 @@ import { Interactor } from './crawler/Interactor';
 import { Variant } from './spec-analyser/Variant';
 import { GraphRenderer } from './graph/GraphRenderer';
 import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
+import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -58,11 +59,14 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
 
+	const pageAnalysisStorage = new PageAnalysisStorage(communicationChannel);
+
 	const elementInteractionGraph = new ElementInteractionGraph(
 		tabId,
 		elementInteractionStorage,
 		elementAnalysisStorage,
-		graphStorage
+		graphStorage,
+		pageAnalysisStorage
 	);
 
 	const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
@@ -91,6 +95,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionExecutor,
 		featureUtil,
 		variantGeneratorUtil,
+		elementAnalysisStorage
 	);
 
 	//const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
@@ -113,7 +118,8 @@ getTabId(communicationChannel).then((tabId) => {
 		featureStorage,
 		elementInteractionExecutor,
 		elementInteractionGraph,
-		communicationChannel
+		communicationChannel,
+		pageAnalysisStorage
 	);
 
 	const specMutex: Mutex = new Mutex('spec-mutex');

@@ -14,6 +14,9 @@ import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { Message } from '../../shared/comm/Message';
 import { Command } from '../../shared/comm/Command';
+import { PageAnalysis } from './PageAnalysis';
+import { PageAnalysisStatus } from './PageAnalysisStatus';
+import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 
 export class PageAnalyzer {
 	private redirectCallback: (feature: Feature, unloadMessageExtra: any) => Promise<void>;
@@ -27,7 +30,8 @@ export class PageAnalyzer {
 		private featureStorage: ObjectStorage<Feature>,
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private elementInteractionGraph: ElementInteractionGraph,
-		private communicationChannel: CommunicationChannel
+		private communicationChannel: CommunicationChannel,
+		private pageAnalysisStorage: PageAnalysisStorage
 	) {
 		this.redirectCallback = async (feature: Feature, unloadMessageExtra: any) => {
 			this.communicationChannel.sendMessageToAll(
@@ -61,6 +65,9 @@ export class PageAnalyzer {
 			lastInteraction.getPageUrl().href === this.browserContext.getUrl().href
 		) {
 			feature = await this.recoveryFeatureOfLastInteraction(lastInteraction);
+			if(!feature?.needNewVariants){
+				feature = null;
+			}
 		}
 
 		const elementAnalysis = await this.elementAnalysisStorage.getWithXpathAndUrl(xPath, url);
@@ -114,6 +121,9 @@ export class PageAnalyzer {
 					feature,
 					previousInteractions
 				);
+
+				const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.Done);
+				this.pageAnalysisStorage.set(pageAnalysis.getUrl().href, pageAnalysis);
 
 				if (featureOuterFormElements) {
 					await this.saveFeatureToSpec(featureOuterFormElements);
