@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { Spec } from '../content-script/spec-analyser/Spec';
 import { Feature } from '../content-script/spec-analyser/Feature';
 import { getDictionary } from '../content-script/dictionary';
 import { VariantSentenceType } from '../content-script/enums/VariantSentenceType';
@@ -80,7 +79,7 @@ export class ConcordiaFiles {
 				content += `${dictionary.I} ${sentenceActionDictionary} `;
 
 				if (sentence.type === VariantSentenceType.GIVEN) {
-					content += `${dictionary.inThe} [${sentence.url}]` + lineBreak;
+					content += `${dictionary.inThe} "${sentence.url}"` + lineBreak;
 				} else if (sentence.type === VariantSentenceType.THEN) {
 					content += `~${sentence.statePostCondition}~` + doubleLineBreak;
 				} else {
