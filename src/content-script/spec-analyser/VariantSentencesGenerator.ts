@@ -63,21 +63,6 @@ export class VariantSentencesGenerator {
 	): VariantSentence {
 		let statePostCondition = featureName.toLocaleLowerCase();
 
-		// let textButton = '';
-
-		// if (lastButtonInteracted !== null) {
-		// 	if (lastButtonInteracted.innerText) {
-		// 		textButton = lastButtonInteracted.innerText;
-		// 	} else if (
-		// 		lastButtonInteracted instanceof HTMLInputElement &&
-		// 		lastButtonInteracted.value
-		// 	) {
-		// 		textButton = lastButtonInteracted.value;
-		// 	}
-
-		// 	statePostCondition += textButton != '' ? ' $$ ' + textButton.toLocaleLowerCase() : '';
-		// }
-
 		return new VariantSentence(
 			VariantSentenceType.THEN,
 			VariantSentenceActions.HAVE,
