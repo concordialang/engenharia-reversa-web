@@ -44,6 +44,7 @@ export class Crawler {
 	}
 
 	public async crawl(): Promise<boolean> {
+		console.log("start");
 		const _this = this;
 
 		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
@@ -129,6 +130,8 @@ export class Crawler {
 				previousInteractions
 			);
 		} catch (e) {
+			console.error(e);
+			window.location.reload();
 			return false;
 		}
 
@@ -144,6 +147,8 @@ export class Crawler {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 			return false;
 		}
+
+		console.log("finish");
 
 		return true;
 	}
