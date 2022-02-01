@@ -24,6 +24,7 @@ import { ElementAnalysis } from './ElementAnalysis';
 import { Feature } from './Feature';
 import { Spec } from './Spec';
 import { SpecStorage } from './SpecStorage';
+import Mutex from 'idb-mutex';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -35,7 +36,9 @@ export class ExtensionManager {
 	private extensionIsEnabled: boolean;
 	private inMemoryDatabase: InMemoryDatabase;
 	private tabLocked: Map<string, boolean>;
+	private tabFinished: Map<string, boolean>;
 	private tabAjaxCalls: Map<string, string[]>;
+	private specMutex: Mutex;
 
 	constructor(
 		extension: Extension,
@@ -52,7 +55,9 @@ export class ExtensionManager {
 		this.extensionIsEnabled = false;
 		this.inMemoryDatabase = inMemoryDatabase;
 		this.tabLocked = new Map<string, boolean>();
+		this.tabFinished = new Map<string, boolean>();
 		this.tabAjaxCalls = new Map<string, string[]>();
+		this.specMutex = new Mutex('spec-mutex');
 	}
 
 	public setup(): void {
@@ -63,6 +68,7 @@ export class ExtensionManager {
 				if (!_this.extensionIsEnabled) {
 					_this.extensionIsEnabled = true;
 					_this.openedTabs.push(tab);
+					_this.tabFinished.set(tab.getId(), false);
 					_this.openedTabsCounter++;
 					console.log("still has ajax to complete");
 					//console.log(_this.tabStillHasAjaxToComplete(tab));
@@ -189,22 +195,28 @@ export class ExtensionManager {
 								new Message([], _this.openedTabsLimit - _this.openedTabsCounter)
 							);
 					} else if (message.includesAction(AppEvent.Finished)) {
-						// const specStorage = JSON.parse(message.getExtra());
-						const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
-						let spec;
-						if(!(specObj instanceof Spec)){
-							spec = plainToClass(Spec, specObj);
-						} else {
-							spec = specObj;
+						console.log("tabs:",_this.tabFinished);
+						_this.tabFinished.set(sender.getId(), true);
+						console.log(_this.allTabsFinished());
+						if(_this.allTabsFinished()){
+							// const specStorage = JSON.parse(message.getExtra());
+							const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
+							let spec;
+							if(!(specObj instanceof Spec)){
+								spec = plainToClass(Spec, specObj);
+							} else {
+								spec = specObj;
+							}
+							spec.setMutex(_this.specMutex);
+							// const specStorage = JSON.parse(message.getExtra());
+							// const specObj = JSON.parse(specStorage.localStorage.Spec);
+							// const spec = plainToClass(Spec, specObj);
+
+							const concordiaFiles = new ConcordiaFiles();
+							concordiaFiles.gerate(spec);
+
+							_this.extensionIsEnabled = false;
 						}
-						// const specStorage = JSON.parse(message.getExtra());
-						// const specObj = JSON.parse(specStorage.localStorage.Spec);
-						// const spec = plainToClass(Spec, specObj);
-
-						const concordiaFiles = new ConcordiaFiles();
-						concordiaFiles.gerate(spec);
-
-						_this.extensionIsEnabled = false;
 					} else if (message.includesAction(Command.ProcessUnload)) {
 						_this.tabLocked.set(sender.getId(), true);
 
@@ -236,6 +248,7 @@ export class ExtensionManager {
 						} else {
 							spec = specObj;
 						}
+						spec.setMutex(_this.specMutex);
 						const specStorage = new SpecStorage(_this.inMemoryDatabase);
 
 						//@ts-ignore
@@ -307,6 +320,7 @@ export class ExtensionManager {
 			});
 			promise.then(function (tab: Tab) {
 				_this.openedTabs.push(tab);
+				_this.tabFinished.set(tab.getId(), false);
 			});
 		} else {
 			this.urlQueue.push(url);
@@ -467,4 +481,12 @@ export class ExtensionManager {
 			array.splice(index, 1);
 		}
 	}
+
+	private allTabsFinished(): boolean {
+		for(let tab of this.openedTabs){
+			if(!this.tabFinished.get(tab.getId())) return false;
+		}
+		return true;
+	}
+
 }
