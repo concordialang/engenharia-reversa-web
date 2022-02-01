@@ -59,8 +59,13 @@ export async function getDiff(
 
 export function getValidUiElementsNodes(element: HTMLElement) {
 	const validNodes = Object.values(ValidUiElementsNodes).join(',');
-
-	return Array.from(element.querySelectorAll(validNodes));
+	if(element){
+		if (typeof element.querySelectorAll === "function") { 
+			return Array.from(element.querySelectorAll(validNodes));
+		} else {
+			console.error("querySelectorAll is not a function for " + element.constructor.name);
+		}
+	}
 }
 
 export function formatToFirstCapitalLetter(txt: string): string {
@@ -183,5 +188,13 @@ const clearElement = (element: HTMLElement): number => {
 	}
 	return removed;
 };
+
+export function isIterable(obj): boolean {
+	// checks for null and undefined
+	if (obj == null) {
+	  return false;
+	}
+	return typeof obj[Symbol.iterator] === 'function';
+  }
 
 export default clearElement;

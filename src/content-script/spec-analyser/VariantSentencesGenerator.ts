@@ -2,7 +2,7 @@ import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
 import { VariantSentenceActions } from '../enums/VariantSentenceActions';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
-import { getValidUiElementsNodes } from '../util';
+import { getValidUiElementsNodes, isIterable } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 
@@ -291,12 +291,20 @@ export class VariantSentencesGenerator {
 		} else {
 			const validsUiElmNodes = getValidUiElementsNodes(element);
 
-			for (let node of validsUiElmNodes) {
-				uiElement = this.uiElementGenerator.createFromElement(node as HTMLElement);
-				if (uiElement) {
-					sentences.push(new VariantSentence(type, action, uiElement, attr));
+			if(validsUiElmNodes){
+				if(isIterable(validsUiElmNodes)){
+					for (let node of validsUiElmNodes) {
+						uiElement = this.uiElementGenerator.createFromElement(node as HTMLElement);
+						if (uiElement) {
+							sentences.push(new VariantSentence(type, action, uiElement, attr));
+						}
+					}
+				} else {
+					console.error("validsUiElmNodes is not iterable for type " + validsUiElmNodes.constructor.name);
+					return [];
 				}
-			}
+			} 
+			
 		}
 
 		return sentences;
