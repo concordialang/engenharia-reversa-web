@@ -53,7 +53,12 @@ getTabId(communicationChannel).then((tabId) => {
 		Feature
 	);
 
-	const variantStorage = new InMemoryStorage<Variant>(communicationChannel, Variant);
+	const variantStorage = new BackgroundIndexedDBObjectStorage<Variant>(
+		IndexedDBDatabases.Variants, 
+		IndexedDBDatabases.Variants, 
+		communicationChannel, 
+		Variant
+	);
 
 	const elementInteractionStorage = new ElementInteractionStorage(
 		communicationChannel,

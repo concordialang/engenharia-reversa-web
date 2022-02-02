@@ -323,7 +323,11 @@ export class ExtensionManager {
 			IndexedDBDatabases.Features,
 			Feature
 		);
-		const variantStorage = new InMemoryStorage<Variant>(this.inMemoryDatabase);
+		const variantStorage = new IndexedDBObjectStorage<Variant>(
+			IndexedDBDatabases.Variants,
+			IndexedDBDatabases.Variants,
+			Variant
+		);
 		const elementInteractionStorage = new ElementInteractionStorage(featureStorage, variantStorage);
 		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
 		const graphStorage = new GraphStorage(this.inMemoryDatabase);
