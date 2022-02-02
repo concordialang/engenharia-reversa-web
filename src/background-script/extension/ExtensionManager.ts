@@ -25,6 +25,9 @@ import { Feature } from './Feature';
 import { Spec } from './Spec';
 import { SpecStorage } from './SpecStorage';
 import Mutex from 'idb-mutex';
+import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
+import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
+import { deleteDB } from 'idb';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -60,8 +63,9 @@ export class ExtensionManager {
 		this.specMutex = new Mutex('spec-mutex');
 	}
 
-	public setup(): void {
+	public async setup(): Promise<void> {
 		let _this = this;
+		await this.deleteIDBDatabases();
 		this.extension.setBrowserActionListener(
 			ExtensionBrowserAction.ExtensionIconClicked,
 			async function (tab: Tab) {
@@ -126,6 +130,43 @@ export class ExtensionManager {
 					console.log(_this.inMemoryDatabase);
 					const key = data.key;
 					_this.inMemoryDatabase.remove(key);
+					if (responseCallback) {
+						responseCallback(new Message([], true));
+					}
+				}
+			} else if (message.includesAction(Command.SetValueInBackgroundIndexedDB)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const value = data.value;
+					const storage = new IndexedDBObjectStorage(data.dbName, data.storeName);
+					await storage.set(key, value);
+					if(_this.isGraphKey(key)){
+						_this.communicationChannel.sendMessageToAll(new Message([AppEvent.InteractionGraphUpdated], key));
+					}
+				}
+			} else if (message.includesAction(Command.GetValueFromBackgroundIndexedDB)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					console.log(key);
+					const storage = new IndexedDBObjectStorage(data.dbName, data.storeName);
+					let value = await storage.get(key);
+					console.log(value);
+					if (responseCallback) {
+						if(value instanceof Graph){
+							value = value.serialize();
+						}
+						console.log("enviou");
+						responseCallback(new Message([], value));
+					}
+				}
+			} else if (message.includesAction(Command.RemoveValueFromBackgroundIndexedDB)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const storage = new IndexedDBObjectStorage(data.dbName, data.storeName);
+					await storage.remove(key);
 					if (responseCallback) {
 						responseCallback(new Message([], true));
 					}
@@ -279,7 +320,7 @@ export class ExtensionManager {
 		const communicationChannel = new ChromeCommunicationChannel(chrome);
 		const featureStorage = new InMemoryStorage<Feature>(this.inMemoryDatabase);
 		const variantStorage = new InMemoryStorage<Variant>(this.inMemoryDatabase);
-		const elementInteractionStorage = new ElementInteractionStorage(this.inMemoryDatabase, featureStorage, variantStorage);
+		const elementInteractionStorage = new ElementInteractionStorage(featureStorage, variantStorage);
 		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
 		const graphStorage = new GraphStorage(this.inMemoryDatabase);
 		return new ElementInteractionGraph('tab-' + id, elementInteractionStorage, elementAnalysisStorage, graphStorage);
@@ -487,6 +528,13 @@ export class ExtensionManager {
 			if(!this.tabFinished.get(tab.getId())) return false;
 		}
 		return true;
+	}
+
+	private async deleteIDBDatabases(){
+		for(let dbName in IndexedDBDatabases){
+			console.log(IndexedDBDatabases[dbName]);
+			await deleteDB(IndexedDBDatabases[dbName]);
+		}
 	}
 
 }
