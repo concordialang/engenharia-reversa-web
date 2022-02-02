@@ -318,7 +318,11 @@ export class ExtensionManager {
 	private getElementInteractionGraph(sender: Tab){
 		const id = sender.getId();
 		const communicationChannel = new ChromeCommunicationChannel(chrome);
-		const featureStorage = new InMemoryStorage<Feature>(this.inMemoryDatabase);
+		const featureStorage = new IndexedDBObjectStorage<Feature>(
+			IndexedDBDatabases.Features,
+			IndexedDBDatabases.Features,
+			Feature
+		);
 		const variantStorage = new InMemoryStorage<Variant>(this.inMemoryDatabase);
 		const elementInteractionStorage = new ElementInteractionStorage(featureStorage, variantStorage);
 		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
@@ -371,7 +375,11 @@ export class ExtensionManager {
 	private async saveFeature(feature: Feature): Promise<void> {
 		console.log("vai salvar a feature");
 
-		const featureStorage = new InMemoryStorage<Feature>(this.inMemoryDatabase);
+		const featureStorage = new IndexedDBObjectStorage<Feature>(
+			IndexedDBDatabases.Features,
+			IndexedDBDatabases.Features,
+			Feature
+		);
 		await featureStorage.set(feature.getId(), feature);
 		console.log(feature.interactedElements.length);
 		console.log(feature.getId());

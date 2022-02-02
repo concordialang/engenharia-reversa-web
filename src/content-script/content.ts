@@ -30,6 +30,8 @@ import { Variant } from './spec-analyser/Variant';
 import { GraphRenderer } from './graph/GraphRenderer';
 import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
+import { BackgroundIndexedDBObjectStorage } from './storage/BackgroundIndexedDBObjectStorage';
+import { IndexedDBDatabases } from '../shared/storage/IndexedDBDatabases';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -44,7 +46,12 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const graphStorage: GraphStorage = new GraphStorage(communicationChannel);
 
-	const featureStorage = new InMemoryStorage<Feature>(communicationChannel, Feature);
+	const featureStorage = new BackgroundIndexedDBObjectStorage<Feature>(
+		IndexedDBDatabases.Features, 
+		IndexedDBDatabases.Features, 
+		communicationChannel, 
+		Feature
+	);
 
 	const variantStorage = new InMemoryStorage<Variant>(communicationChannel, Variant);
 
