@@ -11,9 +11,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 	public sendMessageToAll(message: Message): Promise<any> {
 		const _this = this;
 		return new Promise(async function (resolve, reject) {
-			let resolved = false;
 			_this.chrome.runtime.sendMessage(message, (response?) => {
-				resolved = true;
 				if (response) {
 					const responseMessage = new Message(response.actions, response.extra);
 					resolve(responseMessage);
@@ -21,8 +19,6 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 					resolve(undefined);
 				}
 			});
-			await sleep(3000);
-			if (!resolved) reject();
 		});
 	}
 
@@ -60,6 +56,7 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 			} else {
 				callback(messageObj);
 			}
+			return true;
 		};
 		this.chrome.runtime.onMessage.addListener(cb);
 	}

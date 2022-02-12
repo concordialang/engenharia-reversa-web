@@ -6,15 +6,16 @@ import { ObjectStorage } from '../../shared/storage/ObjectStorage';
 import { Variant } from '../../content-script/spec-analyser/Variant';
 import { plainToClass } from 'class-transformer';
 import { Feature } from '../extension/Feature';
+import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
+import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 
 // TODO Trocar o nome da classe
-export class ElementInteractionStorage extends InMemoryStorage<ElementInteraction<HTMLElement>> {
+export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInteraction<HTMLElement>> {
 	constructor(
-		inMemoryDatabase: InMemoryDatabase,
 		private featureStorage: ObjectStorage<Feature>,
 		private variantStorage: ObjectStorage<Variant>
 	) {
-		super(inMemoryDatabase);
+		super(IndexedDBDatabases.ElementInteractions, IndexedDBDatabases.ElementInteractions, ElementInteraction);
 	}
 
 	async set(key: string, obj: ElementInteraction<HTMLElement>): Promise<void> {

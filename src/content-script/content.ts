@@ -8,7 +8,7 @@ import { FeatureUtil } from './spec-analyser/FeatureUtil';
 import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
 import { LocalObjectStorage } from './storage/LocalObjectStorage';
-import { IndexedDBObjectStorage } from './storage/IndexedDBObjectStorage';
+import { IndexedDBObjectStorage } from '../shared/storage/IndexedDBObjectStorage';
 import { ChromeCommunicationChannel } from '../shared/comm/ChromeCommunicationChannel';
 import { CommunicationChannel } from '../shared/comm/CommunicationChannel';
 import { getDictionary } from './dictionary';
@@ -30,6 +30,8 @@ import { Variant } from './spec-analyser/Variant';
 import { GraphRenderer } from './graph/GraphRenderer';
 import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
+import { BackgroundIndexedDBObjectStorage } from './storage/BackgroundIndexedDBObjectStorage';
+import { IndexedDBDatabases } from '../shared/storage/IndexedDBDatabases';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
@@ -44,9 +46,19 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const graphStorage: GraphStorage = new GraphStorage(communicationChannel);
 
-	const featureStorage = new InMemoryStorage<Feature>(communicationChannel, Feature);
+	const featureStorage = new BackgroundIndexedDBObjectStorage<Feature>(
+		IndexedDBDatabases.Features, 
+		IndexedDBDatabases.Features, 
+		communicationChannel, 
+		Feature
+	);
 
-	const variantStorage = new InMemoryStorage<Variant>(communicationChannel, Variant);
+	const variantStorage = new BackgroundIndexedDBObjectStorage<Variant>(
+		IndexedDBDatabases.Variants, 
+		IndexedDBDatabases.Variants, 
+		communicationChannel, 
+		Variant
+	);
 
 	const elementInteractionStorage = new ElementInteractionStorage(
 		communicationChannel,

@@ -1,5 +1,5 @@
 import Mutex from 'idb-mutex';
-import { IndexedDBObjectStorage } from '../storage/IndexedDBObjectStorage';
+import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
 import { sleep } from '../util';
 
 export default class {

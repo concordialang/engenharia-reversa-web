@@ -1,6 +1,6 @@
 import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { IDBPDatabase, openDB } from 'idb';
-import { ObjectStorage } from './ObjectStorage';
+import { ObjectStorage } from '../../content-script/storage/ObjectStorage';
 
 export class IndexedDBObjectStorage<Type> implements ObjectStorage<Type> {
 	private db: IDBPDatabase | null;

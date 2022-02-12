@@ -5,11 +5,18 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { BrowserContext } from '../crawler/BrowserContext';
 import { InMemoryStorage } from './InMemoryStorage';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
+import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 
 // TODO Trocar o nome da classe
-export class ElementAnalysisStorage extends InMemoryStorage<ElementAnalysis> {
+export class ElementAnalysisStorage extends BackgroundIndexedDBObjectStorage<ElementAnalysis> {
 	constructor(communicationChannel: CommunicationChannel) {
-		super(communicationChannel, ElementAnalysis);
+		super(
+			IndexedDBDatabases.ElementAnalysis,
+			IndexedDBDatabases.ElementAnalysis,
+			communicationChannel, 
+			ElementAnalysis,
+		);
 	}
 
 	public async getWithXpathAndUrl(
