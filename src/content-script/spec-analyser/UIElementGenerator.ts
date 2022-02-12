@@ -178,7 +178,7 @@ export class UIElementGenerator {
 
 		name = name ? name : idUiElm;
 
-		return name;
+		return name.trim();
 	}
 
 	private generateNameFromLabel(
@@ -198,7 +198,7 @@ export class UIElementGenerator {
 			name = formatToFirstCapitalLetter(label.innerText);
 		}
 
-		return name;
+		return name.trim();
 	}
 
 	private generateNameForButton(
@@ -209,13 +209,13 @@ export class UIElementGenerator {
 
 		if (elm.name) {
 			name = formatToFirstCapitalLetter(elm.name);
-		} else if (elm instanceof HTMLButtonElement && elm.innerHTML) {
-			name = formatToFirstCapitalLetter(elm.innerHTML);
+		} else if (elm instanceof HTMLButtonElement && elm.innerText) {
+			name = formatToFirstCapitalLetter(elm.innerText);
 		}
 
 		name = name ? name : idUiElm;
 
-		return name;
+		return name.trim();
 	}
 
 	private generatePropertyId(elm: HTMLElement): UIProperty {
