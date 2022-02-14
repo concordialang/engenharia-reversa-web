@@ -321,13 +321,21 @@ export class VariantGenerator {
 		};
 
 		if (elm.offsetParent && elm.offsetParent instanceof HTMLTableElement) {
-			const xpathTableFirstRowHeader = getPathTo(
-				elm.offsetParent.getElementsByTagName('th')[0].parentElement as HTMLElement
-			);
+			let xpathTableFirstRowHeader = '';
+			let headersCell = elm.offsetParent.getElementsByTagName('th');
+			if(headersCell.length > 0){
+				xpathTableFirstRowHeader = getPathTo(
+					headersCell[0].parentElement as HTMLElement
+				);
+			}
 
-			const xpathTableFirstRowContent = getPathTo(
-				elm.offsetParent.getElementsByTagName('td')[0].parentElement as HTMLElement
-			);
+			let xpathTableFirstRowContent = ''
+			let contentCell = elm.offsetParent.getElementsByTagName('th');
+			if(contentCell.length > 0){
+				xpathTableFirstRowContent = getPathTo(
+					contentCell[0].parentElement as HTMLElement
+				);
+			}
 
 			if (xpathRowElement == xpathTableFirstRowHeader) {
 				row.isValid = true;
