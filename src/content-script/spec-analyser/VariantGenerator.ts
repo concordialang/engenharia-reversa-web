@@ -330,7 +330,7 @@ export class VariantGenerator {
 			}
 
 			let xpathTableFirstRowContent = ''
-			let contentCell = elm.offsetParent.getElementsByTagName('th');
+			let contentCell = elm.offsetParent.getElementsByTagName('td');
 			if(contentCell.length > 0){
 				xpathTableFirstRowContent = getPathTo(
 					contentCell[0].parentElement as HTMLElement
