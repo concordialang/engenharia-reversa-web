@@ -44,7 +44,6 @@ export class Crawler {
 	}
 
 	public async crawl(): Promise<boolean> {
-		console.log("start");
 		const _this = this;
 
 		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
@@ -69,7 +68,6 @@ export class Crawler {
 			lastUnanalyzed.getPageUrl().href == this.browserContext.getUrl().href
 		) {
 			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
-			console.log("getting previous interactions");
 			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
 				lastUnanalyzed,
 				false,
@@ -77,7 +75,6 @@ export class Crawler {
 				null,
 				false
 			);
-			console.log(previousInteractions);
 			previousInteractions = previousInteractions.reverse();
 
 			const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
@@ -147,8 +144,6 @@ export class Crawler {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 			return false;
 		}
-
-		console.log("finish");
 
 		return true;
 	}
@@ -226,8 +221,9 @@ export class Crawler {
 	): Promise<HTMLElement> {
 		let analysisElement: HTMLElement | null = null;
 
+		const url = this.browserContext.getUrl();
 		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
-			this.browserContext.getUrl().href
+			url.origin + url.pathname
 		);
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
@@ -252,7 +248,7 @@ export class Crawler {
 		}
 
 		await this.analysisElementXPathStorage.set(
-			this.browserContext.getUrl().href,
+			url.origin + url.pathname,
 			getPathTo(analysisElement)
 		);
 
