@@ -99,7 +99,7 @@ export class FeatureGenerator {
 				await spec.addFeature(feature);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
-					// throw new ForcingExecutionStoppageError('Forcing execution to stop');
+					throw new ForcingExecutionStoppageError('Forcing execution to stop');
 				} else {
 					this.setElementAnalysisAsDone(analysisElement);
 				}
