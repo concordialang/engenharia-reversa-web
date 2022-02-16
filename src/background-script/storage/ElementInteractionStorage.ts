@@ -35,10 +35,7 @@ export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInt
 	}
 
 	async get(key: string): Promise<ElementInteraction<HTMLElement> | null> {
-		console.log("123123123");
 		const elementInteraction = plainToClass(ElementInteraction, await super.get(key));
-		console.log(elementInteraction);
-		console.log("sadsdasadsad123123");
 		if (!elementInteraction) {
 			return null;
 		}

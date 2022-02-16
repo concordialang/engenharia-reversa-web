@@ -431,13 +431,6 @@ export class VariantGenerator {
 	*/
 	private canInteract(elm: HTMLElement, variant: Variant, feature: Feature): boolean {
 		const xpathElement = getPathTo(elm);
-		console.log("CAN INTERACT");
-		console.log(feature.interactedElements.length);
-		console.log(feature.getId());
-		console.log(feature.getName());
-		console.log(xpathElement);
-		console.log(feature.interactedElements[feature.interactedElements.length-1]);
-
 		// checks if the element has already received interaction in the feature
 		const wasInteracted = feature.interactedElements.some(
 			(interactedElm) => interactedElm.xpath === xpathElement
@@ -523,8 +516,6 @@ export class VariantGenerator {
 		feature: Feature
 	): void {
 		const xpathElement = getPathTo(elm);
-		console.log('SALVANDO NA FEATURE');
-		console.log(xpathElement);
 		const indexAnalyzedElm = feature.interactedElements.findIndex(
 			(analyzedElms) => analyzedElms.xpath === xpathElement
 		);
@@ -548,9 +539,7 @@ export class VariantGenerator {
 			}
 
 			feature.interactedElements.push(interactedElm);
-			console.log('SALVOU');
 		}
-		console.log('TERMINOU')
 	}
 
 	private treatMutationsSentences(observer: MutationObserverManager, variant: Variant) {
@@ -631,11 +620,7 @@ export class VariantGenerator {
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
 			const elm = interactionThatTriggeredRedirect.getElement();
 
-			console.log("Vai salvar a interação "+ getPathTo(elm) +" no unload");
-
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
-
-			console.log("Salvou a interação "+ getPathTo(elm) +" no unload");
 
 			this.createVariantSentence(elm, variant, feature, observer);
 

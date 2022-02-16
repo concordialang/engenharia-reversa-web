@@ -68,15 +68,10 @@ export class ElementInteractionGraph {
 			graph = await this.getLatestVersionOfGraph();
 			//@ts-ignore
 			const keys = graph.serialize().nodes;
-			console.log("size:");
-			console.log(keys.length);
 			for(let key of keys) {
-				console.log(key);
 			}
 			//@ts-ignore
 			const links = graph.serialize().links;
-			console.log("size links:");
-			console.log(links.length);
 			//console.log(graph.serialize());
 		}
 
