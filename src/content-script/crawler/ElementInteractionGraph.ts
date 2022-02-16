@@ -256,7 +256,7 @@ export class ElementInteractionGraph {
 	}
 
 	public async getLastInteraction(): Promise<ElementInteraction<HTMLElement> | null> {
-		return await this.elementInteractionStorage.get(this.lastInteractionKey);
+		return this.elementInteractionStorage.get(this.lastInteractionKey);
 	}
 
 	public async clean(): Promise<void> {

@@ -6,17 +6,10 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo, sleep } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
-import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
-import { Command } from '../../shared/comm/Command';
-import { Message } from '../../shared/comm/Message';
 import { classToPlain } from 'class-transformer';
-import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
-import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
-import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 
 export class VariantGenerator {
 	constructor(
@@ -24,7 +17,6 @@ export class VariantGenerator {
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private featureUtil: FeatureUtil,
 		private varUtil: VariantGeneratorUtil,
-		private elementAnalysisStorage: ElementAnalysisStorage
 	) {}
 
 	public async generate(
@@ -95,8 +87,6 @@ export class VariantGenerator {
 	): Promise<void> {
 		if (!elm) return;
 
-		//console.log(getPathTo(elm));
-
 		const nextElement = async (nextElmToBeAnalyzed) => {
 			return this.analyze(
 				nextElmToBeAnalyzed as HTMLElement,
@@ -115,15 +105,15 @@ export class VariantGenerator {
 			return;
 		}
 
-		const checksChildsRow = await this.treatTableRow(elm, variant, feature, observer);
+		const checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
 
 		// enters the children of the nodes tree
 		const validFirstChild = await this.checksValidFirstChild(
 			elm,
 			feature.ignoreFormElements,
-			checksChildsRow
+			checksChildsTableRow
 		);
-		if (validFirstChild) {
+		if (validFirstChild && !this.varUtil.isButtonOrAnchor(elm)) {
 			await nextElement(elm.firstElementChild);
 		}
 
@@ -292,10 +282,10 @@ export class VariantGenerator {
 		feature: Feature,
 		observer: MutationObserverManager
 	): Promise<boolean> {
-		let checksChildsRow = false;
+		let checksChildsTableRow = false;
 
 		if (!(elm instanceof HTMLTableRowElement)) {
-			return checksChildsRow;
+			return checksChildsTableRow;
 		}
 
 		const row = await this.checkValidRowTable(elm);
@@ -303,12 +293,12 @@ export class VariantGenerator {
 			if (row.type == 'header') {
 				await this.interactWithTableColumn(elm, variant, feature, observer);
 			} else if (row.type == 'content') {
-				checksChildsRow = true;
+				checksChildsTableRow = true;
 				await this.interactWithTableContentRow(elm, variant, feature, observer);
 			}
 		}
 
-		return checksChildsRow;
+		return checksChildsTableRow;
 	}
 
 	// check if element is the first content row or the first header row of the table
@@ -407,7 +397,7 @@ export class VariantGenerator {
 			return false;
 		}
 
-		if (feature.analysesOnlyCancelBtns && !(elm instanceof HTMLButtonElement)) {
+		if (feature.analysesOnlyCancelBtns && !this.varUtil.isButtonOrAnchor(elm)) {
 			return false;
 		}
 
@@ -418,13 +408,14 @@ export class VariantGenerator {
 					| HTMLSelectElement
 					| HTMLTextAreaElement
 					| HTMLButtonElement
+					| HTMLAnchorElement
 			)
 		) {
 			return false;
 		}
 
 		if (
-			!this.varUtil.isButton(elm) &&
+			!this.varUtil.isButtonOrAnchor(elm) &&
 			!this.varUtil.isCheckBox(elm) &&
 			!this.varUtil.isRadionButton(elm)
 		) {
@@ -436,7 +427,7 @@ export class VariantGenerator {
 
 	/*
 		Checks whether the element can interact based on previous feature interactions
-		Some elements can force creations of new variants and cannot have repeated interactions (button, checkbox, radio)
+		Some elements can force creations of new variants and cannot have repeated interactions (button or anchors, checkbox, radio)
 	*/
 	private canInteract(elm: HTMLElement, variant: Variant, feature: Feature): boolean {
 		const xpathElement = getPathTo(elm);
@@ -512,7 +503,7 @@ export class VariantGenerator {
 			if (anyOfGroupHasInteracted) {
 				return false;
 			}
-		} else if (this.varUtil.isButton(elm)) {
+		} else if (this.varUtil.isButtonOrAnchor(elm)) {
 			const anyButtonHasInteracted = this.varUtil.anyButtonHasInteracted(
 				feature.interactedElements,
 				variant.getName()
@@ -552,7 +543,7 @@ export class VariantGenerator {
 			if (this.varUtil.isRadionButton(elm) && (elm as HTMLInputElement).name) {
 				interactedElm.radioGroupName = (elm as HTMLInputElement).name;
 				interactedElm.elmType = 'radio';
-			} else if (this.varUtil.isButton(elm)) {
+			} else if (this.varUtil.isButtonOrAnchor(elm)) {
 				interactedElm.elmType = 'button';
 			}
 
@@ -638,11 +629,6 @@ export class VariantGenerator {
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
 		const _this = this;
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
-			if(window.location.href == 'http://localhost/testesTcc/mainTest/mainTestPage2.html'){
-				// while(true){
-
-				// }
-			}
 			const elm = interactionThatTriggeredRedirect.getElement();
 
 			console.log("Vai salvar a interação "+ getPathTo(elm) +" no unload");

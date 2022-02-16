@@ -91,26 +91,26 @@ export class Crawler {
 		const previousDocument = await this.getPreviousDocument();
 		const analysisElement = await this.getAnalysisElement(document, previousDocument);
 
-		const messageResponse = await this.communicationChannel.sendMessageToAll(
-			new Message([Command.GetNumberOfAvailableTabs])
-		);
-		let availableTabs: number = 0;
-		if (messageResponse) {
-			availableTabs = messageResponse.getExtra();
-		} else {
-			throw new Error('Error while fetching number of available tabs');
-		}
+		// const messageResponse = await this.communicationChannel.sendMessageToAll(
+		// 	new Message([Command.GetNumberOfAvailableTabs])
+		// );
+		// let availableTabs: number = 0;
+		// if (messageResponse) {
+		// 	availableTabs = messageResponse.getExtra();
+		// } else {
+		// 	throw new Error('Error while fetching number of available tabs');
+		// }
 
-		const links = await this.getUnanalyzedLinks(analysisElement);
+		// const links = await this.getUnanalyzedLinks(analysisElement);
 
-		for (let link of links) {
-			if (availableTabs > 0) {
-				this.communicationChannel.sendMessageToAll(
-					new Message([Command.OpenNewTab], { url: link.href })
-				);
-				availableTabs--;
-			}
-		}
+		// for (let link of links) {
+		// 	if (availableTabs > 0) {
+		// 		this.communicationChannel.sendMessageToAll(
+		// 			new Message([Command.OpenNewTab], { url: link.href })
+		// 		);
+		// 		availableTabs--;
+		// 	}
+		// }
 
 		try {
 			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());

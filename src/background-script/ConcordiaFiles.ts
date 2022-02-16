@@ -84,7 +84,7 @@ export class ConcordiaFiles {
 					content += `~${sentence.statePostCondition}~` + doubleLineBreak;
 				} else {
 					if (sentence.action === VariantSentenceActions.CLICK) {
-						content += `${dictionary.on} `;
+						content += `${dictionary.inThe} `;
 					}
 
 					let innerTextValue = sentence.uiElement?.getInnexTextValue();

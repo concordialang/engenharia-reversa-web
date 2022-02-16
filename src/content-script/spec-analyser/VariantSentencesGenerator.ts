@@ -35,6 +35,9 @@ export class VariantSentencesGenerator {
 			case UiElementsTypes.Button:
 				action = VariantSentenceActions.CLICK;
 				break;
+			case UiElementsTypes.Link:
+				action = VariantSentenceActions.CLICK;
+				break;
 			default:
 				action = VariantSentenceActions.CLICK;
 				break;
@@ -59,7 +62,7 @@ export class VariantSentencesGenerator {
 
 	public gerateThenTypeSentence(
 		featureName: string,
-		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | null
+		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
 	): VariantSentence {
 		let statePostCondition = featureName.toLocaleLowerCase();
 

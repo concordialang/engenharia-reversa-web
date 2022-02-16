@@ -99,7 +99,7 @@ export class FeatureGenerator {
 				await spec.addFeature(feature);
 				if (feature.needNewVariants) {
 					this.browserContext.getWindow().location.reload();
-					throw new ForcingExecutionStoppageError('Forcing execution to stop');
+					// throw new ForcingExecutionStoppageError('Forcing execution to stop');
 				} else {
 					this.setElementAnalysisAsDone(analysisElement);
 				}
@@ -218,7 +218,7 @@ export class FeatureGenerator {
 		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
-	private getUniqueUIElements(variants: Variant[]): Array<UIElement> {
+	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {
@@ -292,8 +292,8 @@ export class FeatureGenerator {
 				variantCountByRadios > variantsMaxCount ? variantCountByRadios : variantsMaxCount;
 		}
 
-		// analyze buttons
-		const elms = Array.from(element.querySelectorAll('button, input'));
+		// analyze buttons and anchors
+		const elms = Array.from(element.querySelectorAll('button, input, a'));
 		const buttons = this.buttonsFilter(elms);
 
 		if (buttons.length > 0) {
@@ -336,7 +336,8 @@ export class FeatureGenerator {
 			if (
 				(elm instanceof HTMLInputElement &&
 					(elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) ||
-				elm instanceof HTMLButtonElement
+				elm instanceof HTMLButtonElement ||
+				elm instanceof HTMLAnchorElement
 			) {
 				return htmlElm;
 			}

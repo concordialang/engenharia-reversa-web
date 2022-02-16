@@ -21,12 +21,13 @@ export class UIElementGenerator {
 
 		if (
 			elm instanceof HTMLButtonElement ||
+			elm instanceof HTMLAnchorElement ||
 			(elm instanceof HTMLInputElement &&
 				(elm.type === HTMLInputType.Button ||
 					elm.type === HTMLInputType.Submit ||
 					elm.type === HTMLInputType.Reset))
 		) {
-			uiElement = this.createFromButton(elm);
+			uiElement = this.createFromButtonOrAnchor(elm);
 		} else if (
 			elm instanceof HTMLInputElement ||
 			elm instanceof HTMLSelectElement ||
@@ -101,17 +102,19 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private createFromButton(elm: HTMLButtonElement | HTMLInputElement): UIElement {
+	private createFromButtonOrAnchor(elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement): UIElement {
 		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
-		uiElm.setName(this.generateNameForButton(elm, uiElm.getId()));
+		uiElm.setName(this.generateNameForButtonOrAnchor(elm, uiElm.getId()));
+
+		let type = elm instanceof HTMLAnchorElement ? UiElementsTypes.Link : UiElementsTypes.Button;
 
 		// type
-		uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, 'button'));
+		uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, type));
 
 		return uiElm;
 	}
@@ -201,15 +204,15 @@ export class UIElementGenerator {
 		return name.trim();
 	}
 
-	private generateNameForButton(
-		elm: HTMLButtonElement | HTMLInputElement,
+	private generateNameForButtonOrAnchor(
+		elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement,
 		idUiElm: string
 	): string {
 		let name: string = '';
 
-		if (elm.name) {
+		if (!(elm instanceof HTMLAnchorElement) && elm.name) {
 			name = formatToFirstCapitalLetter(elm.name);
-		} else if (elm instanceof HTMLButtonElement && elm.innerText) {
+		} else if (!(elm instanceof HTMLInputElement) && elm.innerText) {
 			name = formatToFirstCapitalLetter(elm.innerText);
 		}
 

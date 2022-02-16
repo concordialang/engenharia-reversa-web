@@ -3,6 +3,7 @@ import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { VariantSentence } from './VariantSentence';
 import 'reflect-metadata';
 import { HTMLInputType } from '../enums/HTMLInputType';
+import { UiElementsTypes } from '../enums/UiElementsTypes';
 
 export class Variant {
 	private name!: string;
@@ -63,7 +64,7 @@ export class Variant {
 		let sourceElements: HTMLElement[] = [];
 
 		const btnSentences = this.sentences.filter(
-			(sentence) => sentence.uiElement?.getType() === 'button'
+			(sentence) => sentence.uiElement?.getType() === UiElementsTypes.Button || sentence.uiElement?.getType() === UiElementsTypes.Link
 		);
 
 		for (let sentence of btnSentences) {
@@ -77,7 +78,7 @@ export class Variant {
 		return sourceElements;
 	}
 
-	public getLastButtonInteracted(): HTMLButtonElement | HTMLInputElement | null {
+	public getLastButtonInteracted(): HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null {
 		const buttons = this.getButtonsElements();
 
 		const length = buttons.length;
@@ -87,6 +88,7 @@ export class Variant {
 
 			if (
 				lastElm instanceof HTMLButtonElement ||
+				lastElm instanceof HTMLAnchorElement ||
 				(lastElm instanceof HTMLInputElement &&
 					(lastElm.type === HTMLInputType.Submit ||
 						lastElm.type === HTMLInputType.Button ||

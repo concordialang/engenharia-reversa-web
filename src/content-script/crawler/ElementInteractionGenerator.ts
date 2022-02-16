@@ -27,7 +27,7 @@ export class ElementInteractionGenerator {
 			interaction = this.generateTableRowInteraction(element);
 		} else if (element instanceof HTMLTableCellElement) {
 			interaction = this.generateTableCellInteraction(element);
-		} else if (element instanceof HTMLButtonElement) {
+		} else if (element instanceof HTMLButtonElement || element instanceof HTMLAnchorElement) {
 			interaction = new ElementInteraction(
 				element,
 				HTMLEventType.Click,

@@ -6,4 +6,5 @@ export enum UiElementsTypes {
 	TextArea = 'textarea',
 	Button = 'button',
 	Text = 'text',
+	Link = 'link',
 }

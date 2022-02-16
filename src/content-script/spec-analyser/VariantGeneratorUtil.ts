@@ -5,7 +5,8 @@ type InteractableElement =
 	| HTMLInputElement
 	| HTMLSelectElement
 	| HTMLTextAreaElement
-	| HTMLButtonElement;
+	| HTMLButtonElement
+	| HTMLAnchorElement;
 
 export class VariantGeneratorUtil {
 	private analysisElement?: HTMLElement;
@@ -46,11 +47,11 @@ export class VariantGeneratorUtil {
 		}
 	}
 
-	public isButton(elm: HTMLElement): boolean {
+	public isButtonOrAnchor(elm: HTMLElement): boolean {
 		if (
-			(elm instanceof HTMLInputElement &&
-				(elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) ||
-			elm instanceof HTMLButtonElement
+			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) 
+			|| elm instanceof HTMLButtonElement
+			|| elm instanceof HTMLAnchorElement
 		) {
 			return true;
 		}
@@ -79,7 +80,8 @@ export class VariantGeneratorUtil {
 			elm instanceof HTMLInputElement ||
 			elm instanceof HTMLSelectElement ||
 			elm instanceof HTMLTextAreaElement ||
-			elm instanceof HTMLButtonElement
+			elm instanceof HTMLButtonElement ||
+			elm instanceof HTMLAnchorElement
 		) {
 			return true;
 		}
@@ -108,7 +110,10 @@ export class VariantGeneratorUtil {
 	}
 
 	public isEnabled(elm: InteractableElement): boolean {
-		if (elm.disabled || !this.isVisible(elm)) {
+		if (
+			(!(elm instanceof HTMLAnchorElement) && elm.disabled) 
+			|| !this.isVisible(elm)) 
+		{
 			return false;
 		}
 
@@ -134,7 +139,7 @@ export class VariantGeneratorUtil {
 		finalActionButtonFound: boolean,
 		analysesBtnsAfterFinalActionBtn: boolean
 	) {
-		if (this.isButton(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
+		if (this.isButtonOrAnchor(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
 			return true;
 		}
 
@@ -171,15 +176,15 @@ export class VariantGeneratorUtil {
 
 	// checks whether the element is a final action button (buttons that characterize the final action of a variant)
 	public isFinalActionButton(elm: HTMLElement): boolean {
-		if (!this.isButton(elm)) {
+		if (!this.isButtonOrAnchor(elm)) {
 			return false;
 		}
 
-		let button = elm as HTMLInputElement | HTMLButtonElement;
+		let button = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
 
 		let isFinalActionBtn: boolean = false;
 
-		if (button.type === 'submit') {
+		if (button.type && button.type === 'submit') {
 			isFinalActionBtn = true;
 		} else {
 			isFinalActionBtn = this.findStringInElementsProperties(
@@ -193,7 +198,7 @@ export class VariantGeneratorUtil {
 
 	// checks whether the element is a cancel button (buttons that cause system logout)
 	public isCancelButton(elm: HTMLElement): boolean {
-		if (!this.isButton(elm)) {
+		if (!this.isButtonOrAnchor(elm)) {
 			return false;
 		}
 
@@ -209,11 +214,11 @@ export class VariantGeneratorUtil {
 
 	// checks whether the element is a logout button (buttons that characterize the final action of a variant)
 	public isLogoutButton(elm: HTMLElement): boolean {
-		if (!this.isButton(elm)) {
+		if (!this.isButtonOrAnchor(elm)) {
 			return false;
 		}
 
-		let button = elm as HTMLInputElement | HTMLButtonElement;
+		let button = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
 
 		let isLogoutButton = this.findStringInElementsProperties(
 			button,

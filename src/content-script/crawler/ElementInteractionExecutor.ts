@@ -41,9 +41,9 @@ export class ElementInteractionExecutor {
 					<ElementInteraction<HTMLInputElement>>interaction
 				);
 			}
-		} else if (type == HTMLElementType.BUTTON) {
+		} else if (type == HTMLElementType.BUTTON || type == HTMLElementType.A) {
 			result = await this.interactor.executeButton(
-				<ElementInteraction<HTMLButtonElement>>interaction,
+				<ElementInteraction<HTMLButtonElement | HTMLAnchorElement>>interaction,
 				redirectionCallback
 			);
 		} else if (type == HTMLElementType.TR) {

@@ -90,7 +90,7 @@ export class Interactor {
 	// BUTTON
 
 	public async executeButton(
-		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement>,
+		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement | HTMLAnchorElement>,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {
 		let timePassed = 0;

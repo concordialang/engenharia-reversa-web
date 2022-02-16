@@ -28,4 +28,5 @@ export enum HTMLElementType {
 	THEAD = 'THEAD',
 	TR = 'TR',
 	UL = 'UL',
+	A = 'A'
 }

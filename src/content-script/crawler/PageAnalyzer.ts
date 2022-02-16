@@ -38,7 +38,7 @@ export class PageAnalyzer {
 				new Message([Command.ProcessUnload], unloadMessageExtra)
 			);
 
-			//await this.saveFeatureToSpec(feature);
+			await this.saveFeatureToSpec(feature);
 		};
 	}
 

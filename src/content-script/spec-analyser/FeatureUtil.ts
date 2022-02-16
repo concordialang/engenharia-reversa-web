@@ -63,7 +63,7 @@ export class FeatureUtil {
 
 	createThenTypeVariantSentence(
 		featureName: string,
-		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | null
+		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
 	): VariantSentence {
 		return this.variantSentencesGenerator.gerateThenTypeSentence(
 			featureName,

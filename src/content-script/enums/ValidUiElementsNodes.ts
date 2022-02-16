@@ -14,4 +14,5 @@ export enum ValidUiElementsNodes {
 	I = 'I',
 	B = 'B',
 	P = 'P',
+	A = 'A'
 }

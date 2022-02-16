@@ -107,8 +107,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionExecutor,
 		featureUtil,
 		variantGeneratorUtil,
-		elementAnalysisStorage
-	);
+ 	);
 
 	//const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 	const specStorage = new InMemoryStorage<Spec>(communicationChannel, Spec);
