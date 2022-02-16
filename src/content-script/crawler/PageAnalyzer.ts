@@ -2,7 +2,7 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { FeatureGenerator } from '../spec-analyser/FeatureGenerator';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { getFormElements, getPathTo } from '../util';
+import { getFormElements, getPathTo, getURLWithoutQueries } from '../util';
 import { ElementAnalysis } from './ElementAnalysis';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { BrowserContext } from './BrowserContext';
@@ -62,7 +62,7 @@ export class PageAnalyzer {
 
 		if (
 			lastInteraction &&
-			lastInteraction.getPageUrl().href === this.browserContext.getUrl().href
+			getURLWithoutQueries(lastInteraction.getPageUrl()) === getURLWithoutQueries(this.browserContext.getUrl())
 		) {
 			feature = await this.recoveryFeatureOfLastInteraction(lastInteraction);
 			if(!feature?.needNewVariants){
@@ -127,7 +127,7 @@ export class PageAnalyzer {
 				);
 
 				const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.Done);
-				this.pageAnalysisStorage.set(pageAnalysis.getUrl().href, pageAnalysis);
+				this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
 
 				if (featureOuterFormElements) {
 					await this.saveFeatureToSpec(featureOuterFormElements);

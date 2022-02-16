@@ -1,6 +1,7 @@
 import { CommunicationChannel } from "../../shared/comm/CommunicationChannel";
 import { PageAnalysis } from "../crawler/PageAnalysis";
 import { PageAnalysisStatus } from "../crawler/PageAnalysisStatus";
+import { getURLWithoutQueries } from "../util";
 import { InMemoryStorage } from "./InMemoryStorage";
 
 export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
@@ -20,7 +21,7 @@ export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 	public async getPageAnalysisStatus(
 		url: URL
 	): Promise<PageAnalysisStatus> {
-		const analysis = await this.get(url.href);
+		const analysis = await this.get(getURLWithoutQueries(url));
 		if(analysis instanceof PageAnalysis) {
 			return analysis.getStatus();
 		}

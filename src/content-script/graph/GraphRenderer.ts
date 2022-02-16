@@ -139,7 +139,7 @@ export class GraphRenderer {
                     const id = ele.data('id');
                     const interaction = interactions.get(id);
                     //@ts-ignore
-                    const url = interaction?.getPageUrl().href;
+                    const url = interaction?.getPageUrl().origin + interaction?.getPageUrl().pathname;
                     const color = "#"+_this.intToRGB(_this.hashCode(url));
                     //@ts-ignore
                     if(!pages.find(page => page.url == url)) pages.push({url:url,color:color});

@@ -13,6 +13,7 @@ import {
 	getElementByXpath,
 	getFormElements,
 	getPathTo,
+	getURLWithoutQueries,
 	sleep,
 } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
@@ -65,7 +66,7 @@ export class Crawler {
 
 		if (
 			lastUnanalyzed &&
-			lastUnanalyzed.getPageUrl().href == this.browserContext.getUrl().href
+			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
 		) {
 			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
 			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
@@ -139,7 +140,7 @@ export class Crawler {
 		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 		if (
 			lastUnanalyzed &&
-			lastUnanalyzed.getPageUrl().href != this.browserContext.getUrl().href
+			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
 		) {
 			window.location.href = lastUnanalyzed.getPageUrl().href;
 			return false;
@@ -221,9 +222,8 @@ export class Crawler {
 	): Promise<HTMLElement> {
 		let analysisElement: HTMLElement | null = null;
 
-		const url = this.browserContext.getUrl();
 		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
-			url.origin + url.pathname
+			getURLWithoutQueries(this.browserContext.getUrl())
 		);
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
@@ -248,7 +248,7 @@ export class Crawler {
 		}
 
 		await this.analysisElementXPathStorage.set(
-			url.origin + url.pathname,
+			getURLWithoutQueries(this.browserContext.getUrl()),
 			getPathTo(analysisElement)
 		);
 
@@ -288,7 +288,7 @@ export class Crawler {
 		const interactionAfter = await this.elementInteractionGraph.getNextInteraction(interaction);
 		if (interactionAfter) {
 			const interactionsAreOnSamePage =
-				interactionAfter.getPageUrl().href == interaction.getPageUrl().href;
+			getURLWithoutQueries(interactionAfter.getPageUrl()) == getURLWithoutQueries(interaction.getPageUrl());
 
 			const elementOfInteractionAfter = interactionAfter.getElement();
 

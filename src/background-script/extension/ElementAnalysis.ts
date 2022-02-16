@@ -1,5 +1,6 @@
 import { ElementAnalysisStatus } from "../../content-script/crawler/ElementAnalysisStatus";
 import { TransformURL } from "../../content-script/decorators";
+import { getURLWithoutQueries } from "../../content-script/util";
 
 export class ElementAnalysis {
 	private id?: string;
@@ -26,7 +27,7 @@ export class ElementAnalysis {
 	public getId(): string {
 		if (!this.id) {
 			const pathToElement = this.getPathToElement();
-			const id = this.pageUrl.href + ':' + pathToElement;
+			const id = getURLWithoutQueries(this.pageUrl) + ':' + pathToElement;
 			this.id = id;
 			return id;
 		} else {

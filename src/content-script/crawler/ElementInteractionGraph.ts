@@ -7,6 +7,7 @@ import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
+import { getURLWithoutQueries } from '../util';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -163,12 +164,12 @@ export class ElementInteractionGraph {
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean }
 	): boolean {
-		const interactionUrl = interaction.getPageUrl();
-		const url = urlCriteria.interactionUrl;
+		const interactionUrl = getURLWithoutQueries(interaction.getPageUrl());
+		const url = getURLWithoutQueries(urlCriteria.interactionUrl);
 		const urlIsEqual = urlCriteria.isEqual;
 		if (
-			(urlIsEqual && url.href != interactionUrl.href) ||
-			(!urlIsEqual && url.href == interactionUrl.href)
+			(urlIsEqual && url != interactionUrl) ||
+			(!urlIsEqual && url == interactionUrl)
 		) {
 			return false;
 		}
@@ -245,7 +246,7 @@ export class ElementInteractionGraph {
 	): Promise<boolean> {
 		const nextInteraction = await this.getNextInteraction(interaction);
 		if (nextInteraction) {
-			return nextInteraction.getPageUrl().href != interaction.getPageUrl().href;
+			return getURLWithoutQueries(nextInteraction.getPageUrl()) != getURLWithoutQueries(interaction.getPageUrl());
 		}
 		return false;
 	}

@@ -198,3 +198,7 @@ export function isIterable(obj): boolean {
   }
 
 export default clearElement;
+
+export function getURLWithoutQueries(url: URL): string {
+	return url.origin + url.pathname;
+}

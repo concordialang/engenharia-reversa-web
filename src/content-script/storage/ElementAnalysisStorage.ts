@@ -1,4 +1,4 @@
-import { getPathTo } from '../util';
+import { getPathTo, getURLWithoutQueries } from '../util';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
@@ -23,7 +23,7 @@ export class ElementAnalysisStorage extends BackgroundIndexedDBObjectStorage<Ele
 		xPathToElement: string,
 		url: URL
 	): Promise<ElementAnalysis | null> {
-		const key = url.href + ':' + xPathToElement;
+		const key = getURLWithoutQueries(url) + ':' + xPathToElement;
 		return this.get(key);
 	}
 
