@@ -145,7 +145,8 @@ getTabId(communicationChannel).then((tabId) => {
 		featureStorage,
 		specStorage,
 		specMutex,
-		analysisElementXPathStorage
+		analysisElementXPathStorage,
+		pageAnalysisStorage
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {

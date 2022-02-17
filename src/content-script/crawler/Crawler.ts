@@ -24,6 +24,8 @@ import { Spec } from '../spec-analyser/Spec';
 import { Feature } from '../spec-analyser/Feature';
 import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 import Mutex from '../mutex/Mutex';
+import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
+import { PageAnalysisStatus } from './PageAnalysisStatus';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -39,7 +41,8 @@ export class Crawler {
 		private featureStorage: ObjectStorage<Feature>,
 		private specStorage: ObjectStorage<Spec>,
 		private specMutex: Mutex,
-		private analysisElementXPathStorage: ObjectStorage<string>
+		private analysisElementXPathStorage: ObjectStorage<string>,
+		private pageAnalysisStorage: PageAnalysisStorage
 	) {
 		this.lastPageKey = 'last-page';
 	}
@@ -185,6 +188,12 @@ export class Crawler {
 	): Promise<ElementInteraction<HTMLElement> | null> {
 		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
 		if (currentInteraction) {
+			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
+				currentInteraction.getPageUrl()
+			);
+			if (analysisStatus != PageAnalysisStatus.Done) {
+				return currentInteraction;
+			}
 			const path = await elementInteractionGraph.pathToInteraction(
 				currentInteraction,
 				true,
