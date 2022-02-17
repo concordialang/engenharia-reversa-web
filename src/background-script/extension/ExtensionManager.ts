@@ -6,7 +6,7 @@ import { Extension } from './Extension';
 import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
-import { ConcordiaFiles } from '../ConcordiaFiles';
+import { FeatureFileGenerator } from '../FeatureFileGenerator';
 import { plainToClass } from 'class-transformer';
 import { ElementInteractionStorage } from '../../background-script/storage/ElementInteractionStorage';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
@@ -253,8 +253,8 @@ export class ExtensionManager {
 							// const specObj = JSON.parse(specStorage.localStorage.Spec);
 							// const spec = plainToClass(Spec, specObj);
 
-							const concordiaFiles = new ConcordiaFiles();
-							concordiaFiles.gerate(spec);
+							const concordiaFiles = new FeatureFileGenerator();
+							concordiaFiles.generate(spec);
 
 							_this.extensionIsEnabled = false;
 						}
@@ -544,7 +544,6 @@ export class ExtensionManager {
 
 	private async deleteIDBDatabases(){
 		for(let dbName in IndexedDBDatabases){
-			console.log(IndexedDBDatabases[dbName]);
 			await deleteDB(IndexedDBDatabases[dbName]);
 		}
 	}
