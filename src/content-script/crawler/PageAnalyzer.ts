@@ -103,7 +103,6 @@ export class PageAnalyzer {
 				return;
 			}
 
-			console.log("analyzing element: " + xPath);
 
 			feature = await this.analyseFormElements(
 				url,
@@ -111,8 +110,6 @@ export class PageAnalyzer {
 				feature,
 				previousInteractions
 			);
-
-			console.log("analyzing element finished: " + xPath);
 
 			if (contextElement.nodeName !== HTMLElementType.FORM) {
 				// generate feature for elements outside forms

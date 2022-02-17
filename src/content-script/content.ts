@@ -32,7 +32,6 @@ import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
 import { BackgroundIndexedDBObjectStorage } from './storage/BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../shared/storage/IndexedDBDatabases';
-console.log("loaded");
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
 getTabId(communicationChannel).then((tabId) => {

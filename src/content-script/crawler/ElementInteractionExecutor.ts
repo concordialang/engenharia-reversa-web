@@ -18,7 +18,6 @@ export class ElementInteractionExecutor {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
-		console.log("interagiu:", interaction);
 		await sleep(timeBetweenInteractions);
 
 		const element = interaction.getElement();
