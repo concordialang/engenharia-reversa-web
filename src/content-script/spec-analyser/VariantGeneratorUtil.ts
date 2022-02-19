@@ -1,5 +1,9 @@
 import { getDictionary } from '../dictionary';
+import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLInputType } from '../enums/HTMLInputType';
+import { formatToFirstCapitalLetter } from '../util';
+import { Feature } from './Feature';
+import { UIElement } from './UIElement';
 
 type InteractableElement =
 	| HTMLInputElement
@@ -47,7 +51,7 @@ export class VariantGeneratorUtil {
 		}
 	}
 
-	public isButtonOrAnchor(elm: HTMLElement): boolean {
+	public isClicable(elm: HTMLElement): boolean {
 		if (
 			(elm instanceof HTMLInputElement && (elm.type == 'button' || elm.type == 'submit' || elm.type == 'reset')) 
 			|| elm instanceof HTMLButtonElement
@@ -134,12 +138,12 @@ export class VariantGeneratorUtil {
 		return text1.toLowerCase().includes(text2.toLowerCase());
 	}
 
-	public isBtnAfterFinalActionButton(
+	public isClicableAfterFinalActionClicable(
 		elm: HTMLElement,
-		finalActionButtonFound: boolean,
-		analysesBtnsAfterFinalActionBtn: boolean
+		finalActionClicableFound: boolean,
+		analysesClicablesAfterFinalActionClicable: boolean
 	) {
-		if (this.isButtonOrAnchor(elm) && (finalActionButtonFound || analysesBtnsAfterFinalActionBtn)) {
+		if (this.isClicable(elm) && (finalActionClicableFound || analysesClicablesAfterFinalActionClicable)) {
 			return true;
 		}
 
@@ -149,9 +153,9 @@ export class VariantGeneratorUtil {
 	private findStringInElementsProperties(elm, strArray) {
 		let wasFound = false;
 
-		const findString = (btnProperty) => {
+		const findString = (clicableProperty) => {
 			wasFound = strArray.some((str) => {
-				return this.areSimilar(btnProperty, str);
+				return this.areSimilar(clicableProperty, str);
 			});
 		};
 
@@ -174,58 +178,58 @@ export class VariantGeneratorUtil {
 		return wasFound;
 	}
 
-	// checks whether the element is a final action button (buttons that characterize the final action of a variant)
-	public isFinalActionButton(elm: HTMLElement): boolean {
-		if (!this.isButtonOrAnchor(elm)) {
+	// checks whether the element is a final action clicable (buttons or anchors that characterize the final action of a variant)
+	public isFinalActionClicable(elm: HTMLElement): boolean {
+		if (!this.isClicable(elm)) {
 			return false;
 		}
 
-		let button = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
+		let clicable = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
 
-		let isFinalActionBtn: boolean = false;
+		let isFinalActionCliacle: boolean = false;
 
-		if (button.type && button.type === 'submit') {
-			isFinalActionBtn = true;
+		if (clicable.type && clicable.type === 'submit') {
+			isFinalActionCliacle = true;
 		} else {
-			isFinalActionBtn = this.findStringInElementsProperties(
-				button,
-				this.dictionary.stringsFinalActionButtons
+			isFinalActionCliacle = this.findStringInElementsProperties(
+				clicable,
+				this.dictionary.stringsFinalActionClicables
 			);
 		}
 
-		return isFinalActionBtn;
+		return isFinalActionCliacle;
 	}
 
-	// checks whether the element is a cancel button (buttons that cause system logout)
-	public isCancelButton(elm: HTMLElement): boolean {
-		if (!this.isButtonOrAnchor(elm)) {
+	// checks whether the element is a cancel clicable (buttons or anchors that cause system logout)
+	public isCancelClicable(elm: HTMLElement): boolean {
+		if (!this.isClicable(elm)) {
 			return false;
 		}
 
-		let button = elm as HTMLInputElement | HTMLButtonElement;
+		let clicable = elm as HTMLInputElement | HTMLButtonElement;
 
-		let isCancelBtn: boolean = this.findStringInElementsProperties(
-			button,
-			this.dictionary.stringsCancelButtons
+		let isCancelClicable: boolean = this.findStringInElementsProperties(
+			clicable,
+			this.dictionary.stringsCancelClicables
 		);
 
-		return isCancelBtn;
+		return isCancelClicable;
 	}
 
-	// checks whether the element is a logout button (buttons that characterize the final action of a variant)
-	public isLogoutButton(elm: HTMLElement): boolean {
-		if (!this.isButtonOrAnchor(elm)) {
+	// checks whether the element is a logout clicable (buttons or anchors that characterize the final action of a variant)
+	public isLogoutClicable(elm: HTMLElement): boolean {
+		if (!this.isClicable(elm)) {
 			return false;
 		}
 
-		let button = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
+		let clicable = elm as HTMLInputElement | HTMLButtonElement | HTMLAnchorElement;
 
-		let isLogoutButton = this.findStringInElementsProperties(
-			button,
-			this.dictionary.stringLogoutButtons
+		let isLogoutClicable = this.findStringInElementsProperties(
+			clicable,
+			this.dictionary.stringLogoutClicable
 		);
 
-		return isLogoutButton;
+		return isLogoutClicable;
 	}
 
 	// checks if some group radio button received interaction in this variant
@@ -244,10 +248,10 @@ export class VariantGeneratorUtil {
 		return anyInteracted;
 	}
 
-	// checks if some button has interacted in the variant
-	public anyButtonHasInteracted(interactedElements, variantName: string): boolean {
+	// checks if some clicable has interacted in the variant
+	public anyClicableHasInteracted(interactedElements, variantName: string): boolean {
 		const anyInteracted = interactedElements.some((interactedElm) => {
-			return interactedElm.variantName === variantName && interactedElm.elmType === 'button';
+			return interactedElm.variantName === variantName && interactedElm.elmType === 'clicable';
 		});
 
 		return anyInteracted;
@@ -300,5 +304,100 @@ export class VariantGeneratorUtil {
 		const lastField = lastFields[0];
 
 		return lastField === this.lastAnalysisInputField;
+	}
+
+	public nameUiElementIfEmpty(uiElm: UIElement, feature: Feature){
+		if(uiElm.getName() === '' && !uiElm.onlyDisplayValue){
+			let uiElmName = '';
+			let elm = uiElm.getSourceElement();
+
+			if(elm instanceof HTMLTableRowElement){
+				uiElmName = this.nameTableElements(uiElm);
+			}
+			else if(elm instanceof HTMLTableCellElement){
+				uiElmName = this.nameTableElements(uiElm);
+			} else {
+				uiElmName = this.namesUielmWithDefaultName(uiElm, feature);
+			}
+
+			uiElm.setName(uiElmName);
+		}
+	}
+
+	private nameTableElements(uiElm: UIElement): string{
+		let id = uiElm.getId(true);
+		let name = '';
+
+		if(id.isXPathIdProp()){
+			let idXPath = id.getValue();
+			let xPathParts = idXPath.split('/');
+			let lastPart = xPathParts.pop();
+
+			if(!lastPart){
+				return name;
+			}
+
+			let element = lastPart.split('[');
+
+			if(element.length != 2){
+				return name;
+			}
+
+			let type = element[0];
+			let number = element[1].replace(']', '');
+
+			if(isNaN(number)){
+				return name;
+			}
+
+			let tableElmName = ''
+			if(type == HTMLElementType.TR.toLowerCase()){
+				tableElmName = this.dictionary.row;
+			}
+			else if(type == HTMLElementType.TH.toLowerCase()){
+				tableElmName = this.dictionary.column;
+			}
+
+			name = tableElmName != '' ? formatToFirstCapitalLetter(tableElmName) + ' ' + number : '';
+		}
+
+		return name;
+	}
+
+	private nameCellTableElement(uiElm: UIElement): string{
+		let id = uiElm.getId(true);
+		let name = '';
+
+		if(id.isXPathIdProp()){
+			let idXPathRow = id.getValue();
+			let xPathRowParts = idXPathRow.split('/');
+			let lastPart = xPathRowParts.pop();
+
+			if(!lastPart){
+				return name;
+			}
+
+			let element = lastPart.split('[');
+			let row = element[0];
+
+			if(row == HTMLElementType.TR.toLowerCase()){
+				let number = element[1].replace(']', '');
+
+				name = !isNaN(number) ? formatToFirstCapitalLetter(this.dictionary.row) + ' ' + number : '';
+			}
+		}
+
+		return name;
+	}
+
+	private namesUielmWithDefaultName(uiElm: UIElement, feature: Feature): string{
+		let name = feature.getUiElements().find(uiElmFeature => uiElmFeature.getId() === uiElm.getId())?.getName();
+
+		if(!name){
+			let numberOfUiElmInFeature = feature.getNumberOfUiElmentsNotOnlyDisplayValue();
+			name = formatToFirstCapitalLetter(this.dictionary.element) + ' ' + numberOfUiElmInFeature;
+		}
+		
+		return name;
 	}
 }

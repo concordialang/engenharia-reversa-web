@@ -13,7 +13,7 @@ export class Variant {
 	private sentences!: Array<VariantSentence>;
 
 	public lastAnalysisInputFieldFound = false;
-	public finalActionButtonFound = false;
+	public finalActionClicableFound = false;
 	public whenSentenceCreated = false;
 
 	constructor(id?: string) {
@@ -60,14 +60,14 @@ export class Variant {
 		});
 	}
 
-	public getButtonsElements(): HTMLElement[] {
+	public getClicablesElements(): HTMLElement[] {
 		let sourceElements: HTMLElement[] = [];
 
-		const btnSentences = this.sentences.filter(
+		const clicableSentences = this.sentences.filter(
 			(sentence) => sentence.uiElement?.getType() === UiElementsTypes.Button || sentence.uiElement?.getType() === UiElementsTypes.Link
 		);
 
-		for (let sentence of btnSentences) {
+		for (let sentence of clicableSentences) {
 			let elm = sentence.uiElement?.getSourceElement();
 
 			if (elm) {
@@ -78,13 +78,13 @@ export class Variant {
 		return sourceElements;
 	}
 
-	public getLastButtonInteracted(): HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null {
-		const buttons = this.getButtonsElements();
+	public getLastClicableInteracted(): HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null {
+		const clicables = this.getClicablesElements();
 
-		const length = buttons.length;
+		const length = clicables.length;
 
 		if (length > 0) {
-			const lastElm = buttons[length - 1];
+			const lastElm = clicables[length - 1];
 
 			if (
 				lastElm instanceof HTMLButtonElement ||

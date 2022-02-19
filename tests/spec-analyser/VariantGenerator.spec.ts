@@ -24,6 +24,10 @@ import { VariantGeneratorUtil } from '../../src/content-script/spec-analyser/Var
 import { Interactor } from '../../src/content-script/crawler/Interactor';
 import { ChromeCommunicationChannel } from '../../src/shared/comm/ChromeCommunicationChannel';
 import { ChromeMock } from '../util/ChromeMock';
+import { CommunicationChannel } from '../../src/shared/comm/CommunicationChannel';
+import { PageAnalysisStorage } from '../../src/content-script/storage/PageAnalysisStorage';
+
+const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
 describe('VariantGenerator', () => {
 	const language = 'pt';
@@ -38,7 +42,7 @@ describe('VariantGenerator', () => {
 	const interactionsGraphMutex: Mutex = new Mutex('interactions-graph-mutex');
 
 	const elementAnalysisStorage: ElementAnalysisStorage = new ElementAnalysisStorage(
-		window.localStorage
+		communicationChannel
 	);
 	const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
 		window.localStorage,
@@ -46,11 +50,14 @@ describe('VariantGenerator', () => {
 	);
 	const graphStorage: GraphStorage = new GraphStorage(new ChromeCommunicationChannel(new ChromeMock()));
 
+	const pageAnalysisStorage = new PageAnalysisStorage(communicationChannel);
+
 	const elementInteractionGraph = new ElementInteractionGraph(
 		'graph',
 		elementInteracationStorage,
 		elementAnalysisStorage,
-		graphStorage
+		graphStorage,
+		pageAnalysisStorage
 	);
 
 	const interactor = new Interactor(window);
@@ -68,7 +75,6 @@ describe('VariantGenerator', () => {
 	const variantGenerator = new VariantGenerator(
 		elementInteractionGenerator,
 		elementInteractionExecutor,
-		elementInteractionGraph,
 		featureUtil,
 		variantGeneratorUtil
 	);
@@ -145,9 +151,10 @@ describe('VariantGenerator', () => {
 		const observer = new MutationObserverManager(document.body);
 		const feature = featureUtil.createFeatureFromElement(
 			document.body,
-			spec.getFeatures().length
+			spec.getFeatures().length,
+			url
 		);
-		const variant = await variantGenerator.generate(document.body, url, observer, feature);
+		const variant = await variantGenerator.generate(document.body, observer, feature);
 		expect(variant).toBeInstanceOf(Variant);
 	});
 });

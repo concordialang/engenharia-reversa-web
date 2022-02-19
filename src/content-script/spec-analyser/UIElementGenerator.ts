@@ -27,15 +27,22 @@ export class UIElementGenerator {
 					elm.type === HTMLInputType.Submit ||
 					elm.type === HTMLInputType.Reset))
 		) {
-			uiElement = this.createFromButtonOrAnchor(elm);
+			uiElement = this.createFromClicable(elm);
 		} else if (
 			elm instanceof HTMLInputElement ||
 			elm instanceof HTMLSelectElement ||
 			elm instanceof HTMLTextAreaElement
 		) {
 			uiElement = this.createFromEditableElements(elm);
+		} else if(
+			elm instanceof HTMLTableRowElement || 
+			elm instanceof HTMLTableColElement || 
+			elm instanceof HTMLTableCellElement
+		) {
+			uiElement = this.createFromTableRowElements(elm);
 		} else {
 			uiElement = this.createFromOthers(elm);
+
 		}
 
 		return uiElement;
@@ -48,7 +55,7 @@ export class UIElementGenerator {
 		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
-		uiElm.setName(this.generateName(elm, uiElm.getId()));
+		uiElm.setName(this.generateName(elm));
 
 		if (elm instanceof HTMLSelectElement && elm.options.length > 0) {
 			let value = Array.from(elm.options).reverse()[0].value; // set last option value
@@ -61,13 +68,15 @@ export class UIElementGenerator {
 			uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, type));
 		}
 
-		// editabled
-		uiElm.setProperty(new UIProperty(PropertyTypes.EDITABLE, true));
+		if(type !== UiElementsTypes.Radio){
+			// dataType
+			let dataType = this.gerateDataType(elm);
+			if (dataType) {
+				uiElm.setProperty(new UIProperty(PropertyTypes.DATATYPE, dataType));
+			}
 
-		// dataType
-		let dataType = this.gerateDataType(elm);
-		if (dataType) {
-			uiElm.setProperty(new UIProperty(PropertyTypes.DATATYPE, dataType));
+			// editabled
+			uiElm.setProperty(new UIProperty(PropertyTypes.EDITABLE, true));
 		}
 
 		// required
@@ -102,19 +111,34 @@ export class UIElementGenerator {
 		return uiElm;
 	}
 
-	private createFromButtonOrAnchor(elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement): UIElement {
+	// buttons and anchors
+	private createFromClicable(elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement): UIElement {
 		let uiElm = new UIElement(elm);
 
 		// id
 		uiElm.setProperty(this.generatePropertyId(elm));
 
 		// name
-		uiElm.setName(this.generateNameForButtonOrAnchor(elm, uiElm.getId()));
-
-		let type = elm instanceof HTMLAnchorElement ? UiElementsTypes.Link : UiElementsTypes.Button;
+		uiElm.setName(this.generateNameForClicables(elm));
 
 		// type
+		let type = elm instanceof HTMLAnchorElement ? UiElementsTypes.Link : UiElementsTypes.Button;
 		uiElm.setProperty(new UIProperty(PropertyTypes.TYPE, type));
+
+		return uiElm;
+	}
+
+	private createFromTableRowElements(elm): UIElement | null {
+		let uiElm = new UIElement(elm);
+
+		// id
+		const propId = this.generatePropertyId(elm);
+		uiElm.setProperty(propId);
+
+		if(!propId.isXPathIdProp()){
+			// name
+			uiElm.setName(uiElm.getId());
+		}
 
 		return uiElm;
 	}
@@ -134,23 +158,27 @@ export class UIElementGenerator {
 		let uiElm = new UIElement(elm);
 
 		// id
-		uiElm.setProperty(this.generatePropertyId(elm));
+		const propId = this.generatePropertyId(elm);
+		uiElm.setProperty(propId);
 
-		// name
-		uiElm.setName(uiElm.getId());
+		if(!propId.isXPathIdProp()){
+			// name
+			uiElm.setName(uiElm.getId());
+		}
 
 		// value
 		if (elm.innerText) {
 			let value = elm.innerText;
 			uiElm.setProperty(new UIProperty(PropertyTypes.VALUE, value, undefined, true));
-		}
 
+			uiElm.onlyDisplayValue = true;
+		}
+		
 		return uiElm;
 	}
 
 	private generateName(
 		elm: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-		idUiElm: string
 	): string {
 		let name: string = '';
 
@@ -179,8 +207,6 @@ export class UIElementGenerator {
 			name = this.generateNameFromLabel(elm.parentElement.previousElementSibling, elm);
 		}
 
-		name = name ? name : idUiElm;
-
 		return name.trim();
 	}
 
@@ -204,19 +230,20 @@ export class UIElementGenerator {
 		return name.trim();
 	}
 
-	private generateNameForButtonOrAnchor(
-		elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement,
-		idUiElm: string
+	private generateNameForClicables(
+		elm: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement
 	): string {
-		let name: string = '';
+		let propName: string = ''
 
 		if (!(elm instanceof HTMLAnchorElement) && elm.name) {
-			name = formatToFirstCapitalLetter(elm.name);
+			propName = elm.name;
 		} else if (!(elm instanceof HTMLInputElement) && elm.innerText) {
-			name = formatToFirstCapitalLetter(elm.innerText);
+			propName = elm.innerText;
+		} else if(elm instanceof HTMLInputElement && elm.value){
+			propName = elm.value;
 		}
 
-		name = name ? name : idUiElm;
+		let name = formatToFirstCapitalLetter(propName);
 
 		return name.trim();
 	}
@@ -225,7 +252,7 @@ export class UIElementGenerator {
 		let id = '';
 		let isIdXPath = false;
 
-		if (elm.id) {
+		if (elm.id && !(elm instanceof HTMLTableRowElement)) {
 			id = elm.id;
 		} else {
 			id = getPathTo(elm);

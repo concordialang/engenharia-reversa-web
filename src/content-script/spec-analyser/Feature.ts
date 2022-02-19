@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import { Import } from './Import';
 import { Scenario } from './Scenario';
 import { UIElement } from './UIElement';
+import { TransformURL } from '../decorators';
 
 export class Feature {
 	private name: string = '';
@@ -10,11 +11,12 @@ export class Feature {
 	public ignoreFormElements: boolean = false;
 	public needNewVariants: boolean = false;
 
-	// it also starts to analyze the buttons that are after the final action button, ignoring the final action button
-	public analysesBtnsAfterFinalActionBtn: boolean = false;
+	// it also starts to analyze the clicables (buttons and anchors) 
+	// that are after the final action clicable, ignoring the final action clicable
+	public analysesClicablesAfterFinalActionClicable: boolean = false;
 
 	// starts to create variant analyzing only the cancel buttons
-	public analysesOnlyCancelBtns: boolean = false;
+	public analysesOnlyCancelClicables: boolean = false;
 
 	public interactedElements: Array<{
 		xpath: string;
@@ -24,9 +26,9 @@ export class Feature {
 		elmType: string;
 	}> = [];
 
-	public btnsAfterFinalActionBtn: Array<{
+	public clicablesAfterFinalActionClicable: Array<{
 		xpath: string;
-		isCancelButton: boolean;
+		isCancelClicable: boolean;
 	}>;
 
 	@Type(() => Import)
@@ -38,11 +40,14 @@ export class Feature {
 	@Type(() => UIElement)
 	private uiElements: Array<UIElement>;
 
+	@TransformURL()
+	public url?: URL;
+
 	constructor(id?: string) {
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
-		this.btnsAfterFinalActionBtn = [];
+		this.clicablesAfterFinalActionClicable = [];
 		this.id = id || Math.random().toString(18).substring(2);
 	}
 
@@ -56,14 +61,6 @@ export class Feature {
 
 	public getId(): string {
 		return this.id;
-	}
-
-	public addUiElement(uiElement: UIElement): void {
-		this.uiElements.push(uiElement);
-	}
-
-	public setUiElements(uiElements: Array<UIElement>): void {
-		this.uiElements = uiElements;
 	}
 
 	public getUiElements(): Array<UIElement> {
@@ -102,5 +99,21 @@ export class Feature {
 		if (Number.isInteger(maxVariantCount)) {
 			this.maxVariantCount = maxVariantCount;
 		}
+	}
+
+	public addUiElement(uiElement: UIElement): void {
+		let alreadyExists = this.uiElements.some(uiElm => uiElm.getId() === uiElement.getId());
+
+		if(!alreadyExists){
+			this.uiElements.push(uiElement);
+		}
+	}
+
+	public setUiElements(uiElements: Array<UIElement>): void {
+		this.uiElements = uiElements;
+	}
+
+	public getNumberOfUiElmentsNotOnlyDisplayValue(){
+		return this.uiElements.filter(uiElm => !uiElm.onlyDisplayValue).length;
 	}
 }

@@ -18,7 +18,10 @@ const dictionary = {
 		that: 'that',
 		inThe: 'in the',
 		on: 'on',
-		stringsFinalActionButtons: [
+		element: 'element',
+		row: 'row',
+		column: 'column',
+		stringsFinalActionClicables: [
 			'Confirm',
 			'Save',
 			'Record',
@@ -35,8 +38,8 @@ const dictionary = {
 			'Submit',
 			'Send',
 		],
-		stringsCancelButtons: ['Cancel', 'Back', 'Close', 'Return', 'No'],
-		stringLogoutButtons: ['Logout', 'Exit'],
+		stringsCancelClicables: ['Cancel', 'Back', 'Close', 'Return', 'No'],
+		stringLogoutClicable: ['Logout', 'Exit'],
 		variantSentenceTypes: {
 			given: 'Given',
 			when: 'When',
@@ -117,7 +120,10 @@ const dictionary = {
 		that: 'que',
 		inThe: 'em',
 		on: 'na',
-		stringsFinalActionButtons: [
+		element: 'elemento',
+		row: 'linha',
+		column: 'coluna',
+		stringsFinalActionClicables: [
 			'Confirmar',
 			'Salvar',
 			'Gravar',
@@ -134,7 +140,7 @@ const dictionary = {
 			'Sim',
 			'Enviar',
 		],
-		stringsCancelButtons: [
+		stringsCancelClicables: [
 			'Cancelar',
 			'Cancela',
 			'Voltar',
@@ -145,7 +151,7 @@ const dictionary = {
 			'Retorna',
 			'Não',
 		],
-		stringLogoutButtons: ['Sair', 'Encerrar'],
+		stringLogoutClicable: ['Sair', 'Encerrar'],
 		variantSentenceTypes: {
 			given: 'Dado',
 			when: 'Quando',
@@ -209,14 +215,14 @@ const dictionary = {
 	},
 };
 
-dictionary.pt.stringsFinalActionButtons = dictionary.pt.stringsFinalActionButtons.concat(
-	dictionary.en.stringsFinalActionButtons
+dictionary.pt.stringsFinalActionClicables = dictionary.pt.stringsFinalActionClicables.concat(
+	dictionary.en.stringsFinalActionClicables
 );
-dictionary.pt.stringsCancelButtons = dictionary.pt.stringsCancelButtons.concat(
-	dictionary.en.stringsCancelButtons
+dictionary.pt.stringsCancelClicables = dictionary.pt.stringsCancelClicables.concat(
+	dictionary.en.stringsCancelClicables
 );
-dictionary.pt.stringLogoutButtons = dictionary.pt.stringLogoutButtons.concat(
-	dictionary.en.stringLogoutButtons
+dictionary.pt.stringLogoutClicable = dictionary.pt.stringLogoutClicable.concat(
+	dictionary.en.stringLogoutClicable
 );
 
 export function getDictionary(language?: string) {

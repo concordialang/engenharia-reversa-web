@@ -278,7 +278,7 @@ export class Crawler {
 			ancestorElement = commonAncestorElement(Array.from(formElements));
 		} else*/ if (formElements.length == 0) {
 			const inputFieldTags = analysisContext.querySelectorAll(
-				'input, select, textarea, button'
+				'input, select, textarea, button, a'
 			);
 			ancestorElement = commonAncestorElement(Array.from(inputFieldTags));
 		} else {

@@ -87,9 +87,9 @@ export class Interactor {
 		return matchedInputs;
 	}
 
-	// BUTTON
+	// CLICABLE (BUTTONS AND ANCHORS)
 
-	public async executeButton(
+	public async executeClicable(
 		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement | HTMLAnchorElement>,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {

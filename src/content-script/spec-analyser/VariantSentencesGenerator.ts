@@ -50,26 +50,24 @@ export class VariantSentencesGenerator {
 		return new VariantSentence(variantType, action, uiElement);
 	}
 
-	public gerateGivenTypeSentence(url: URL): VariantSentence {
+	public gerateGivenTypeSentence(): VariantSentence {
 		return new VariantSentence(
 			VariantSentenceType.GIVEN,
 			VariantSentenceActions.AMON,
 			undefined,
 			undefined,
-			url
 		);
 	}
 
 	public gerateThenTypeSentence(
 		featureName: string,
-		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
+		lastClicableInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
 	): VariantSentence {
 		let statePostCondition = featureName.toLocaleLowerCase();
 
 		return new VariantSentence(
 			VariantSentenceType.THEN,
 			VariantSentenceActions.HAVE,
-			undefined,
 			undefined,
 			undefined,
 			statePostCondition
@@ -118,14 +116,14 @@ export class VariantSentencesGenerator {
 						node,
 						VariantSentenceType.AND,
 						VariantSentenceActions.NOTSEE,
-						[{ property: property, value: value }]
+						[{ property: property, value: value }],
 					);
 				} else {
 					sentences = this.createSentencesForMutations(
 						node,
 						VariantSentenceType.AND,
 						VariantSentenceActions.SEE,
-						[{ property: property, value: value }]
+						[{ property: property, value: value }],
 					);
 				}
 			}
@@ -146,7 +144,7 @@ export class VariantSentencesGenerator {
 			sentences = this.createSentencesForMutations(
 				node,
 				VariantSentenceType.AND,
-				VariantSentenceActions.APPEND
+				VariantSentenceActions.APPEND,
 			);
 		} else if (removedNodes && removedNodes.length > 0) {
 			const node: any = removedNodes[0];
@@ -154,7 +152,7 @@ export class VariantSentencesGenerator {
 			sentences = this.createSentencesForMutations(
 				node,
 				VariantSentenceType.AND,
-				VariantSentenceActions.REMOVE
+				VariantSentenceActions.REMOVE,
 			);
 		}
 
@@ -258,7 +256,7 @@ export class VariantSentencesGenerator {
 				node,
 				VariantSentenceType.AND,
 				action,
-				[{ property: 'hidden', value: node.readOnly }]
+				[{ property: 'hidden', value: node.hidden }]
 			);
 		}
 
@@ -269,7 +267,7 @@ export class VariantSentencesGenerator {
 		element: HTMLElement,
 		type: VariantSentenceType,
 		action: string,
-		attr: Array<{ property: string; value: string }> = []
+		attr: Array<{ property: string; value: string }> = [],
 	): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 

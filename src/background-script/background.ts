@@ -1,6 +1,6 @@
 //const bkg : Window | null = chrome.extension.getBackgroundPage();
 
-import { ExtensionManager } from './extension/ExtensionManager';
+import { ExtensionFacade } from './extension/ExtensionFacade';
 import { ChromeExtension } from './extension/ChromeExtension';
 import { Extension } from './extension/Extension';
 import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
@@ -23,7 +23,7 @@ extension.searchTab({ url: 'http://localhost/*' }).then((tabs) => {
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 const inMemoryDatabase = new InMemoryDatabase();
-const manager: ExtensionManager = new ExtensionManager(
+const manager: ExtensionFacade = new ExtensionFacade(
 	extension,
 	communicationChannel,
 	inMemoryDatabase,

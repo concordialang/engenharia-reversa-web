@@ -90,10 +90,6 @@ export function assertVariantSentencesAreEqual(expected: VariantSentence, actual
 	expect(actual.type).toBe(expected.type);
 	expect(actual.action).toBe(expected.action);
 	expect(actual.attributtes).toStrictEqual(expected.attributtes);
-	expect(actual.url).not.toBeUndefined();
-	if (actual.url && expected.url) {
-		expect(actual.url.href).toBe(expected.url.href);
-	}
 	expect(actual.statePostCondition).toBe(expected.statePostCondition);
 	expect(actual.uiElement).not.toBeUndefined();
 	if (actual.uiElement && expected.uiElement) {

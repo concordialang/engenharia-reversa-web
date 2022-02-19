@@ -9,7 +9,7 @@ import { formatToFirstCapitalLetter } from '../util';
 export class FeatureUtil {
 	constructor(private variantSentencesGenerator: VariantSentencesGenerator, private dictionary) {}
 
-	createFeatureFromElement(f: HTMLElement, featureCount: number): Feature {
+	createFeatureFromElement(f: HTMLElement, featureCount: number, url: URL): Feature {
 		const title: HTMLElement | null = this.titleBeforeElement(f);
 
 		let featureName: string;
@@ -23,6 +23,7 @@ export class FeatureUtil {
 
 		const feature = new Feature();
 		feature.setName(featureName);
+		feature.url = url;
 
 		const scenario = this.createScenario(featureName);
 		feature.addScenario(scenario);
@@ -48,13 +49,13 @@ export class FeatureUtil {
 
 	createVariantSentence(
 		element: HTMLElement,
-		whenSentenceCreated: boolean = false
+		whenSentenceCreated: boolean = false,
 	): VariantSentence | null {
 		return this.variantSentencesGenerator.gerate(element, whenSentenceCreated);
 	}
 
-	createGivenTypeVariantSentence(url: URL): VariantSentence | null {
-		return this.variantSentencesGenerator.gerateGivenTypeSentence(url);
+	createGivenTypeVariantSentence(): VariantSentence | null {
+		return this.variantSentencesGenerator.gerateGivenTypeSentence();
 	}
 
 	createMutationVariantSentences(mutation: MutationRecord): VariantSentence[] | null {
@@ -63,11 +64,11 @@ export class FeatureUtil {
 
 	createThenTypeVariantSentence(
 		featureName: string,
-		lastButtonInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
+		lastClicableInteracted: HTMLButtonElement | HTMLInputElement | HTMLAnchorElement | null
 	): VariantSentence {
 		return this.variantSentencesGenerator.gerateThenTypeSentence(
 			featureName,
-			lastButtonInteracted
+			lastClicableInteracted
 		);
 	}
 

@@ -10,11 +10,12 @@ export class Feature {
 	public ignoreFormElements: boolean = false;
 	public needNewVariants: boolean = false;
 
-	// it also starts to analyze the buttons that are after the final action button, ignoring the final action button
-	public analysesBtnsAfterFinalActionBtn: boolean = false;
+	// it also starts to analyze the clicables (buttons and anchors) 
+	// that are after the final action clicable, ignoring the final action clicable
+	public analysesClicablesAfterFinalActionClicable: boolean = false;
 
-	// starts to create variant analyzing only the cancel buttons
-	public analysesOnlyCancelBtns: boolean = false;
+	// starts to create variant analyzing only the cancel clicables
+	public analysesOnlyCancelClicables: boolean = false;
 
 	public interactedElements: Array<{
 		xpath: string;
@@ -24,9 +25,9 @@ export class Feature {
 		elmType: string;
 	}> = [];
 
-	public btnsAfterFinalActionBtn: Array<{
+	public clicablesAfterFinalActionClicable: Array<{
 		xpath: string;
-		isCancelButton: boolean;
+		isCancelClicable: boolean;
 	}>;
 
 	@Type(() => Import)
@@ -42,7 +43,7 @@ export class Feature {
 		this.imports = [];
 		this.scenarios = [];
 		this.uiElements = [];
-		this.btnsAfterFinalActionBtn = [];
+		this.clicablesAfterFinalActionClicable = [];
 		this.id = id || Math.random().toString(18).substring(2);
 	}
 

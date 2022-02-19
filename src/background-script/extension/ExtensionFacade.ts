@@ -8,18 +8,17 @@ import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
 import { FeatureFileGenerator } from '../FeatureFileGenerator';
 import { plainToClass } from 'class-transformer';
-import { ElementInteractionStorage } from '../../background-script/storage/ElementInteractionStorage';
+import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
-import { InMemoryStorage } from '../../background-script/storage/InMemoryStorage';
 import { Variant } from '../../content-script/spec-analyser/Variant';
 import { ElementAnalysisStorage } from '../../content-script/storage/ElementAnalysisStorage';
-import { GraphStorage } from '../../background-script/storage/GraphStorage';
+import { GraphStorage } from '../storage/GraphStorage';
 import { ElementInteractionGraph } from '../graph/ElementInteractionGraph';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { Graph } from '../../content-script/graph/Graph';
 import { sleep } from '../../content-script/util';
 import { ElementAnalysisStatus } from '../../content-script/crawler/ElementAnalysisStatus';
-import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../../background-script/storage/ElementAnalysisStorage';
+import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../storage/ElementAnalysisStorage';
 import { ElementAnalysis } from './ElementAnalysis';
 import { Feature } from './Feature';
 import { Spec } from './Spec';
@@ -29,7 +28,7 @@ import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStor
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 import { deleteDB } from 'idb';
 
-export class ExtensionManager {
+export class ExtensionFacade {
 	private openedTabs: Array<Tab>;
 	private openedTabsCounter: number;
 	private extension: Extension;
