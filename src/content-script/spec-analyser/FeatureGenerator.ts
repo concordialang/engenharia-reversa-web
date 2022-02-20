@@ -157,15 +157,6 @@ export class FeatureGenerator {
 
 			this.addVariantToScenario(newVariant, scenario, feature);
 
-			//await this.variantStorage.set(newVariant.getId(), newVariant);
-
-			//unloadMessageExtra.newVariant = newVariant;
-
-			// const uiElements: Array<UIElement> = await this.getUniqueUIElements(
-			// 	scenario.getVariants()
-			// );
-			// feature.setUiElements(uiElements);
-
 			unloadMessageExtra.feature = classToPlain(feature);
 
 			unloadMessageExtra.analysisElementPath = getPathTo(analysisElement);
@@ -209,45 +200,6 @@ export class FeatureGenerator {
 	private needsNewVariants(feature: Feature): boolean {
 		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
-
-	// private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
-	// 	let allUIElements: UIElement[] = [];
-
-	// 	for (let variant of variants) {
-	// 		variant.getSentences().forEach((sentence) => {
-	// 			if (sentence.uiElement) {
-	// 				allUIElements.push(sentence.uiElement);
-	// 			}
-	// 		});
-	// 	}
-
-	// 	let uniqueUIElementsNames = [...new Set(allUIElements.map((uie) => uie.getName()))];
-
-	// 	let uniqueUIElements: UIElement[] = [];
-
-	// 	for (let nameUI of uniqueUIElementsNames) {
-	// 		let UiElementsOfName = allUIElements.filter((uiElm) => uiElm.getName() === nameUI);
-
-	// 		if (UiElementsOfName.length == 0) {
-	// 			continue;
-	// 		}
-
-	// 		let uniqueUIElm: UIElement = UiElementsOfName[0];
-
-	// 		if (UiElementsOfName.length > 1) {
-	// 			uniqueUIElm = UiElementsOfName.reduce((uiElmWithMoreProperties, uiElm) => {
-	// 				return uiElm.getProperties().length >
-	// 					uiElmWithMoreProperties.getProperties().length
-	// 					? uiElm
-	// 					: uiElmWithMoreProperties;
-	// 			}, uniqueUIElm);
-	// 		}
-
-	// 		uniqueUIElements.push(uniqueUIElm);
-	// 	}
-
-	// 	return uniqueUIElements;
-	// }
 
 	private discoverElementMaxVariantCount(
 		analysisElement: HTMLElement,
