@@ -35,20 +35,49 @@ export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInt
 	}
 
 	async get(key: string): Promise<ElementInteraction<HTMLElement> | null> {
-		const elementInteraction = plainToClass(ElementInteraction, await super.get(key));
+		let elementInteraction = await super.get(key);
 		if (!elementInteraction) {
 			return null;
 		}
+		if(!(elementInteraction instanceof ElementInteraction)) {
+			//@ts-ignore
+			elementInteraction = plainToClass(ElementInteraction, elementInteraction);
+		}
+		//@ts-ignore
 		let feature = elementInteraction.getFeature();
 		if (typeof feature === 'string') {
 			//@ts-ignore
 			feature = await this.featureStorage.get(feature);
+			//@ts-ignore
 			elementInteraction.setFeature(feature);
+		} else if(feature) {
+			if(feature.constructor.name != "Feature"){
+				//@ts-ignore
+				feature = plainToClass(Feature, feature);
+			}
+			//@ts-ignore
+			feature = await this.featureStorage.get(feature.getId());
+			if(elementInteraction){
+				elementInteraction.setFeature(feature);
+			}
 		}
+		//@ts-ignore
 		let variant = elementInteraction.getVariant();
 		if (typeof variant === 'string') {
 			variant = await this.variantStorage.get(variant);
+			//@ts-ignore
 			elementInteraction.setVariant(variant);
+		} else if(variant) {
+			if(variant.constructor.name != "Variant"){
+				console.log(variant);
+				//@ts-ignore
+				variant = plainToClass(Variant, variant);
+			}
+			//@ts-ignore
+			variant = await this.variantStorage.get(variant.getId());
+			if(elementInteraction){
+				elementInteraction.setVariant(variant);
+			}
 		}
 		return elementInteraction;
 	}

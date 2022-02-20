@@ -7,7 +7,7 @@ import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
 import { FeatureFileGenerator } from '../FeatureFileGenerator';
-import { plainToClass } from 'class-transformer';
+import { classToPlain, plainToClass } from 'class-transformer';
 import { ElementInteractionStorage } from '../../background-script/storage/ElementInteractionStorage';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
 import { InMemoryStorage } from '../../background-script/storage/InMemoryStorage';
@@ -159,6 +159,28 @@ export class ExtensionManager {
 						}
 						console.log("enviou");
 						responseCallback(new Message([], value));
+					}
+				}
+			} else if (message.includesAction(Command.GetInteractionFromBackgroundIndexedDB)) {
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const featureStorage = new IndexedDBObjectStorage<Feature>(
+						IndexedDBDatabases.Features,
+						IndexedDBDatabases.Features,
+						Feature
+					);
+					const variantStorage = new IndexedDBObjectStorage<Variant>(
+						IndexedDBDatabases.Variants,
+						IndexedDBDatabases.Variants,
+						Variant
+					);
+					const storage = new ElementInteractionStorage(featureStorage, variantStorage);
+					let value = await storage.get(key);
+					if (responseCallback) {
+						console.log("enviou");
+						//@ts-ignore
+						responseCallback(new Message([], classToPlain(value, ElementInteraction)));
 					}
 				}
 			} else if (message.includesAction(Command.RemoveValueFromBackgroundIndexedDB)) {

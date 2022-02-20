@@ -14,6 +14,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 		private storeName: string,
 		private communicationChannel: CommunicationChannel,
 		private typeConstructor?: ClassConstructor<unknown>,
+		private getCommand: Command = Command.GetValueFromBackgroundIndexedDB
 	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
@@ -28,7 +29,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 	}
 
 	async get(key: string): Promise<Type | null> {
-		const message = new Message([Command.GetValueFromBackgroundIndexedDB], {
+		const message = new Message([this.getCommand], {
 			key: key,
 			dbName: this.dbName,
 			storeName: this.storeName,
