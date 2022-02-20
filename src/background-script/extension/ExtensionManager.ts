@@ -265,6 +265,7 @@ export class ExtensionManager {
 						const interaction = plainToClass(ElementInteraction, message.getExtra().interaction);
 						//@ts-ignore
 						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);
+						_this.communicationChannel.sendMessageToAll(new Message([AppEvent.InteractionGraphUpdated], elementInteractionGraph.getId()));
 
 						console.log(interaction);
 						//@ts-ignore

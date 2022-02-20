@@ -24,7 +24,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		this.communicationChannel.sendMessageToAll(message);
+		this.communicationChannel.sendMessage(message);
 	}
 
 	async get(key: string): Promise<Type | null> {
@@ -33,7 +33,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		const response = await this.communicationChannel.sendMessageToAll(message);
+		const response = await this.communicationChannel.sendMessage(message);
 		const json = response.getExtra();
 		return this.deserialize(json);
 	}	
@@ -44,7 +44,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		await this.communicationChannel.sendMessageToAll(message);
+		await this.communicationChannel.sendMessage(message);
 	}
 
 	protected serialize(obj: Type): {} {
