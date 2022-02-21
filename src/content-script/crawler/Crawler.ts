@@ -285,7 +285,9 @@ export class Crawler {
 			ancestorElement = analysisContext;
 		}
 
-		return ancestorElement ? ancestorElement : document.body;
+		const analysysElement = ancestorElement ? ancestorElement : analysisContext;
+
+		return analysysElement ? analysysElement : document.body;
 	}
 
 	/*
