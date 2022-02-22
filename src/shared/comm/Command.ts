@@ -9,6 +9,7 @@ export enum Command {
 	RemoveValueFromMemoryDatabase = 'remove-value-from-memory-database',
 	SetValueInBackgroundIndexedDB = 'set-value-in-background-indexed-db',
 	GetValueFromBackgroundIndexedDB = 'get-value-from-background-indexed-db',
+	GetInteractionFromBackgroundIndexedDB = 'get-interaction-from-background-indexed-db',
 	RemoveValueFromBackgroundIndexedDB = 'remove-value-from-background-indexed-db',
 	GetInteractionsGraphs = 'get-interactions-graphs',
 	ProcessUnload = 'process-unload',

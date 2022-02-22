@@ -14,6 +14,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 		private storeName: string,
 		private communicationChannel: CommunicationChannel,
 		private typeConstructor?: ClassConstructor<unknown>,
+		private getCommand: Command = Command.GetValueFromBackgroundIndexedDB
 	) {}
 
 	async set(key: string, obj: Type): Promise<void> {
@@ -24,16 +25,16 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		this.communicationChannel.sendMessageToAll(message);
+		this.communicationChannel.sendMessage(message);
 	}
 
 	async get(key: string): Promise<Type | null> {
-		const message = new Message([Command.GetValueFromBackgroundIndexedDB], {
+		const message = new Message([this.getCommand], {
 			key: key,
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		const response = await this.communicationChannel.sendMessageToAll(message);
+		const response = await this.communicationChannel.sendMessage(message);
 		const json = response.getExtra();
 		return this.deserialize(json);
 	}	
@@ -44,7 +45,7 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 			dbName: this.dbName,
 			storeName: this.storeName,
 		});
-		await this.communicationChannel.sendMessageToAll(message);
+		await this.communicationChannel.sendMessage(message);
 	}
 
 	protected serialize(obj: Type): {} {

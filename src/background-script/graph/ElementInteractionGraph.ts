@@ -218,6 +218,10 @@ export class ElementInteractionGraph {
 	public async clean(): Promise<void> {
 		await this.graphStorage.remove(this.elementInteractionGraphKey);
 	}
+
+	public getId() : string {
+		return this.id;
+	}
 }
 
 

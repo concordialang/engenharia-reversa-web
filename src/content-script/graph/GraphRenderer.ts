@@ -28,7 +28,7 @@ export class GraphRenderer {
         const graphs = new Map();
 
         return new Promise((resolve, reject) => {
-            this.communicationChannel.sendMessageToAll(message).then(response => {
+            this.communicationChannel.sendMessage(message).then(response => {
                 const responseGraphs = response.getExtra();
                 for (var key in responseGraphs) {
                     if (responseGraphs.hasOwnProperty(key)) {

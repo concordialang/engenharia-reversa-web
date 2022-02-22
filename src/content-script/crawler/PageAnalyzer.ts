@@ -34,7 +34,7 @@ export class PageAnalyzer {
 		private pageAnalysisStorage: PageAnalysisStorage
 	) {
 		this.redirectCallback = async (feature: Feature, unloadMessageExtra: any) => {
-			this.communicationChannel.sendMessageToAll(
+			this.communicationChannel.sendMessage(
 				new Message([Command.ProcessUnload], unloadMessageExtra)
 			);
 

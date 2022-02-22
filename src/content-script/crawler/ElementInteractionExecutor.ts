@@ -19,6 +19,7 @@ export class ElementInteractionExecutor {
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
 		await sleep(timeBetweenInteractions);
+		console.log(interaction);
 
 		const element = interaction.getElement();
 		const type = element.tagName;

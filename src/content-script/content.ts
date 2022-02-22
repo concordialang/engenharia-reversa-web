@@ -148,6 +148,7 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {
+		console.log(message);
 		if (message.includesAction(Command.CleanGraph)) {
 			clean();
 		}
@@ -156,7 +157,7 @@ getTabId(communicationChannel).then((tabId) => {
 			overrideJavascriptPopups();
 			const finished = await crawler.crawl();
 			if (finished) {
-				communicationChannel.sendMessageToAll(
+				communicationChannel.sendMessage(
 					new Message([AppEvent.Finished], JSON.stringify(specStorage))
 				);
 			}
@@ -164,7 +165,7 @@ getTabId(communicationChannel).then((tabId) => {
 	});
 
 	//definir no protocolo de comunicação maneira para que a comunicação da extensão não interfira com a de outras extensões, e vice-versa
-	communicationChannel.sendMessageToAll(new Message([AppEvent.Loaded]));
+	communicationChannel.sendMessage(new Message([AppEvent.Loaded]));
 
 	// FIXME Na chamada a essa função, esperar ela terminar antes de executar o resto, caso contrário, não irá esperar limpar tudo antes de continuar
 	async function clean(): Promise<void> {
@@ -177,7 +178,7 @@ getTabId(communicationChannel).then((tabId) => {
 		crawler.resetLastPage();
 	}
 
-	if(pageUrl.pathname === '/visualizacao-grafo-url/'){
+	if(pageUrl.pathname === '/visualizacao-grafo-url/' || pageUrl.pathname === '/htdocs/visualizacao-grafo-url/'){
 		const graphRenderer = new GraphRenderer(communicationChannel, elementInteractionStorage);
 		graphRenderer.render();
 	}
@@ -220,7 +221,7 @@ function overrideWindowOpen() {
 
 async function getTabId(comChannel: CommunicationChannel): Promise<string> {
 	const message = new Message([Command.GetTabId]);
-	const responseMessage = await comChannel.sendMessageToAll(message);
+	const responseMessage = await comChannel.sendMessage(message);
 	const tabId = responseMessage.getExtra();
 	return tabId;
 }

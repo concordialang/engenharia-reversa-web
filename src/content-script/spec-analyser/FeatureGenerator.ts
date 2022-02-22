@@ -92,7 +92,7 @@ export class FeatureGenerator {
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
 				this.variantStorage.set(variantAnalyzed.getId(), variantAnalyzed);
 				await spec.addFeature(feature);
-				if (feature.needNewVariants) {
+				if (feature.needNewVariants && variantAnalyzed.isValid()) {
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');
 				} else {

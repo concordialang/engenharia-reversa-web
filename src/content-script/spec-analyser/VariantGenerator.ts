@@ -86,6 +86,7 @@ export class VariantGenerator {
 	): Promise<void> {
 		if (!elm) return;
 
+		//console.log(elm.id);
 		const nextElement = async (nextElmToBeAnalyzed) => {
 			return this.analyze(
 				nextElmToBeAnalyzed as HTMLElement,
@@ -358,7 +359,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
+		const result = await this.elementInteractionExecutor.execute(interaction, undefined, true);
 		if (!result) {
 			return;
 		}
@@ -388,7 +389,7 @@ export class VariantGenerator {
 			return;
 		}
 
-		const result = await this.elementInteractionExecutor.execute(interaction, undefined, false);
+		const result = await this.elementInteractionExecutor.execute(interaction, undefined, true);
 		if (!result) {
 			return;
 		}
