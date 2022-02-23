@@ -113,7 +113,7 @@ export class FeatureGenerator {
 			return null;
 		}
 
-		const uniqueUiElements: UIElement[] = await this.getUniqueUIElements(
+		const uniqueUiElements: UIElement[] = this.getUniqueUIElements(
 			scenario.getVariants()
 		);
 		feature.setUiElements(uniqueUiElements);
@@ -170,7 +170,7 @@ export class FeatureGenerator {
 
 			//unloadMessageExtra.newVariant = newVariant;
 
-			const uiElements: Array<UIElement> = await this.getUniqueUIElements(
+			const uiElements: Array<UIElement> = this.getUniqueUIElements(
 				scenario.getVariants()
 			);
 			feature.setUiElements(uiElements);
@@ -219,7 +219,7 @@ export class FeatureGenerator {
 		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
 	}
 
-	private async getUniqueUIElements(variants: Variant[]): Promise<Array<UIElement>> {
+	private getUniqueUIElements(variants: Variant[]):Array<UIElement> {
 		let allUIElements: Array<UIElement> = [];
 
 		for (let variant of variants) {

@@ -48,75 +48,76 @@ export class Crawler {
 	}
 
 	public async crawl(): Promise<boolean> {
-		console.log("location", window.location.href)
-		const _this = this;
-
-		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
-
-		this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
-			await _this.pageStorage.set(
-				_this.lastPageKey,
-				_this.browserContext.getWindow().document.body.outerHTML
-			);
-			//A callback being called when a redirect was detected on VariantGenerator was not working, so it had to be done here
-		});
-
-		//obtem ultima interacao que não está dentro do contexto já analisado
-		let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
-			this.elementInteractionGraph
-		);
-
-		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
-
-		if (
-			lastUnanalyzed &&
-			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
-		) {
-			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
-			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
-				lastUnanalyzed,
-				false,
-				urlCriteria,
-				null,
-				false
-			);
-			previousInteractions = previousInteractions.reverse();
-
-			const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
-				lastUnanalyzed
-			);
-			if (interactionAfterTriggeredRedirect) {
-				previousInteractions.push(interactionAfterTriggeredRedirect);
-			}
-		}
-
-		const previousDocument = await this.getPreviousDocument();
-		const analysisElement = await this.getAnalysisElement(document, previousDocument);
-
-		console.log(analysisElement);
-
-		// const messageResponse = await this.communicationChannel.sendMessageToAll(
-		// 	new Message([Command.GetNumberOfAvailableTabs])
-		// );
-		// let availableTabs: number = 0;
-		// if (messageResponse) {
-		// 	availableTabs = messageResponse.getExtra();
-		// } else {
-		// 	throw new Error('Error while fetching number of available tabs');
-		// }
-
-		// const links = await this.getUnanalyzedLinks(analysisElement);
-
-		// for (let link of links) {
-		// 	if (availableTabs > 0) {
-		// 		this.communicationChannel.sendMessageToAll(
-		// 			new Message([Command.OpenNewTab], { url: link.href })
-		// 		);
-		// 		availableTabs--;
-		// 	}
-		// }
-
 		try {
+
+			console.log("location", window.location.href)
+			const _this = this;
+
+			// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
+
+			this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
+				await _this.pageStorage.set(
+					_this.lastPageKey,
+					_this.browserContext.getWindow().document.body.outerHTML
+				);
+				//A callback being called when a redirect was detected on VariantGenerator was not working, so it had to be done here
+			});
+
+			//obtem ultima interacao que não está dentro do contexto já analisado
+			let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+				this.elementInteractionGraph
+			);
+
+			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
+
+			if (
+				lastUnanalyzed &&
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
+			) {
+				const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
+				previousInteractions = await this.elementInteractionGraph.pathToInteraction(
+					lastUnanalyzed,
+					false,
+					urlCriteria,
+					null,
+					false
+				);
+				previousInteractions = previousInteractions.reverse();
+
+				const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
+					lastUnanalyzed
+				);
+				if (interactionAfterTriggeredRedirect) {
+					previousInteractions.push(interactionAfterTriggeredRedirect);
+				}
+			}
+
+			const previousDocument = await this.getPreviousDocument();
+			const analysisElement = await this.getAnalysisElement(document, previousDocument);
+
+			console.log(analysisElement);
+
+			// const messageResponse = await this.communicationChannel.sendMessageToAll(
+			// 	new Message([Command.GetNumberOfAvailableTabs])
+			// );
+			// let availableTabs: number = 0;
+			// if (messageResponse) {
+			// 	availableTabs = messageResponse.getExtra();
+			// } else {
+			// 	throw new Error('Error while fetching number of available tabs');
+			// }
+
+			// const links = await this.getUnanalyzedLinks(analysisElement);
+
+			// for (let link of links) {
+			// 	if (availableTabs > 0) {
+			// 		this.communicationChannel.sendMessageToAll(
+			// 			new Message([Command.OpenNewTab], { url: link.href })
+			// 		);
+			// 		availableTabs--;
+			// 	}
+			// }
+
 			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());
 			if (!spec) {
 				spec = new Spec('pt', this.featureStorage, this.specStorage, this.specMutex);
@@ -133,26 +134,26 @@ export class Crawler {
 				analysisElement,
 				previousInteractions
 			);
+
+			lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+				this.elementInteractionGraph
+			);
+	
+			//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
+			if (
+				lastUnanalyzed &&
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+			) {
+				window.location.href = lastUnanalyzed.getPageUrl().href;
+				return false;
+			}
+	
+			return true;
 		} catch (e) {
 			console.error(e);
 			window.location.reload();
 			return false;
 		}
-
-		lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
-			this.elementInteractionGraph
-		);
-
-		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
-		if (
-			lastUnanalyzed &&
-			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
-		) {
-			window.location.href = lastUnanalyzed.getPageUrl().href;
-			return false;
-		}
-
-		return true;
 	}
 
 	private async getUnanalyzedLinks(element: HTMLElement): Promise<HTMLLinkElement[]> {
@@ -240,7 +241,8 @@ export class Crawler {
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
 			if (!analysisElement) {
-				// throw new Error('Analysis element not found');
+				console.error("n achou o elemento");
+				//throw new Error('Analysis element not found');
 				return currentDocument.body;
 			}
 
