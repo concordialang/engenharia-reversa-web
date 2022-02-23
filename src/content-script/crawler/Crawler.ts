@@ -26,6 +26,7 @@ import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 import Mutex from '../mutex/Mutex';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
+import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -151,7 +152,9 @@ export class Crawler {
 			return true;
 		} catch (e) {
 			console.error(e);
-			window.location.reload();
+			if(!(e instanceof ForcingExecutionStoppageErrorFromInteraction)){
+				window.location.reload();
+			}
 			return false;
 		}
 	}

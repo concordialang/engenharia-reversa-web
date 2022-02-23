@@ -632,6 +632,7 @@ export class VariantGenerator {
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
 		const _this = this;
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
+			console.error("CALLBACK 1");
 			const elm = interactionThatTriggeredRedirect.getElement();
 
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};

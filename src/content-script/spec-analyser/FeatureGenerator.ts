@@ -163,7 +163,7 @@ export class FeatureGenerator {
 			newVariant: Variant,
 			unloadMessageExtra: any
 		) => {
-
+			console.error("CALLBACK 2");
 			this.addVariantToScenario(newVariant, scenario, feature);
 
 			//await this.variantStorage.set(newVariant.getId(), newVariant);

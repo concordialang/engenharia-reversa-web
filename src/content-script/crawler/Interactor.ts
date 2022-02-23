@@ -2,8 +2,10 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLEventType } from '../enums/HTMLEventType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
-import { sleep } from '../util';
+import { getPathTo, sleep } from '../util';
 import { InteractionResult } from './InteractionResult';
+import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
+import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
 
 export class Interactor {
 	constructor(private window: Window) {}
@@ -96,9 +98,11 @@ export class Interactor {
 		let timePassed = 0;
 		let timeLimit = 300;
 		const element = interaction.getElement();
+		const path = getPathTo(element);
 		let triggeredUnload = false;
 		let alreadyExitedFunction = false;
 		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
+			console.error("UNLOAD");
 			if (!triggeredUnload && !alreadyExitedFunction) {
 				triggeredUnload = true;
 				if (redirectionCallback) await redirectionCallback(interaction);
@@ -114,12 +118,16 @@ export class Interactor {
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {
+				if(path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a"){
+					throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
+				}
 				return new InteractionResult(true);
 			}
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
 		}
 		alreadyExitedFunction = true;
+		console.log("left interactor");
 		return new InteractionResult(false);
 	}
 

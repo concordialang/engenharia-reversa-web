@@ -34,6 +34,7 @@ export class PageAnalyzer {
 		private pageAnalysisStorage: PageAnalysisStorage
 	) {
 		this.redirectCallback = async (feature: Feature, unloadMessageExtra: any) => {
+			console.error("CALLBACK 3");
 			this.communicationChannel.sendMessage(
 				new Message([Command.ProcessUnload], unloadMessageExtra)
 			);
