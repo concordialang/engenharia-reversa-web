@@ -175,6 +175,10 @@ export class VariantGeneratorUtil {
 			findString(elm.alt);
 		}
 
+		if (elm.pathname && !wasFound) {
+			findString(elm.pathname);
+		}
+
 		return wasFound;
 	}
 

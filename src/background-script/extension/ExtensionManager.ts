@@ -302,6 +302,8 @@ export class ExtensionManager {
 							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
 						}
 
+						console.log("SAVE FEATURE", feature);
+
 						//@ts-ignore
 						await _this.saveFeature(feature);
 

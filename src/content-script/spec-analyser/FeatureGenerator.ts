@@ -109,6 +109,7 @@ export class FeatureGenerator {
 		observer.disconnect();
 
 		if (feature.getVariantsCount() == 0) {
+			this.setElementAnalysisAsDone(analysisElement);
 			return null;
 		}
 

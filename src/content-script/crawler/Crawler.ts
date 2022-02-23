@@ -48,6 +48,7 @@ export class Crawler {
 	}
 
 	public async crawl(): Promise<boolean> {
+		console.log("location", window.location.href)
 		const _this = this;
 
 		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
@@ -239,8 +240,10 @@ export class Crawler {
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
 			if (!analysisElement) {
-				throw new Error('Analysis element not found');
+				// throw new Error('Analysis element not found');
+				return currentDocument.body;
 			}
+
 			return analysisElement;
 		}
 
