@@ -99,13 +99,14 @@ export class VariantGenerator {
 			);
 		};
 
+		const path = getPathTo(elm);
+
 		if (pathsOfElementsToIgnore.includes(getPathTo(elm))) {
 			if (elm.nextElementSibling) {
 				await nextElement(elm.nextElementSibling);
 			}
 			return;
 		}
-
 		const checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
 
 		// enters the children of the nodes tree
@@ -120,6 +121,16 @@ export class VariantGenerator {
 
 		// check if element will receive interaction
 		const validInteractableElm = this.checkValidInteractableElement(elm, variant, feature);
+		console.log("interagivel: ", validInteractableElm);
+		if(
+			path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a" && 
+			window.location.href.includes("product/index.php") &&
+			validInteractableElm
+		){
+			console.error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+		}
+		console.log("path", path);
+		console.log("text:", elm.innerText);
 		if (!validInteractableElm) {
 			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
 				elm,
@@ -131,6 +142,7 @@ export class VariantGenerator {
 			}
 			return;
 		}
+
 
 		// create interaction for the element
 		const interaction = await this.generateInteraction(elm, variant, feature);
@@ -154,6 +166,7 @@ export class VariantGenerator {
 		);
 
 		// interacts with the element
+		console.log(interaction);
 		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
 		if (!result) {
 			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(

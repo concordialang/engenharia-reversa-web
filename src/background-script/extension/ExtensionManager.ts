@@ -162,6 +162,7 @@ export class ExtensionManager {
 					}
 				}
 			} else if (message.includesAction(Command.GetInteractionFromBackgroundIndexedDB)) {
+				console.log(message);
 				const data = message.getExtra();
 				if (data) {
 					const key = data.key;
