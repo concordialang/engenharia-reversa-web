@@ -115,19 +115,22 @@ export class Interactor {
 
 		element.click();
 
+		timePassed = 0;
+		timeLimit = 20000;
+
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {
-				if(path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a"){
-					throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
-				}
+				// if(path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a"){
+					// console.log("ENTROU NO ELEMENTO");
+				// throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
+				// }
 				return new InteractionResult(true);
 			}
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
 		}
 		alreadyExitedFunction = true;
-		console.log("left interactor");
 		return new InteractionResult(false);
 	}
 
