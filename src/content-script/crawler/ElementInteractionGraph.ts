@@ -220,8 +220,8 @@ export class ElementInteractionGraph {
 			nextInteractionUrl
 		);
 		if (
-			(isPageAnalyzed && analysisStatus == PageAnalysisStatus.Pending) ||
-			(!isPageAnalyzed && analysisStatus != PageAnalysisStatus.Pending)
+			(!isPageAnalyzed && analysisStatus == PageAnalysisStatus.Done) ||
+			(isPageAnalyzed && analysisStatus == PageAnalysisStatus.Done)
 		) {
 			return false;
 		}

@@ -286,6 +286,8 @@ export class ExtensionManager {
 
 						const elementInteractionGraph = _this.getElementInteractionGraph(sender);
 						const interaction = plainToClass(ElementInteraction, message.getExtra().interaction);
+						//@ts-ignore
+						interaction.setCausedRedirection(true);
 
 						//@ts-ignore
 						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);

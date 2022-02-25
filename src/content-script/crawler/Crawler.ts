@@ -69,6 +69,17 @@ export class Crawler {
 				this.elementInteractionGraph
 			);
 
+			if(
+				lastUnanalyzed?.getCausedRedirection() && 
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+			){
+				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
+				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
+					window.location.href = lastUnanalyzed.getPageUrl().href;
+					return false;
+				}
+			}
+
 			console.log("lastUnanalyzed CRAWLER", lastUnanalyzed)
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
@@ -261,6 +272,49 @@ export class Crawler {
 
 		return null;
 	}
+
+	// private async getMostRecentInteractionFromUnfinishedAnalysis(
+	// 	elementInteractionGraph: ElementInteractionGraph,
+	// 	fromUnfinishedFeatureOnSameUrl: boolean
+	// ): Promise<ElementInteraction<HTMLElement> | null> {
+	// 	const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
+	// 	if (currentInteraction) {
+	// 		if(!fromUnfinishedFeatureOnSameUrl){
+	// 			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
+	// 				currentInteraction.getPageUrl()
+	// 			);
+	// 			if (analysisStatus != PageAnalysisStatus.Done) {
+	// 				return currentInteraction;
+	// 			}
+	// 		}
+	// 		let path : ElementInteraction<HTMLElement>[] = [];
+	// 		if(fromUnfinishedFeatureOnSameUrl){
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				{interactionUrl: this.browserContext.getUrl(), isEqual: true},
+	// 				null,
+	// 				false,
+	// 				undefined,
+	// 				true
+	// 			);
+	// 		} else {
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				null,
+	// 				null,
+	// 				false
+	// 			);
+	// 		}
+	// 		const lastUnanalyzed = path.pop();
+	// 		if (lastUnanalyzed) {
+	// 			return lastUnanalyzed;
+	// 		}
+	// 	}
+
+	// 	return null;
+	// }
 
 	private async getPreviousDocument(): Promise<Document | null> {
 		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);

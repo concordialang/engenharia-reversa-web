@@ -55,6 +55,10 @@ export class PageAnalyzer {
 			return;
 		}
 
+
+		const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.InProgress);
+		await this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+
 		let feature: Feature | string | null = null;
 
 		const lastInteraction = previousInteractions[previousInteractions.length - 1];

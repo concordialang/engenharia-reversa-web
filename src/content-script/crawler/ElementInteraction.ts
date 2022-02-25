@@ -12,6 +12,7 @@ export class ElementInteraction<T extends HTMLElement> {
 	private pageUrl: URL;
 	private value: string | boolean | null;
 	private id: string;
+	private causedRedirection: boolean = false;
 
 	@Transform(
 		(params) => (params.obj.elementSelector ? params.obj.elementSelector : params.obj.element),
@@ -88,5 +89,13 @@ export class ElementInteraction<T extends HTMLElement> {
 
 	public setVariant(variant: Variant | string | null) {
 		this.variant = variant;
+	}
+
+	public setCausedRedirection(causedRedirection: boolean): void {
+		this.causedRedirection = causedRedirection;
+	}
+
+	public getCausedRedirection(): boolean {
+		return this.causedRedirection;
 	}
 }
