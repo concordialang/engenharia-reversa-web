@@ -15,7 +15,6 @@ export class Variant {
 	public lastAnalysisInputFieldFound = false;
 	public finalActionButtonFound = false;
 	public whenSentenceCreated = false;
-	public causedRedirect = false;
 
 	constructor(id?: string) {
 		this.sentences = [];

@@ -286,11 +286,11 @@ export class ExtensionManager {
 
 						const elementInteractionGraph = _this.getElementInteractionGraph(sender);
 						const interaction = plainToClass(ElementInteraction, message.getExtra().interaction);
+
 						//@ts-ignore
 						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);
 						_this.communicationChannel.sendMessageToAll(new Message([AppEvent.InteractionGraphUpdated], elementInteractionGraph.getId()));
 
-						console.log(interaction);
 						//@ts-ignore
 						_this.setInteractionElementAsAnalyzed(interaction, sender);
 
@@ -302,8 +302,6 @@ export class ExtensionManager {
 						if (!feature.needNewVariants) {
 							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
 						}
-
-						console.log("SAVE FEATURE", feature);
 
 						//@ts-ignore
 						await _this.saveFeature(feature);

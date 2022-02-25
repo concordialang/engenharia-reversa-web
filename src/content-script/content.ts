@@ -150,7 +150,7 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {
-		console.log(message);
+		// console.log(message);
 		if (message.includesAction(Command.CleanGraph)) {
 			clean();
 		}

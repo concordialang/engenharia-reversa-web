@@ -98,13 +98,12 @@ export class Interactor {
 		let timePassed = 0;
 		let timeLimit = 300;
 		const element = interaction.getElement();
-		const path = getPathTo(element);
 		let triggeredUnload = false;
 		let alreadyExitedFunction = false;
 		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
-			console.error("UNLOAD");
 			if (!triggeredUnload && !alreadyExitedFunction) {
 				triggeredUnload = true;
+				console.log('unload INTERACTOR elm', element)
 				if (redirectionCallback) await redirectionCallback(interaction);
 			}
 		});
@@ -115,17 +114,11 @@ export class Interactor {
 
 		element.click();
 
-		timePassed = 0;
-		timeLimit = 20000;
-
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {
-				// if(path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a"){
-					// console.log("ENTROU NO ELEMENTO");
-				// throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
-				// }
-				return new InteractionResult(true);
+				console.log('força stop redirecionamento INTERACTOR elm', element);
+				throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
 			}
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
