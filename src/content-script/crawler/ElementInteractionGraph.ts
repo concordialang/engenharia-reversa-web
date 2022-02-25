@@ -241,8 +241,8 @@ export class ElementInteractionGraph {
 			//@ts-ignore
 			const needNewVariants = nextInteractionFeature.needNewVariants;
 			if (
-				(interactionFeatureNeedsNewVariant && needNewVariants) ||
-				(!interactionFeatureNeedsNewVariant && !needNewVariants)
+				(interactionFeatureNeedsNewVariant && !needNewVariants) ||
+				(!interactionFeatureNeedsNewVariant && needNewVariants)
 			) {
 				return false;
 			}
