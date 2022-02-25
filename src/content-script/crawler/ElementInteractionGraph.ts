@@ -8,6 +8,7 @@ import { ObjectStorage } from '../storage/ObjectStorage';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
 import { getURLWithoutQueries } from '../util';
+import { Feature } from '../spec-analyser/Feature';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -19,6 +20,7 @@ export class ElementInteractionGraph {
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private graphStorage: GraphStorage,
 		private pageAnalysisStorage: PageAnalysisStorage,
+		private featureStorage: ObjectStorage<Feature>,
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
@@ -26,6 +28,7 @@ export class ElementInteractionGraph {
 		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
 		this.lastInteractionKey = 'last-interaction-' + this.id;
 		this.pageAnalysisStorage = pageAnalysisStorage;
+		this.featureStorage = featureStorage;
 	}
 
 	public async addElementInteractionToGraph(
@@ -61,7 +64,8 @@ export class ElementInteractionGraph {
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
 		isInteractionElementAnalyzed: boolean | null = null,
 		isInteractionPageAnalyzed: boolean | null = null,
-		graph?: Graph
+		graph?: Graph,
+		interactionFeatureNeedsNewVariant: boolean | null = null
 	): Promise<ElementInteraction<HTMLElement>[]> {
 		const currentInteractionId = currentInteraction.getId();
 
@@ -100,7 +104,8 @@ export class ElementInteractionGraph {
 			nextInteraction,
 			urlCriteria,
 			isInteractionElementAnalyzed,
-			isInteractionPageAnalyzed
+			isInteractionPageAnalyzed,
+			interactionFeatureNeedsNewVariant
 		);
 
 		if (searchForClosest && satisfiesCriteria) {
@@ -121,7 +126,8 @@ export class ElementInteractionGraph {
 			urlCriteria,
 			isInteractionElementAnalyzed,
 			isInteractionPageAnalyzed,
-			graph
+			graph,
+			interactionFeatureNeedsNewVariant
 		);
 
 		if (!nextInteractionResult.length) {
@@ -135,7 +141,8 @@ export class ElementInteractionGraph {
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean } | null,
 		isInteractionElementAnalyzed: boolean | null = null,
-		isInteractionPageAnalyzed: boolean | null = null
+		isInteractionPageAnalyzed: boolean | null = null,
+		interactionFeatureNeedsNewVariant: boolean | null = null,
 	): Promise<boolean> {
 		let satisfiesCriteria = true;
 
@@ -154,6 +161,13 @@ export class ElementInteractionGraph {
 			satisfiesCriteria = await this.interactionSatisfiesPageAnalysisCriteria(
 				interaction,
 				isInteractionPageAnalyzed
+			);
+		}
+
+		if (satisfiesCriteria && typeof interactionFeatureNeedsNewVariant === 'boolean') {
+			satisfiesCriteria = await this.interactionSatisfiesFeatureCriteria(
+				interaction,
+				interactionFeatureNeedsNewVariant
 			);
 		}
 
@@ -213,6 +227,30 @@ export class ElementInteractionGraph {
 		}
 
 		return true;
+	}
+
+	private async interactionSatisfiesFeatureCriteria(
+		interaction: ElementInteraction<HTMLElement>,
+		interactionFeatureNeedsNewVariant: boolean
+	): Promise<boolean> {
+		let nextInteractionFeature : Feature | string | null = interaction.getFeature();
+		if(typeof nextInteractionFeature === 'string'){
+			nextInteractionFeature = await this.featureStorage.get(nextInteractionFeature);
+		}
+		if(nextInteractionFeature){
+			//@ts-ignore
+			const needNewVariants = nextInteractionFeature.needNewVariants;
+			if (
+				(interactionFeatureNeedsNewVariant && needNewVariants) ||
+				(!interactionFeatureNeedsNewVariant && !needNewVariants)
+			) {
+				return false;
+			}
+	
+			return true;
+		} else {
+			throw new Error('Next Interaction feature is null');
+		}
 	}
 
 	public async getPreviousInteraction(

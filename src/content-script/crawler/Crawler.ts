@@ -66,7 +66,8 @@ export class Crawler {
 
 			//obtem ultima interacao que não está dentro do contexto já analisado
 			let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
-				this.elementInteractionGraph
+				this.elementInteractionGraph,
+				true,
 			);
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
@@ -189,7 +190,8 @@ export class Crawler {
 	}
 
 	private async getMostRecentInteractionFromUnfinishedAnalysis(
-		elementInteractionGraph: ElementInteractionGraph
+		elementInteractionGraph: ElementInteractionGraph,
+		fromUnfinishedFeatureOnSameUrl: boolean = true
 	): Promise<ElementInteraction<HTMLElement> | null> {
 		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
 		if (currentInteraction) {
@@ -199,13 +201,26 @@ export class Crawler {
 			if (analysisStatus != PageAnalysisStatus.Done) {
 				return currentInteraction;
 			}
-			const path = await elementInteractionGraph.pathToInteraction(
-				currentInteraction,
-				true,
-				null,
-				null,
-				false
-			);
+			let path : ElementInteraction<HTMLElement>[] = [];
+			if(fromUnfinishedFeatureOnSameUrl){
+				path = await elementInteractionGraph.pathToInteraction(
+					currentInteraction,
+					true,
+					null,
+					null,
+					false
+				);
+			} else {
+				path = await elementInteractionGraph.pathToInteraction(
+					currentInteraction,
+					true,
+					{interactionUrl: currentInteraction.getPageUrl(), isEqual: true},
+					null,
+					null,
+					undefined,
+					true
+				);
+			}
 			const lastUnanalyzed = path.pop();
 			if (lastUnanalyzed) {
 				return lastUnanalyzed;
