@@ -69,7 +69,7 @@ export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInt
 			elementInteraction.setVariant(variant);
 		} else if(variant) {
 			if(variant.constructor.name != "Variant"){
-				console.log(variant);
+				// console.log(variant);
 				//@ts-ignore
 				variant = plainToClass(Variant, variant);
 			}

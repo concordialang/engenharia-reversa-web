@@ -27,6 +27,8 @@ import Mutex from '../mutex/Mutex';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
 import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
+import { ElementAnalysis } from './ElementAnalysis';
+import { PageAnalysis } from './PageAnalysis';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -50,8 +52,6 @@ export class Crawler {
 
 	public async crawl(): Promise<boolean> {
 		try {
-
-			console.log("location", window.location.href)
 			const _this = this;
 
 			// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
@@ -69,6 +69,8 @@ export class Crawler {
 				this.elementInteractionGraph,
 				true,
 			);
+
+			console.log("lastUnanalyzed CRAWLER", lastUnanalyzed)
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
 
@@ -97,7 +99,7 @@ export class Crawler {
 			const previousDocument = await this.getPreviousDocument();
 			const analysisElement = await this.getAnalysisElement(document, previousDocument);
 
-			console.log(analysisElement);
+			console.log('analysisElement CRAWLER', analysisElement);
 
 			// const messageResponse = await this.communicationChannel.sendMessageToAll(
 			// 	new Message([Command.GetNumberOfAvailableTabs])
@@ -130,12 +132,14 @@ export class Crawler {
 				spec.setMutex(this.specMutex);
 			}
 
-			await this.pageAnalyzer.analyze(
-				spec,
-				this.browserContext.getUrl(),
-				analysisElement,
-				previousInteractions
-			);
+			if(analysisElement){
+				await this.pageAnalyzer.analyze(
+					spec,
+					this.browserContext.getUrl(),
+					analysisElement,
+					previousInteractions
+				);
+			}
 
 			lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 				this.elementInteractionGraph
@@ -152,7 +156,7 @@ export class Crawler {
 	
 			return true;
 		} catch (e) {
-			console.error(e);
+			console.error('error crawler', e);
 			if(!(e instanceof ForcingExecutionStoppageErrorFromInteraction)){
 				window.location.reload();
 			}
@@ -250,7 +254,7 @@ export class Crawler {
 	private async getAnalysisElement(
 		currentDocument: Document,
 		previousDocument: Document | null = null
-	): Promise<HTMLElement> {
+	): Promise<HTMLElement | null> {
 		let analysisElement: HTMLElement | null = null;
 
 		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
@@ -258,10 +262,14 @@ export class Crawler {
 		);
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
+			
 			if (!analysisElement) {
 				console.error("n achou o elemento");
-				//throw new Error('Analysis element not found');
-				return currentDocument.body;
+
+				const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
+				this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);				
+				
+				return null;
 			}
 
 			return analysisElement;

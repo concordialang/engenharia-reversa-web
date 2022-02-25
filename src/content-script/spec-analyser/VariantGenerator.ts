@@ -6,10 +6,11 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo } from '../util';
+import { getPathTo, sleep } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
+import { ForcingExecutionStoppageErrorFromInteraction } from '../crawler/ForcingExecutionStoppageErrorFromInteraction';
 
 export class VariantGenerator {
 	constructor(
@@ -66,9 +67,12 @@ export class VariantGenerator {
 			feature.getName(),
 			lastButtonInteracted
 		);
+
 		if (thenTypeSentence) {
 			variant.setVariantSentence(thenTypeSentence);
 		}
+
+		console.log('variante finalizada VARIANTGENERATOR', variant)
 
 		return variant;
 	}
@@ -87,7 +91,6 @@ export class VariantGenerator {
 	): Promise<void> {
 		if (!elm) return;
 
-		//console.log(elm.id);
 		const nextElement = async (nextElmToBeAnalyzed) => {
 			return this.analyze(
 				nextElmToBeAnalyzed as HTMLElement,
@@ -99,7 +102,6 @@ export class VariantGenerator {
 			);
 		};
 
-		const path = getPathTo(elm);
 
 		if (pathsOfElementsToIgnore.includes(getPathTo(elm))) {
 			if (elm.nextElementSibling) {
@@ -107,7 +109,11 @@ export class VariantGenerator {
 			}
 			return;
 		}
+
 		const checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
+		if(checksChildsTableRow === null){
+			return;
+		}
 
 		// enters the children of the nodes tree
 		const validFirstChild = await this.checksValidFirstChild(
@@ -121,16 +127,7 @@ export class VariantGenerator {
 
 		// check if element will receive interaction
 		const validInteractableElm = this.checkValidInteractableElement(elm, variant, feature);
-		console.log("interagivel: ", validInteractableElm);
-		if(
-			path == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a" && 
-			window.location.href.includes("product/index.php") &&
-			validInteractableElm
-		){
-			console.error("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		}
-		console.log("path", path);
-		console.log("text:", elm.innerText);
+
 		if (!validInteractableElm) {
 			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
 				elm,
@@ -142,7 +139,6 @@ export class VariantGenerator {
 			}
 			return;
 		}
-
 
 		// create interaction for the element
 		const interaction = await this.generateInteraction(elm, variant, feature);
@@ -166,7 +162,8 @@ export class VariantGenerator {
 		);
 
 		// interacts with the element
-		console.log(interaction);
+		console.log('interaction VARIANTGENERATOR', interaction);
+		console.log('elemento interagido VARIANTGENERATOR', elm);
 		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
 		if (!result) {
 			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
@@ -179,6 +176,7 @@ export class VariantGenerator {
 			}
 			return;
 		} else if (result.getTriggeredRedirection()) {
+			console.log('elemento redirecionamento FORA DA CALLBACK VARIANTGENERATOR', elm);
 			return;
 		}
 
@@ -295,21 +293,26 @@ export class VariantGenerator {
 		variant: Variant,
 		feature: Feature,
 		observer: MutationObserverManager
-	): Promise<boolean> {
+	): Promise<boolean | null> {
 		let checksChildsTableRow = false;
 
 		if (!(elm instanceof HTMLTableRowElement)) {
 			return checksChildsTableRow;
 		}
 
+		let result;
 		const row = await this.checkValidRowTable(elm);
 		if (row.isValid) {
 			if (row.type == 'header') {
-				await this.interactWithTableColumn(elm, variant, feature, observer);
+				result = await this.interactWithTableColumn(elm, variant, feature, observer);
 			} else if (row.type == 'content') {
 				checksChildsTableRow = true;
-				await this.interactWithTableContentRow(elm, variant, feature, observer);
+				result = await this.interactWithTableContentRow(elm, variant, feature, observer);
 			}
+		}
+
+		if(!result){
+			return null;
 		}
 
 		return checksChildsTableRow;
@@ -368,11 +371,13 @@ export class VariantGenerator {
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, true);
-		if (!result) {
+		if (!result || result.getTriggeredRedirection()) {
 			return;
 		}
 
 		this.createVariantSentence(row, variant, feature, observer);
+
+		return true;
 	}
 
 	// interacts and get mutation sentences (if exists) of the second column of table
@@ -398,11 +403,13 @@ export class VariantGenerator {
 		}
 
 		const result = await this.elementInteractionExecutor.execute(interaction, undefined, true);
-		if (!result) {
+		if (!result || result.getTriggeredRedirection()) {
 			return;
 		}
 
 		this.createVariantSentence(row, variant, feature, observer);
+
+		return true;
 	}
 
 	// check if the element is ready to receive interaction
@@ -632,8 +639,9 @@ export class VariantGenerator {
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
 		const _this = this;
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
-			console.error("CALLBACK 1");
 			const elm = interactionThatTriggeredRedirect.getElement();
+
+			console.log('redirecionamento CALLBACK 1 VARIANTGENERATOR elm:', elm);
 
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
 
