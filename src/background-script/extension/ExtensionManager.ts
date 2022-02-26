@@ -86,9 +86,9 @@ export class ExtensionManager {
 					_this.openedTabsCounter++;
 					console.log("still has ajax to complete");
 					//console.log(_this.tabStillHasAjaxToComplete(tab));
-					while(_this.tabStillHasAjaxToComplete(tab)){
-						await sleep(5);
-					}
+					// while(_this.tabStillHasAjaxToComplete(tab)){
+					// 	await sleep(5);
+					// }
 					_this.sendOrderToCrawlTab(tab, true);
 				} else {
 					_this.extension.reload();
@@ -550,7 +550,7 @@ export class ExtensionManager {
 	private tabStillHasAjaxToComplete(tab: Tab): boolean {
 		return false;
 		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
-		//return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
+		// return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
 	}
 
 	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {

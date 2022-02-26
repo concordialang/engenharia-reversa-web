@@ -80,7 +80,7 @@ export class Crawler {
 				}
 			}
 
-			console.log("lastUnanalyzed CRAWLER", lastUnanalyzed);
+			 console.log("lastUnanalyzed CRAWLER", lastUnanalyzed);
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
 
