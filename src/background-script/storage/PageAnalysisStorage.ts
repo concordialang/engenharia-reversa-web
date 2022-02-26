@@ -6,8 +6,8 @@ import { InMemoryDatabase } from "../extension/InMemoryDatabase"
 
 export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 
-	constructor() {
-		super(new InMemoryDatabase());
+	constructor(inMemoryDatabase : InMemoryDatabase) {
+		super(inMemoryDatabase);
 	}
 
 	public async set(key: string, obj: PageAnalysis): Promise<void> {

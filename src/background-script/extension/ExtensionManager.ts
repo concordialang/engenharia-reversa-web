@@ -404,7 +404,7 @@ export class ExtensionManager {
 		);
 
 		console.log('BGBG pageAnalysis', pageAnalysis);
-		const pageAnalysisStorage = new PageAnalysisStorageBackground();
+		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase);
 		await pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
 		console.log('qqqqqqqqqqqqqqqqqqqqqqqqqq', pageAnalysis.getUrl());
 		const teste = await pageAnalysisStorage.getPageAnalysisStatus(pageAnalysis.getUrl());
