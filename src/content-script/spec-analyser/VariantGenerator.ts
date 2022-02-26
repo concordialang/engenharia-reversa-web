@@ -109,9 +109,15 @@ export class VariantGenerator {
 			return;
 		}
 
-		const checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
-		if(checksChildsTableRow === null){
-			return;
+		let checksChildsTableRow: boolean | null = true;
+		
+		// interact with table rows if is not a form
+		if(feature.ignoreFormElements){
+			checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
+
+			if(checksChildsTableRow === null){
+				return;
+			}
 		}
 
 		// enters the children of the nodes tree
@@ -658,6 +664,17 @@ export class VariantGenerator {
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
 
 			this.createVariantSentence(elm, variant, feature, observer);
+
+			const lastClicableInteracted = variant.getLastClicableInteracted();
+
+			const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(
+				feature.getName(),
+				lastClicableInteracted
+			);
+
+			if (thenTypeSentence) {
+				variant.setVariantSentence(thenTypeSentence);
+			}
 
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant, unloadMessageExtra);
