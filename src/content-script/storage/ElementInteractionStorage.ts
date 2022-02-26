@@ -7,6 +7,7 @@ import { InMemoryStorage } from './InMemoryStorage';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
+import { Command } from '../../shared/comm/Command';
 
 // TODO Trocar o nome da classe
 export class ElementInteractionStorage extends BackgroundIndexedDBObjectStorage<ElementInteraction<HTMLElement>> {
@@ -15,7 +16,13 @@ export class ElementInteractionStorage extends BackgroundIndexedDBObjectStorage<
 		private featureStorage: ObjectStorage<Feature>,
 		private variantStorage: ObjectStorage<Variant>
 	) {
-		super(IndexedDBDatabases.ElementInteractions, IndexedDBDatabases.ElementInteractions, communicationChannel, ElementInteraction);
+		super(
+			IndexedDBDatabases.ElementInteractions, 
+			IndexedDBDatabases.ElementInteractions, 
+			communicationChannel, 
+			ElementInteraction, 
+			Command.GetInteractionFromBackgroundIndexedDB
+		);
 	}
 
 	async set(key: string, obj: ElementInteraction<HTMLElement>): Promise<void> {

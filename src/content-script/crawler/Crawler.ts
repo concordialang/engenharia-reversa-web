@@ -26,6 +26,9 @@ import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 import Mutex from '../mutex/Mutex';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
+import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
+import { ElementAnalysis } from './ElementAnalysis';
+import { PageAnalysis } from './PageAnalysis';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -48,110 +51,129 @@ export class Crawler {
 	}
 
 	public async crawl(): Promise<boolean> {
-		const _this = this;
-
-		// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
-
-		this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
-			await _this.pageStorage.set(
-				_this.lastPageKey,
-				_this.browserContext.getWindow().document.body.outerHTML
-			);
-			//A callback being called when a redirect was detected on VariantGenerator was not working, so it had to be done here
-		});
-
-		//obtem ultima interacao que não está dentro do contexto já analisado
-		let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
-			this.elementInteractionGraph
-		);
-
-		let previousInteractions: ElementInteraction<HTMLElement>[] = [];
-
-		if (
-			lastUnanalyzed &&
-			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
-		) {
-			const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
-			previousInteractions = await this.elementInteractionGraph.pathToInteraction(
-				lastUnanalyzed,
-				false,
-				urlCriteria,
-				null,
-				false
-			);
-			previousInteractions = previousInteractions.reverse();
-
-			const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
-				lastUnanalyzed
-			);
-			if (interactionAfterTriggeredRedirect) {
-				previousInteractions.push(interactionAfterTriggeredRedirect);
-			}
-		}
-
-		const previousDocument = await this.getPreviousDocument();
-		const analysisElement = await this.getAnalysisElement(document, previousDocument);
-
-		console.log(analysisElement);
-
-		// const messageResponse = await this.communicationChannel.sendMessageToAll(
-		// 	new Message([Command.GetNumberOfAvailableTabs])
-		// );
-		// let availableTabs: number = 0;
-		// if (messageResponse) {
-		// 	availableTabs = messageResponse.getExtra();
-		// } else {
-		// 	throw new Error('Error while fetching number of available tabs');
-		// }
-
-		// const links = await this.getUnanalyzedLinks(analysisElement);
-
-		// for (let link of links) {
-		// 	if (availableTabs > 0) {
-		// 		this.communicationChannel.sendMessageToAll(
-		// 			new Message([Command.OpenNewTab], { url: link.href })
-		// 		);
-		// 		availableTabs--;
-		// 	}
-		// }
-
 		try {
+			const _this = this;
+
+			// this.visitedURLGraph.addVisitedURLToGraph(this.browserContext.getUrl());
+
+			this.browserContext.getWindow().addEventListener(HTMLEventType.BeforeUnload, async (e) => {
+				await _this.pageStorage.set(
+					_this.lastPageKey,
+					_this.browserContext.getWindow().document.body.outerHTML
+				);
+				//A callback being called when a redirect was detected on VariantGenerator was not working, so it had to be done here
+			});
+
+			//obtem ultima interacao que não está dentro do contexto já analisado
+			let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+				this.elementInteractionGraph
+			);
+
+			if(
+				lastUnanalyzed?.getCausedRedirection() && 
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+			){
+				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
+				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
+					window.location.href = lastUnanalyzed.getPageUrl().href;
+					return false;
+				}
+			}
+
+			 console.log("lastUnanalyzed CRAWLER", lastUnanalyzed);
+
+			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
+
+			if (
+				lastUnanalyzed &&
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
+			) {
+				const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
+				previousInteractions = await this.elementInteractionGraph.pathToInteraction(
+					lastUnanalyzed,
+					false,
+					urlCriteria,
+					null,
+					false
+				);
+				previousInteractions = previousInteractions.reverse();
+
+				const interactionAfterTriggeredRedirect = await this.didInteractionAfterTriggeredPageRedirection(
+					lastUnanalyzed
+				);
+				if (interactionAfterTriggeredRedirect) {
+					previousInteractions.push(interactionAfterTriggeredRedirect);
+				}
+			}
+
+			const previousDocument = await this.getPreviousDocument();
+			const analysisElement = await this.getAnalysisElement(document, previousDocument);
+
+			console.log('analysisElement CRAWLER', analysisElement);
+
+			// const messageResponse = await this.communicationChannel.sendMessageToAll(
+			// 	new Message([Command.GetNumberOfAvailableTabs])
+			// );
+			// let availableTabs: number = 0;
+			// if (messageResponse) {
+			// 	availableTabs = messageResponse.getExtra();
+			// } else {
+			// 	throw new Error('Error while fetching number of available tabs');
+			// }
+
+			// const links = await this.getUnanalyzedLinks(analysisElement);
+
+			// for (let link of links) {
+			// 	if (availableTabs > 0) {
+			// 		this.communicationChannel.sendMessageToAll(
+			// 			new Message([Command.OpenNewTab], { url: link.href })
+			// 		);
+			// 		availableTabs--;
+			// 	}
+			// }
+
 			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());
 			if (!spec) {
 				spec = new Spec('pt', this.featureStorage, this.specStorage, this.specMutex);
-				this.specStorage.set(Spec.getStorageKey(), spec);
+				await this.specStorage.set(Spec.getStorageKey(), spec);
 			} else {
 				spec.setFeatureStorage(this.featureStorage);
 				spec.setSpecStorage(this.specStorage);
 				spec.setMutex(this.specMutex);
 			}
 
-			await this.pageAnalyzer.analyze(
-				spec,
-				this.browserContext.getUrl(),
-				analysisElement,
-				previousInteractions
+			if(analysisElement){
+				await this.pageAnalyzer.analyze(
+					spec,
+					this.browserContext.getUrl(),
+					analysisElement,
+					previousInteractions
+				);
+			}
+
+			lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
+				this.elementInteractionGraph
 			);
+
+			console.log('lastUnanalyzed FINAL', lastUnanalyzed);
+	
+			//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
+			if (
+				lastUnanalyzed &&
+				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+			) {
+				window.location.href = lastUnanalyzed.getPageUrl().href;
+				return false;
+			}
+	
+			return true;
 		} catch (e) {
-			console.error(e);
-			window.location.reload();
+			console.error('error crawler', e);
+			if(!(e instanceof ForcingExecutionStoppageErrorFromInteraction)){
+				window.location.reload();
+			}
 			return false;
 		}
-
-		lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
-			this.elementInteractionGraph
-		);
-
-		//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
-		if (
-			lastUnanalyzed &&
-			getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
-		) {
-			window.location.href = lastUnanalyzed.getPageUrl().href;
-			return false;
-		}
-
-		return true;
 	}
 
 	private async getUnanalyzedLinks(element: HTMLElement): Promise<HTMLLinkElement[]> {
@@ -183,7 +205,50 @@ export class Crawler {
 		this.pageStorage.remove(this.lastPageKey);
 	}
 
-	private async getMostRecentInteractionFromUnfinishedAnalysis(
+	// private async getMostRecentInteractionFromUnfinishedAnalysis(
+	// 	elementInteractionGraph: ElementInteractionGraph,
+	// 	fromUnfinishedFeatureOnSameUrl: boolean
+	// ): Promise<ElementInteraction<HTMLElement> | null> {
+	// 	const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
+	// 	if (currentInteraction) {
+	// 		if(!fromUnfinishedFeatureOnSameUrl){
+	// 			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
+	// 				currentInteraction.getPageUrl()
+	// 			);
+	// 			if (analysisStatus != PageAnalysisStatus.Done) {
+	// 				return currentInteraction;
+	// 			}
+	// 		}
+	// 		let path : ElementInteraction<HTMLElement>[] = [];
+	// 		if(fromUnfinishedFeatureOnSameUrl){
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				{interactionUrl: this.browserContext.getUrl(), isEqual: true},
+	// 				null,
+	// 				false,
+	// 				undefined,
+	// 				true
+	// 			);
+	// 		} else {
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				null,
+	// 				null,
+	// 				false
+	// 			);
+	// 		}
+	// 		const lastUnanalyzed = path.pop();
+	// 		if (lastUnanalyzed) {
+	// 			return lastUnanalyzed;
+	// 		}
+	// 	}
+
+	// 	return null;
+	// }
+
+	public async getMostRecentInteractionFromUnfinishedAnalysis(
 		elementInteractionGraph: ElementInteractionGraph
 	): Promise<ElementInteraction<HTMLElement> | null> {
 		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
@@ -210,6 +275,49 @@ export class Crawler {
 		return null;
 	}
 
+	// private async getMostRecentInteractionFromUnfinishedAnalysis(
+	// 	elementInteractionGraph: ElementInteractionGraph,
+	// 	fromUnfinishedFeatureOnSameUrl: boolean
+	// ): Promise<ElementInteraction<HTMLElement> | null> {
+	// 	const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
+	// 	if (currentInteraction) {
+	// 		if(!fromUnfinishedFeatureOnSameUrl){
+	// 			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
+	// 				currentInteraction.getPageUrl()
+	// 			);
+	// 			if (analysisStatus != PageAnalysisStatus.Done) {
+	// 				return currentInteraction;
+	// 			}
+	// 		}
+	// 		let path : ElementInteraction<HTMLElement>[] = [];
+	// 		if(fromUnfinishedFeatureOnSameUrl){
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				{interactionUrl: this.browserContext.getUrl(), isEqual: true},
+	// 				null,
+	// 				false,
+	// 				undefined,
+	// 				true
+	// 			);
+	// 		} else {
+	// 			path = await elementInteractionGraph.pathToInteraction(
+	// 				currentInteraction,
+	// 				true,
+	// 				null,
+	// 				null,
+	// 				false
+	// 			);
+	// 		}
+	// 		const lastUnanalyzed = path.pop();
+	// 		if (lastUnanalyzed) {
+	// 			return lastUnanalyzed;
+	// 		}
+	// 	}
+
+	// 	return null;
+	// }
+
 	private async getPreviousDocument(): Promise<Document | null> {
 		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);
 		if (previousHTML) {
@@ -230,7 +338,7 @@ export class Crawler {
 	private async getAnalysisElement(
 		currentDocument: Document,
 		previousDocument: Document | null = null
-	): Promise<HTMLElement> {
+	): Promise<HTMLElement | null> {
 		let analysisElement: HTMLElement | null = null;
 
 		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
@@ -238,9 +346,16 @@ export class Crawler {
 		);
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
+			
 			if (!analysisElement) {
-				throw new Error('Analysis element not found');
+				console.error("n achou o elemento");
+
+				const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
+				this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);				
+				
+				return null;
 			}
+
 			return analysisElement;
 		}
 
@@ -285,7 +400,9 @@ export class Crawler {
 			ancestorElement = analysisContext;
 		}
 
-		return ancestorElement ? ancestorElement : document.body;
+		const analysysElement = ancestorElement ? ancestorElement : analysisContext;
+
+		return analysysElement ? analysysElement : document.body;
 	}
 
 	/*

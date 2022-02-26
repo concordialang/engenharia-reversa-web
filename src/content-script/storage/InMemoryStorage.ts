@@ -20,14 +20,14 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 			key: key,
 			value: json,
 		});
-		this.communicationChannel.sendMessageToAll(message);
+		this.communicationChannel.sendMessage(message);
 	}
 
 	async get(key: string): Promise<Type | null> {
 		const message = new Message([Command.GetValueFromMemoryDatabase], {
 			key: key,
 		});
-		const response = await this.communicationChannel.sendMessageToAll(message);
+		const response = await this.communicationChannel.sendMessage(message);
 		const json = response.getExtra();
 		return this.deserialize(json);
 	}
@@ -36,7 +36,7 @@ export class InMemoryStorage<Type> implements ObjectStorage<Type> {
 		const message = new Message([Command.RemoveValueFromMemoryDatabase], {
 			key: key,
 		});
-		await this.communicationChannel.sendMessageToAll(message);
+		await this.communicationChannel.sendMessage(message);
 	}
 
 	protected serialize(obj: Type): {} {

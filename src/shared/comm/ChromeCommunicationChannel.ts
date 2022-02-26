@@ -8,7 +8,7 @@ import { Message } from './Message';
 export class ChromeCommunicationChannel implements CommunicationChannel {
 	constructor(private chrome) {}
 
-	public sendMessageToAll(message: Message): Promise<any> {
+	public sendMessage(message: Message): Promise<any> {
 		const _this = this;
 		return new Promise(async function (resolve, reject) {
 			_this.chrome.runtime.sendMessage(message, (response?) => {
@@ -18,6 +18,18 @@ export class ChromeCommunicationChannel implements CommunicationChannel {
 				} else {
 					resolve(undefined);
 				}
+			});
+		});
+	}
+
+	public sendMessageToAll(message: Message): Promise<void> {
+		const _this = this;
+		return new Promise(async function (resolve, reject) {
+			_this.chrome.tabs.query({}, (tabs) => {
+				for(let tab of tabs) {
+					chrome.tabs.sendMessage(tab.id, message);
+				}
+				resolve();
 			});
 		});
 	}

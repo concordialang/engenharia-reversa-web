@@ -1,6 +1,7 @@
 export enum Command {
 	OpenNewTab = 'open-new-tab',
 	Crawl = 'crawl',
+	CrawlRejected = 'crawl-rejected',
 	CleanGraph = 'clean-graph',
 	GetNumberOfAvailableTabs = 'get-number-of-available-tabs',
 	GetTabId = 'get-tab-id',
@@ -9,6 +10,7 @@ export enum Command {
 	RemoveValueFromMemoryDatabase = 'remove-value-from-memory-database',
 	SetValueInBackgroundIndexedDB = 'set-value-in-background-indexed-db',
 	GetValueFromBackgroundIndexedDB = 'get-value-from-background-indexed-db',
+	GetInteractionFromBackgroundIndexedDB = 'get-interaction-from-background-indexed-db',
 	RemoveValueFromBackgroundIndexedDB = 'remove-value-from-background-indexed-db',
 	GetInteractionsGraphs = 'get-interactions-graphs',
 	ProcessUnload = 'process-unload',

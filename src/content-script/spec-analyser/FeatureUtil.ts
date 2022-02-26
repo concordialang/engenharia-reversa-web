@@ -16,7 +16,7 @@ export class FeatureUtil {
 		if (title) {
 			featureName = title.innerText;
 		} else {
-			featureName = f.id
+			featureName = f.id && typeof f.id === 'string'
 				? formatToFirstCapitalLetter(f.id)
 				: this.generateDefaultFeatureName(featureCount);
 		}

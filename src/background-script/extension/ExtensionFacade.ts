@@ -7,8 +7,8 @@ import { ExtensionBrowserAction } from './ExtensionBrowserAction';
 import { InMemoryDatabase } from './InMemoryDatabase';
 import { Tab } from '../../shared/comm/Tab';
 import { FeatureFileGenerator } from '../FeatureFileGenerator';
-import { plainToClass } from 'class-transformer';
-import { ElementInteractionStorage } from '../storage/ElementInteractionStorage';
+import { classToPlain, plainToClass } from 'class-transformer';
+import { ElementInteractionStorage } from '../../background-script/storage/ElementInteractionStorage';
 import { ChromeCommunicationChannel } from '../../shared/comm/ChromeCommunicationChannel';
 import { Variant } from '../../content-script/spec-analyser/Variant';
 import { ElementAnalysisStorage } from '../../content-script/storage/ElementAnalysisStorage';
@@ -16,9 +16,10 @@ import { GraphStorage } from '../storage/GraphStorage';
 import { ElementInteractionGraph } from '../graph/ElementInteractionGraph';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { Graph } from '../../content-script/graph/Graph';
-import { sleep } from '../../content-script/util';
+import { getURLWithoutQueries, sleep } from '../../content-script/util';
 import { ElementAnalysisStatus } from '../../content-script/crawler/ElementAnalysisStatus';
-import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../storage/ElementAnalysisStorage';
+import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../../background-script/storage/ElementAnalysisStorage';
+import { PageAnalysisStorage as PageAnalysisStorageBackground }  from '../../background-script/storage/PageAnalysisStorage';
 import { ElementAnalysis } from './ElementAnalysis';
 import { Feature } from './Feature';
 import { Spec } from './Spec';
@@ -27,6 +28,8 @@ import Mutex from 'idb-mutex';
 import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 import { deleteDB } from 'idb';
+import { PageAnalysis } from '../../content-script/crawler/PageAnalysis';
+import { PageAnalysisStatus } from '../../content-script/crawler/PageAnalysisStatus';
 
 export class ExtensionFacade {
 	private openedTabs: Array<Tab>;
@@ -41,6 +44,7 @@ export class ExtensionFacade {
 	private tabFinished: Map<string, boolean>;
 	private tabAjaxCalls: Map<string, string[]>;
 	private specMutex: Mutex;
+	private initialHost: string|null;
 
 	constructor(
 		extension: Extension,
@@ -60,6 +64,7 @@ export class ExtensionFacade {
 		this.tabFinished = new Map<string, boolean>();
 		this.tabAjaxCalls = new Map<string, string[]>();
 		this.specMutex = new Mutex('spec-mutex');
+		this.initialHost = null;
 	}
 
 	public async setup(): Promise<void> {
@@ -69,15 +74,20 @@ export class ExtensionFacade {
 			ExtensionBrowserAction.ExtensionIconClicked,
 			async function (tab: Tab) {
 				if (!_this.extensionIsEnabled) {
+					if(!tab.getURL()){
+						throw new Error("Tab has no URL");
+					}
+					//@ts-ignore
+					_this.initialHost = tab.getURL().host;
 					_this.extensionIsEnabled = true;
 					_this.openedTabs.push(tab);
 					_this.tabFinished.set(tab.getId(), false);
 					_this.openedTabsCounter++;
 					console.log("still has ajax to complete");
 					//console.log(_this.tabStillHasAjaxToComplete(tab));
-					while(_this.tabStillHasAjaxToComplete(tab)){
-						await sleep(5);
-					}
+					// while(_this.tabStillHasAjaxToComplete(tab)){
+					// 	await sleep(5);
+					// }
 					_this.sendOrderToCrawlTab(tab, true);
 				} else {
 					_this.extension.reload();
@@ -160,6 +170,29 @@ export class ExtensionFacade {
 						responseCallback(new Message([], value));
 					}
 				}
+			} else if (message.includesAction(Command.GetInteractionFromBackgroundIndexedDB)) {
+				console.log(message);
+				const data = message.getExtra();
+				if (data) {
+					const key = data.key;
+					const featureStorage = new IndexedDBObjectStorage<Feature>(
+						IndexedDBDatabases.Features,
+						IndexedDBDatabases.Features,
+						Feature
+					);
+					const variantStorage = new IndexedDBObjectStorage<Variant>(
+						IndexedDBDatabases.Variants,
+						IndexedDBDatabases.Variants,
+						Variant
+					);
+					const storage = new ElementInteractionStorage(featureStorage, variantStorage);
+					let value = await storage.get(key);
+					if (responseCallback) {
+						console.log("enviou");
+						//@ts-ignore
+						responseCallback(new Message([], classToPlain(value, ElementInteraction)));
+					}
+				}
 			} else if (message.includesAction(Command.RemoveValueFromBackgroundIndexedDB)) {
 				const data = message.getExtra();
 				if (data) {
@@ -199,8 +232,18 @@ export class ExtensionFacade {
 					if (message.includesAction(AppEvent.Loaded)) {
 						const url = sender.getURL();
 						if(url){
+							if(url.host != _this.initialHost){
+								console.log("hosts diferentes:", url.host, _this.initialHost);
+								_this.extension.sendMessageToTab(
+									sender.getId(),
+									new Message([Command.CrawlRejected])
+								);
+							}
 							console.log(url.href);
+						} else {
+							throw new Error("url is null");
 						}
+
 						console.log("graph:");
 						let graph = _this.inMemoryDatabase.get('interactions-graph-tab-'+sender.getId());
 						if(graph instanceof Graph){
@@ -263,9 +306,12 @@ export class ExtensionFacade {
 						const elementInteractionGraph = _this.getElementInteractionGraph(sender);
 						const interaction = plainToClass(ElementInteraction, message.getExtra().interaction);
 						//@ts-ignore
-						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);
+						interaction.setCausedRedirection(true);
 
-						console.log(interaction);
+						//@ts-ignore
+						_this.addElementInteractionToGraph(interaction, elementInteractionGraph);
+						_this.communicationChannel.sendMessageToAll(new Message([AppEvent.InteractionGraphUpdated], elementInteractionGraph.getId()));
+
 						//@ts-ignore
 						_this.setInteractionElementAsAnalyzed(interaction, sender);
 
@@ -273,9 +319,18 @@ export class ExtensionFacade {
 						const feature = plainToClass(Feature, message.getExtra().feature);
 						//@ts-ignore
 						const url = interaction.getPageUrl();
+
+						console.log("BGBG FEATURE", feature)
 						//@ts-ignore
 						if (!feature.needNewVariants) {
+							console.log("BGBG ELEMENT ANALYSIS AS DONE", analysisElementPath)
 							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
+
+							//@ts-ignore
+							if(feature.ignoreFormElements){
+								console.log("BGBG PAGE AS DONE URL", url)
+								await _this.setPageAnalysisAsDone(url);
+							}
 						}
 
 						//@ts-ignore
@@ -356,6 +411,21 @@ export class ExtensionFacade {
 		);
 		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+	}
+
+	private async setPageAnalysisAsDone(url: URL): Promise<void> {
+		const pageAnalysis = new PageAnalysis(
+			url,
+			PageAnalysisStatus.Done,
+		);
+
+		console.log('BGBG pageAnalysis', pageAnalysis);
+		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase);
+		await pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+		console.log('qqqqqqqqqqqqqqqqqqqqqqqqqq', pageAnalysis.getUrl());
+		const teste = await pageAnalysisStorage.getPageAnalysisStatus(pageAnalysis.getUrl());
+
+		console.log('testetesteteste', teste);
 	}
 
 	public openNewTab(url: URL): void {
@@ -478,7 +548,8 @@ export class ExtensionFacade {
 
 	private tabStillHasAjaxToComplete(tab: Tab): boolean {
 		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
-		return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
+		// return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
+		return false;
 	}
 
 	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {

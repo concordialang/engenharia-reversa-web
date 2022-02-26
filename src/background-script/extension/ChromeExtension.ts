@@ -39,8 +39,8 @@ export class ChromeExtension implements Extension {
 		callback: (tab: Tab) => void
 	): void {
 		const cb = function (tab: chrome.tabs.Tab) {
-			if (tab && tab.id) {
-				callback(new Tab(tab.id.toString()));
+			if (tab && tab.id && tab.url) {
+				callback(new Tab(tab.id.toString(), new URL(tab.url)));
 			}
 		};
 		const chromeAction = this.getChromeActionName(action);
