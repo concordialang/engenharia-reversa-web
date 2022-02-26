@@ -5,6 +5,7 @@ import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { VisitedURLGraph } from './VisitedURLGraph';
 import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
+import { maxWaitTimeForUnload } from '../config';
 import { Message } from '../../shared/comm/Message';
 import { Command } from '../../shared/comm/Command';
 import {
@@ -170,6 +171,9 @@ export class Crawler {
 		} catch (e) {
 			console.error('error crawler', e);
 			if(!(e instanceof ForcingExecutionStoppageErrorFromInteraction)){
+				window.location.reload();
+			} else {
+				await sleep(maxWaitTimeForUnload);
 				window.location.reload();
 			}
 			return false;
