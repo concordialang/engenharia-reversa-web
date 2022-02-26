@@ -547,9 +547,9 @@ export class ExtensionFacade {
 	}
 
 	private tabStillHasAjaxToComplete(tab: Tab): boolean {
+		return false;
 		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
 		// return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
-		return false;
 	}
 
 	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {
