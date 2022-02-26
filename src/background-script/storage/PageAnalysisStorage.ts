@@ -1,13 +1,13 @@
-import { CommunicationChannel } from "../../shared/comm/CommunicationChannel";
-import { PageAnalysis } from "../crawler/PageAnalysis";
-import { PageAnalysisStatus } from "../crawler/PageAnalysisStatus";
-import { getURLWithoutQueries } from "../util";
+import { PageAnalysis } from "../../content-script/crawler/PageAnalysis";
+import { PageAnalysisStatus } from "../../content-script/crawler/PageAnalysisStatus";
+import { getURLWithoutQueries } from "../../content-script/util";
 import { InMemoryStorage } from "./InMemoryStorage";
+import { InMemoryDatabase } from "../extension/InMemoryDatabase"
 
 export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 
-	constructor(communicationChannel: CommunicationChannel) {
-		super(communicationChannel, PageAnalysis);
+	constructor() {
+		super(new InMemoryDatabase());
 	}
 
 	public async set(key: string, obj: PageAnalysis): Promise<void> {
@@ -22,7 +22,6 @@ export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 		url: URL
 	): Promise<PageAnalysisStatus> {
 		const analysis = await this.get(getURLWithoutQueries(url));
-		console.log('analysis in storage', analysis);
 		if(analysis instanceof PageAnalysis) {
 			return analysis.getStatus();
 		}

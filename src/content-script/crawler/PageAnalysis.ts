@@ -13,7 +13,6 @@ export class PageAnalysis {
 		this.status = status;
 	}
 
-
 	public getUrl(): URL {
 		return this.url;
 	}

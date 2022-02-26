@@ -80,7 +80,7 @@ export class Crawler {
 				}
 			}
 
-			console.log("lastUnanalyzed CRAWLER", lastUnanalyzed)
+			console.log("lastUnanalyzed CRAWLER", lastUnanalyzed);
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
 
@@ -154,6 +154,8 @@ export class Crawler {
 			lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 				this.elementInteractionGraph
 			);
+
+			console.log('lastUnanalyzed FINAL', lastUnanalyzed);
 	
 			//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
 			if (

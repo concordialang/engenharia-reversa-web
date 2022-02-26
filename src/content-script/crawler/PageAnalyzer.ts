@@ -48,16 +48,20 @@ export class PageAnalyzer {
 		previousInteractions: ElementInteraction<HTMLElement>[] = [],
 		stopBeforeAnalysisStarts: boolean = false
 	): Promise<void> {
+		const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
+		if(pageAnalysisStatus === PageAnalysisStatus.Pending){
+			const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.InProgress);
+			await this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+		} else if(pageAnalysisStatus === PageAnalysisStatus.Done) {
+			return;
+		}
+
 		this.spec = spec;
 		let xPath = getPathTo(contextElement);
 
 		if (!xPath) {
 			return;
 		}
-
-
-		const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.InProgress);
-		await this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
 
 		let feature: Feature | string | null = null;
 

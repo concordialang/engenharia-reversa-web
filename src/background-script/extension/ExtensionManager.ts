@@ -17,9 +17,10 @@ import { GraphStorage } from '../../background-script/storage/GraphStorage';
 import { ElementInteractionGraph } from '../graph/ElementInteractionGraph';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { Graph } from '../../content-script/graph/Graph';
-import { sleep } from '../../content-script/util';
+import { getURLWithoutQueries, sleep } from '../../content-script/util';
 import { ElementAnalysisStatus } from '../../content-script/crawler/ElementAnalysisStatus';
 import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../../background-script/storage/ElementAnalysisStorage';
+import { PageAnalysisStorage as PageAnalysisStorageBackground }  from '../../background-script/storage/PageAnalysisStorage';
 import { ElementAnalysis } from './ElementAnalysis';
 import { Feature } from './Feature';
 import { Spec } from './Spec';
@@ -28,6 +29,8 @@ import Mutex from 'idb-mutex';
 import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 import { deleteDB } from 'idb';
+import { PageAnalysis } from '../../content-script/crawler/PageAnalysis';
+import { PageAnalysisStatus } from '../../content-script/crawler/PageAnalysisStatus';
 
 export class ExtensionManager {
 	private openedTabs: Array<Tab>;
@@ -300,9 +303,18 @@ export class ExtensionManager {
 						const feature = plainToClass(Feature, message.getExtra().feature);
 						//@ts-ignore
 						const url = interaction.getPageUrl();
+
+						console.log("BGBG FEATURE", feature)
 						//@ts-ignore
 						if (!feature.needNewVariants) {
+							console.log("BGBG ELEMENT ANALYSIS AS DONE", analysisElementPath)
 							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
+
+							//@ts-ignore
+							if(feature.ignoreFormElements){
+								console.log("BGBG PAGE AS DONE URL", url)
+								await _this.setPageAnalysisAsDone(url);
+							}
 						}
 
 						//@ts-ignore
@@ -383,6 +395,21 @@ export class ExtensionManager {
 		);
 		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+	}
+
+	private async setPageAnalysisAsDone(url: URL): Promise<void> {
+		const pageAnalysis = new PageAnalysis(
+			url,
+			PageAnalysisStatus.Done,
+		);
+
+		console.log('BGBG pageAnalysis', pageAnalysis);
+		const pageAnalysisStorage = new PageAnalysisStorageBackground();
+		await pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+		console.log('qqqqqqqqqqqqqqqqqqqqqqqqqq', pageAnalysis.getUrl());
+		const teste = await pageAnalysisStorage.getPageAnalysisStatus(pageAnalysis.getUrl());
+
+		console.log('testetesteteste', teste);
 	}
 
 	public openNewTab(url: URL): void {

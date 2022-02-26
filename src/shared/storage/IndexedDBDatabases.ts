@@ -3,4 +3,5 @@ export enum IndexedDBDatabases {
     Features = 'features',
     Variants = 'variants',
     ElementAnalysis = 'element-analysis',
+    PageAnalysis = 'page-analysis',
 }
