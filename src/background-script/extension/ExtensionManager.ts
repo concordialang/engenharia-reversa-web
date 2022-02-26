@@ -45,6 +45,7 @@ export class ExtensionManager {
 	private tabFinished: Map<string, boolean>;
 	private tabAjaxCalls: Map<string, string[]>;
 	private specMutex: Mutex;
+	private initialHost: string|null;
 
 	constructor(
 		extension: Extension,
@@ -64,6 +65,7 @@ export class ExtensionManager {
 		this.tabFinished = new Map<string, boolean>();
 		this.tabAjaxCalls = new Map<string, string[]>();
 		this.specMutex = new Mutex('spec-mutex');
+		this.initialHost = null;
 	}
 
 	public async setup(): Promise<void> {
@@ -73,6 +75,11 @@ export class ExtensionManager {
 			ExtensionBrowserAction.ExtensionIconClicked,
 			async function (tab: Tab) {
 				if (!_this.extensionIsEnabled) {
+					if(!tab.getURL()){
+						throw new Error("Tab has no URL");
+					}
+					//@ts-ignore
+					_this.initialHost = tab.getURL().host;
 					_this.extensionIsEnabled = true;
 					_this.openedTabs.push(tab);
 					_this.tabFinished.set(tab.getId(), false);
@@ -226,8 +233,14 @@ export class ExtensionManager {
 					if (message.includesAction(AppEvent.Loaded)) {
 						const url = sender.getURL();
 						if(url){
+							if(url.host != _this.initialHost){
+								if (responseCallback) responseCallback(new Message([], null));
+							}
 							console.log(url.href);
+						} else {
+							throw new Error("url is null");
 						}
+
 						console.log("graph:");
 						let graph = _this.inMemoryDatabase.get('interactions-graph-tab-'+sender.getId());
 						if(graph instanceof Graph){
