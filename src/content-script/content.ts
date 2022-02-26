@@ -37,6 +37,8 @@ const communicationChannel: CommunicationChannel = new ChromeCommunicationChanne
 getTabId(communicationChannel).then((tabId) => {
 	tabId = 'tab-' + tabId;
 
+	console.log("url href:",window.location.href);
+
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
 	const pageStorage = new InMemoryStorage<string>(communicationChannel);
@@ -163,6 +165,15 @@ getTabId(communicationChannel).then((tabId) => {
 				communicationChannel.sendMessage(
 					new Message([AppEvent.Finished], JSON.stringify(specStorage))
 				);
+			}
+		}
+		if (message.includesAction(Command.CrawlRejected)) {
+			//alert("dsadsadsa");
+			let lastUnanalyzed = await crawler.getMostRecentInteractionFromUnfinishedAnalysis(
+				elementInteractionGraph
+			);
+			if(lastUnanalyzed){
+				window.location.href = lastUnanalyzed?.getPageUrl().href;
 			}
 		}
 	});

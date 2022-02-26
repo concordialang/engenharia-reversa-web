@@ -234,7 +234,11 @@ export class ExtensionManager {
 						const url = sender.getURL();
 						if(url){
 							if(url.host != _this.initialHost){
-								if (responseCallback) responseCallback(new Message([], null));
+								console.log("hosts diferentes:", url.host, _this.initialHost);
+								_this.extension.sendMessageToTab(
+									sender.getId(),
+									new Message([Command.CrawlRejected])
+								);
 							}
 							console.log(url.href);
 						} else {

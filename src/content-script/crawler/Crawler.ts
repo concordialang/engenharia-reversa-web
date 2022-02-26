@@ -248,7 +248,7 @@ export class Crawler {
 	// 	return null;
 	// }
 
-	private async getMostRecentInteractionFromUnfinishedAnalysis(
+	public async getMostRecentInteractionFromUnfinishedAnalysis(
 		elementInteractionGraph: ElementInteractionGraph
 	): Promise<ElementInteraction<HTMLElement> | null> {
 		const currentInteraction = await this.elementInteractionGraph.getLastInteraction();

@@ -1,6 +1,7 @@
 export enum Command {
 	OpenNewTab = 'open-new-tab',
 	Crawl = 'crawl',
+	CrawlRejected = 'crawl-rejected',
 	CleanGraph = 'clean-graph',
 	GetNumberOfAvailableTabs = 'get-number-of-available-tabs',
 	GetTabId = 'get-tab-id',
