@@ -548,8 +548,9 @@ export class ExtensionManager {
 	}
 
 	private tabStillHasAjaxToComplete(tab: Tab): boolean {
+		return false;
 		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
-		return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
+		//return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
 	}
 
 	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {
