@@ -110,8 +110,6 @@ export class Interactor {
 		this.window.addEventListener(HTMLEventType.Submit, async (event) => {
 			timePassed = 0;
 			timeLimit = 20000;
-			await sleep(5000);
-			this.window.location.reload();
 		});
 
 		element.click();
