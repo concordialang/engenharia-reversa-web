@@ -114,7 +114,7 @@ export class Interactor {
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {
-				throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
+				throw new ForcingExecutionStoppageErrorFromInteraction("Redirected on click");
 			}
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
