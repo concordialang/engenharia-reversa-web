@@ -7,7 +7,7 @@ import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppa
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ObjectStorage } from '../storage/ObjectStorage';
-import { getPathTo, sleep } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Scenario } from './Scenario';
@@ -17,7 +17,6 @@ import { VariantGenerator } from './VariantGenerator';
 import { limitOfVariants } from '../config';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
-import { ForcingExecutionStoppageErrorFromInteraction } from '../crawler/ForcingExecutionStoppageErrorFromInteraction';
 
 export class FeatureGenerator {
 	constructor(

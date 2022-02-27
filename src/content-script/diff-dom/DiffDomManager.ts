@@ -1,6 +1,7 @@
 import { DiffDOM } from 'diff-dom';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { getPathTo } from '../util';
+import { minimumChildNodesNumberForDiff, strAnalyzedElmsForDiff } from '../config';
 
 export class DiffDomManager {
 	private diffDom: DiffDOM;
@@ -55,22 +56,67 @@ export class DiffDomManager {
 		return diffDom;
 	}
 
-	private getOutermostElementDiff() {
-		let outermostElementDiff = this.diffDom.find(
+	// private getOutermostElementDiff() {
+	// 	let outermostElementDiff = this.diffDom.find(
+	// 		(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
+	// 	);
+
+	// 	if (!outermostElementDiff) return null;
+
+	// 	for (let diff of this.diffDom) {
+	// 		outermostElementDiff =
+	// 			diff.route.length <= outermostElementDiff.route.length &&
+	// 			(diff.action == 'replaceElement' || diff.action == 'addElement')
+	// 				? diff
+	// 				: outermostElementDiff;
+	// 	}
+
+	// 	return outermostElementDiff;
+	// }
+
+	private electedElementsDiff() {
+		let newElementsDiff = this.diffDom.filter(
 			(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
 		);
 
-		if (!outermostElementDiff) return null;
+		let newElementsDiffHtml: any = [];
+		for(let elmDiff of newElementsDiff){
+			let htmlElement: HTMLElement | ChildNode = this.currentHtml;
+			
+			for (let route of elmDiff.route) {
+				htmlElement = htmlElement.childNodes[route];
+			}
 
-		for (let diff of this.diffDom) {
-			outermostElementDiff =
-				diff.route.length <= outermostElementDiff.route.length &&
-				(diff.action == 'replaceElement' || diff.action == 'addElement')
-					? diff
-					: outermostElementDiff;
+			if(htmlElement instanceof HTMLElement){
+				const objElmDiff = {
+					elm: htmlElement, 
+					route: elmDiff.route, 
+				};
+	
+				newElementsDiffHtml.push(objElmDiff);
+			}
 		}
 
-		return outermostElementDiff;
+		if(!newElementsDiffHtml || newElementsDiffHtml.length == 0){
+			return null;
+		}
+
+		let elected: {
+			elm: HTMLElement
+			route: []
+		} = newElementsDiffHtml.pop();
+
+		for(let diff of newElementsDiffHtml){
+			if(diff.route.length < elected.route.length) {
+				let childrenDiff = diff.elm.querySelectorAll(strAnalyzedElmsForDiff);
+
+				if(childrenDiff.length >= minimumChildNodesNumberForDiff){
+					elected = diff;
+				}
+			}
+		}
+
+		return elected.elm;
 	}
 
 	public getDiff(): DiffDOM {
@@ -88,19 +134,13 @@ export class DiffDomManager {
 	// returns the parent xpath of the outermost element that has changed
 	public getParentXPathOfTheOutermostElementDiff(): string | null {
 		if (this.diffDom.length > 0 && this.currentHtml instanceof HTMLElement) {
-			let outermostElementDiff: any = this.getOutermostElementDiff();
+			let electedElement: HTMLElement | null = this.electedElementsDiff();
 
-			if (outermostElementDiff) {
-				let htmlElement: HTMLElement | ChildNode = this.currentHtml;
-
-				for (let route of outermostElementDiff.route) {
-					htmlElement = htmlElement.childNodes[route];
-				}
-
-				if (htmlElement.parentElement) {
-					return getPathTo(htmlElement.parentElement);
-				}
+			if(!electedElement){
+				return null;
 			}
+			
+			return getPathTo(electedElement.parentElement ? electedElement.parentElement : electedElement);
 		}
 
 		return null;
