@@ -5,7 +5,7 @@ export function TransformURL() {
 	const toPlain = Transform(
 		function ({ value }) {
 			if (value) {
-				return { href: value.href };
+				return { href: value.href, origin: value.origin, pathname: value.pathname };
 			}
 		},
 		{

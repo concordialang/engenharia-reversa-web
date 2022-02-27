@@ -64,6 +64,8 @@ export function createValidSpec(): Spec {
 export function createValidFeature(): Feature {
 	const feature = new Feature();
 	feature.setName('A Feature');
+		
+	feature.url = new URL('https://www.google.com'); 
 
 	const import1 = new Import('file.txt');
 	const import2 = new Import('file2.txt');
@@ -98,7 +100,6 @@ export function createValidVariant(uiElement: UIElement): Variant {
 		'action 1',
 		uiElement,
 		[{ property: 'property 1', value: 'value 1' }],
-		new URL('https://www.google.com'),
 		'state 1'
 	);
 

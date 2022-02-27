@@ -7,8 +7,6 @@ import Mutex from './mutex/Mutex';
 import { FeatureUtil } from './spec-analyser/FeatureUtil';
 import { UIElementGenerator } from './spec-analyser/UIElementGenerator';
 import { VariantSentencesGenerator } from './spec-analyser/VariantSentencesGenerator';
-import { LocalObjectStorage } from './storage/LocalObjectStorage';
-import { IndexedDBObjectStorage } from '../shared/storage/IndexedDBObjectStorage';
 import { ChromeCommunicationChannel } from '../shared/comm/ChromeCommunicationChannel';
 import { CommunicationChannel } from '../shared/comm/CommunicationChannel';
 import { getDictionary } from './dictionary';
@@ -121,7 +119,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementAnalysisStorage,
 		browserContext,
 		elementInteractionGraph,
-		variantStorage
+		variantStorage,
 	);
 
 	const pageAnalyzer = new PageAnalyzer(

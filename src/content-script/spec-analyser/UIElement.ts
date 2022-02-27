@@ -7,6 +7,7 @@ import { PropertyTypes } from '../enums/PropertyTypes';
 export class UIElement {
 	private name: string;
 	private value: string | null;
+	public onlyDisplayValue: boolean = false;
 
 	@Type(() => UIProperty)
 	private properties: Array<UIProperty>;
@@ -29,6 +30,14 @@ export class UIElement {
 		return this.name;
 	}
 
+	public setValue(value: string | null) {
+		this.value = value;
+	}
+
+	public getValue() {
+		return this.value;
+	}
+
 	public setProperty(property: UIProperty) {
 		this.properties.push(property);
 	}
@@ -41,10 +50,10 @@ export class UIElement {
 		return this.properties;
 	}
 
-	public getId() {
-		return this.properties
-			.find((property) => property.getName() === PropertyTypes.ID)
-			?.getValue();
+	public getId(completeProp = false) {
+		const id = this.properties.find((property) => property.getName() === PropertyTypes.ID);
+		
+		return completeProp ? id : id?.getValue();
 	}
 
 	public getType() {

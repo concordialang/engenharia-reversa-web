@@ -6,6 +6,7 @@ export enum ValidUiElementsNodes {
 	TEXTAREA = 'TEXTAREA',
 	BUTTON = 'BUTTON',
 	TR = 'TR',
+	TH = 'TH',
 	SPAN = 'SPAN',
 	EM = 'EM',
 	IMG = 'IMG',

@@ -22,7 +22,6 @@ export class VariantGenerator {
 
 	public async generate(
 		analysisElement: HTMLElement,
-		url: URL,
 		observer: MutationObserverManager,
 		feature: Feature,
 		redirectionCallback?: (
@@ -47,7 +46,7 @@ export class VariantGenerator {
 			return null;
 		}
 
-		const givenTypeSentence = this.featureUtil.createGivenTypeVariantSentence(url);
+		const givenTypeSentence = this.featureUtil.createGivenTypeVariantSentence();
 		if (givenTypeSentence) {
 			variant.setVariantSentence(givenTypeSentence);
 		}
@@ -61,11 +60,11 @@ export class VariantGenerator {
 			pathsOfElementsToIgnore
 		);
 
-		const lastButtonInteracted = variant.getLastButtonInteracted();
+		const lastClicableInteracted = variant.getLastClicableInteracted();
 
 		const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(
 			feature.getName(),
-			lastButtonInteracted
+			lastClicableInteracted
 		);
 
 		if (thenTypeSentence) {
@@ -110,9 +109,15 @@ export class VariantGenerator {
 			return;
 		}
 
-		const checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
-		if(checksChildsTableRow === null){
-			return;
+		let checksChildsTableRow: boolean | null = true;
+		
+		// interact with table rows if is not a form
+		if(feature.ignoreFormElements){
+			checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
+
+			if(checksChildsTableRow === null){
+				return;
+			}
 		}
 
 		// enters the children of the nodes tree
@@ -121,7 +126,7 @@ export class VariantGenerator {
 			feature.ignoreFormElements,
 			checksChildsTableRow
 		);
-		if (validFirstChild && !this.varUtil.isButtonOrAnchor(elm)) {
+		if (validFirstChild && !this.varUtil.isClicable(elm)) {
 			await nextElement(elm.firstElementChild);
 		}
 
@@ -233,14 +238,20 @@ export class VariantGenerator {
 			return null;
 		}
 
+		if(variantSentence?.uiElement){
+			this.varUtil.nameUiElementIfEmpty(variantSentence.uiElement, feature)
+			feature.addUiElement(variantSentence.uiElement);
+		}
+
 		variant.setVariantSentence(variantSentence);
+
 
 		if (!variant.whenSentenceCreated) {
 			variant.whenSentenceCreated = true;
 		}
 
 		// treat mutational variant sentences
-		this.treatMutationsSentences(observer, variant);
+		this.treatMutationsSentences(observer, feature, variant);
 
 		return true;
 	}
@@ -418,7 +429,7 @@ export class VariantGenerator {
 			return false;
 		}
 
-		if (feature.analysesOnlyCancelBtns && !this.varUtil.isButtonOrAnchor(elm)) {
+		if (feature.analysesOnlyCancelClicables && !this.varUtil.isClicable(elm)) {
 			return false;
 		}
 
@@ -436,7 +447,7 @@ export class VariantGenerator {
 		}
 
 		if (
-			!this.varUtil.isButtonOrAnchor(elm) &&
+			!this.varUtil.isClicable(elm) &&
 			!this.varUtil.isCheckBox(elm) &&
 			!this.varUtil.isRadionButton(elm)
 		) {
@@ -457,12 +468,12 @@ export class VariantGenerator {
 			(interactedElm) => interactedElm.xpath === xpathElement
 		);
 
-		if (!variant.lastAnalysisInputFieldFound && this.varUtil.isLogoutButton(elm)) {
+		if (!variant.lastAnalysisInputFieldFound && this.varUtil.isLogoutClicable(elm)) {
 			return false;
 		}
 
-		// true when it is a cancel button valid to interaction
-		let isInteractableCancelBtn = this.treatInteractableBtnsAfterFinalActionButton(
+		// true when it is a cancel clicable valid to interaction
+		let isInteractableCancelClicable = this.treatInteractableClicablesAfterFinalActionClicable(
 			elm,
 			xpathElement,
 			wasInteracted,
@@ -470,40 +481,40 @@ export class VariantGenerator {
 			feature
 		);
 
-		if (feature.analysesOnlyCancelBtns && !isInteractableCancelBtn) {
+		if (feature.analysesOnlyCancelClicables && !isInteractableCancelClicable) {
 			return false;
 		}
 
-		if (!feature.analysesOnlyCancelBtns && isInteractableCancelBtn) {
+		if (!feature.analysesOnlyCancelClicables && isInteractableCancelClicable) {
 			return false;
 		}
 
-		if (variant.finalActionButtonFound && !feature.analysesBtnsAfterFinalActionBtn) {
+		if (variant.finalActionClicableFound && !feature.analysesClicablesAfterFinalActionClicable) {
 			return false;
 		}
 
-		let isFinalActionBtn = false;
+		let isFinalActionClicable = false;
 
 		/*
-			tries to find the final action button if:
+			tries to find the final action clicable if:
 			- the last input field was found
-			- that the feature has not yet started to analyze buttons placed after the final action button
-			- other action button was not found yet
+			- that the feature has not yet started to analyze clicables placed after the final action clicable
+			- other action clicable was not found yet
 		*/
 		if (
 			variant.lastAnalysisInputFieldFound &&
-			!feature.analysesBtnsAfterFinalActionBtn &&
-			!variant.finalActionButtonFound
+			!feature.analysesClicablesAfterFinalActionClicable &&
+			!variant.finalActionClicableFound
 		) {
-			isFinalActionBtn = this.varUtil.isFinalActionButton(elm);
+			isFinalActionClicable = this.varUtil.isFinalActionClicable(elm);
 		}
 
-		if (isFinalActionBtn) {
-			variant.finalActionButtonFound = true;
+		if (isFinalActionClicable) {
+			variant.finalActionClicableFound = true;
 		}
 
-		// final action buttons can interact more the one time
-		if (wasInteracted && !isFinalActionBtn) {
+		// final action clicables can interact more the one time
+		if (wasInteracted && !isFinalActionClicable) {
 			return false;
 		}
 
@@ -517,13 +528,13 @@ export class VariantGenerator {
 			if (anyOfGroupHasInteracted) {
 				return false;
 			}
-		} else if (this.varUtil.isButtonOrAnchor(elm)) {
-			const anyButtonHasInteracted = this.varUtil.anyButtonHasInteracted(
+		} else if (this.varUtil.isClicable(elm)) {
+			const anyClicableHasInteracted = this.varUtil.anyClicableHasInteracted(
 				feature.interactedElements,
 				variant.getName()
 			);
 
-			if (anyButtonHasInteracted && !isFinalActionBtn) {
+			if (anyClicableHasInteracted && !isFinalActionClicable) {
 				return false;
 			}
 		}
@@ -555,15 +566,15 @@ export class VariantGenerator {
 			if (this.varUtil.isRadionButton(elm) && (elm as HTMLInputElement).name) {
 				interactedElm.radioGroupName = (elm as HTMLInputElement).name;
 				interactedElm.elmType = 'radio';
-			} else if (this.varUtil.isButtonOrAnchor(elm)) {
-				interactedElm.elmType = 'button';
+			} else if (this.varUtil.isClicable(elm)) {
+				interactedElm.elmType = 'clicable';
 			}
 
 			feature.interactedElements.push(interactedElm);
 		}
 	}
 
-	private treatMutationsSentences(observer: MutationObserverManager, variant: Variant) {
+	private treatMutationsSentences(observer: MutationObserverManager, feature: Feature, variant: Variant) {
 		let mutations: MutationRecord[] = observer.getMutations();
 
 		if (mutations.length == 0) {
@@ -572,17 +583,24 @@ export class VariantGenerator {
 
 		if (mutations.length > 0) {
 			for (let mutation of mutations) {
-				const mutationSentence = this.featureUtil.createMutationVariantSentences(mutation);
+				const mutationSentences = this.featureUtil.createMutationVariantSentences(mutation);
 
-				if (mutationSentence) {
-					variant.setVariantsSentences(mutationSentence);
+				if (mutationSentences && mutationSentences.length > 0) {
+					for(let sentence of mutationSentences){
+						if(sentence.uiElement){
+							feature.addUiElement(sentence.uiElement);
+							this.varUtil.nameUiElementIfEmpty(sentence.uiElement, feature);
+						}
+					}
+
+					variant.setVariantsSentences(mutationSentences);
 				}
 			}
 
 			this.varUtil.updateAnalysisInputFields();
 
 			// check if last field remains the same
-			if (variant.lastAnalysisInputFieldFound && !variant.finalActionButtonFound) {
+			if (variant.lastAnalysisInputFieldFound && !variant.finalActionClicableFound) {
 				variant.lastAnalysisInputFieldFound = this.varUtil.checksLastAnalysisField();
 			}
 		}
@@ -590,50 +608,50 @@ export class VariantGenerator {
 		observer.resetMutations();
 	}
 
-	private saveBtnAfterFinalActionButton(
+	private saveClicableAfterFinalActionClicable(
 		feature: Feature,
 		xpathElement: string,
-		isCancelButton: boolean
+		isCancelClicable: boolean
 	): void {
-		const wasSaved = feature.btnsAfterFinalActionBtn.find((btn) => btn.xpath === xpathElement);
+		const wasSaved = feature.clicablesAfterFinalActionClicable.find((clicable) => clicable.xpath === xpathElement);
 
 		if (!wasSaved) {
-			const btnAfter = {
+			const clicableAfter = {
 				xpath: xpathElement,
-				isCancelButton: isCancelButton,
+				isCancelClicable: isCancelClicable,
 			};
 
-			feature.btnsAfterFinalActionBtn.push(btnAfter);
+			feature.clicablesAfterFinalActionClicable.push(clicableAfter);
 		}
 	}
 
 	/*
-		Checks whether the element is an interactable button placed after the final action button
-		returns true if it is a cancel button
+		Checks whether the element is an interactable clicable placed after the final action clicable
+		returns true if it is a cancel clicable
 	*/
-	private treatInteractableBtnsAfterFinalActionButton(
+	private treatInteractableClicablesAfterFinalActionClicable(
 		elm: HTMLElement,
 		xpathElement: string,
 		wasInteracted: boolean,
 		variant: Variant,
 		feature: Feature
 	): boolean {
-		let isCancelBtn = false;
+		let isCancelClicable = false;
 
 		if (
 			!wasInteracted &&
-			this.varUtil.isBtnAfterFinalActionButton(
+			this.varUtil.isClicableAfterFinalActionClicable(
 				elm,
-				variant.finalActionButtonFound,
-				feature.analysesBtnsAfterFinalActionBtn
+				variant.finalActionClicableFound,
+				feature.analysesClicablesAfterFinalActionClicable
 			)
 		) {
-			isCancelBtn = this.varUtil.isCancelButton(elm);
+			isCancelClicable = this.varUtil.isCancelClicable(elm);
 
-			this.saveBtnAfterFinalActionButton(feature, xpathElement, isCancelBtn);
+			this.saveClicableAfterFinalActionClicable(feature, xpathElement, isCancelClicable);
 		}
 
-		return isCancelBtn;
+		return isCancelClicable;
 	}
 
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {
@@ -646,6 +664,17 @@ export class VariantGenerator {
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
 
 			this.createVariantSentence(elm, variant, feature, observer);
+
+			const lastClicableInteracted = variant.getLastClicableInteracted();
+
+			const thenTypeSentence = this.featureUtil.createThenTypeVariantSentence(
+				feature.getName(),
+				lastClicableInteracted
+			);
+
+			if (thenTypeSentence) {
+				variant.setVariantSentence(thenTypeSentence);
+			}
 
 			if (redirectionCallback) {
 				await redirectionCallback(interactionThatTriggeredRedirect, variant, unloadMessageExtra);

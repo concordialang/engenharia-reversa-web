@@ -7,21 +7,16 @@ import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppa
 import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ObjectStorage } from '../storage/ObjectStorage';
-import { getPathTo, sleep } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { FeatureUtil } from './FeatureUtil';
 import { Scenario } from './Scenario';
 import { Spec } from './Spec';
-import { UIElement } from './UIElement';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
 import { limitOfVariants } from '../config';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
-import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
-import { Message } from '../../shared/comm/Message';
-import { Command } from '../../shared/comm/Command';
 import { classToPlain } from 'class-transformer';
-import { ForcingExecutionStoppageErrorFromInteraction } from '../crawler/ForcingExecutionStoppageErrorFromInteraction';
 
 export class FeatureGenerator {
 	constructor(
@@ -30,7 +25,7 @@ export class FeatureGenerator {
 		private elementAnalysisStorage: ElementAnalysisStorage,
 		private browserContext: BrowserContext,
 		private elementInteractionGraph: ElementInteractionGraph,
-		private variantStorage: ObjectStorage<Variant>
+		private variantStorage: ObjectStorage<Variant>,
 	) {}
 
 	public async generate(
@@ -43,7 +38,7 @@ export class FeatureGenerator {
 		previousInteractions: Array<ElementInteraction<HTMLElement>> = []
 	): Promise<Feature | null> {
 		if (!feature) {
-			feature = this.initializeNewFeature(spec, analysisElement, ignoreFormElements);
+			feature = this.initializeNewFeature(spec, analysisElement, ignoreFormElements, url);
 		}
 
 		console.log('feature a ser analisada FEATUREGENERATOR', feature);
@@ -88,7 +83,6 @@ export class FeatureGenerator {
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
-				url,
 				observer,
 				feature,
 				callback,
@@ -136,16 +130,6 @@ export class FeatureGenerator {
 			// return null;
 		}
 
-		const uniqueUiElements: UIElement[] = this.getUniqueUIElements(
-			scenario.getVariants()
-		);
-		
-		if(uniqueUiElements.length > 0){
-			feature.setUiElements(uniqueUiElements);
-		}
-
-		console.log('feature finalizada FEATUREGENERATOR', feature);
-
 		return feature;
 	}
 
@@ -162,11 +146,13 @@ export class FeatureGenerator {
 	private initializeNewFeature(
 		spec: Spec,
 		analysisElement: HTMLElement,
-		ignoreFormElements: boolean
+		ignoreFormElements: boolean,
+		url: URL
 	): Feature {
 		const feature = this.featureUtil.createFeatureFromElement(
 			analysisElement,
-			spec.featureCount()
+			spec.featureCount(),
+			url
 		);
 
 		feature.ignoreFormElements = ignoreFormElements;
@@ -193,15 +179,6 @@ export class FeatureGenerator {
 		) => {
 			this.addVariantToScenario(newVariant, scenario, feature);
 
-			//await this.variantStorage.set(newVariant.getId(), newVariant);
-
-			//unloadMessageExtra.newVariant = newVariant;
-
-			const uiElements: Array<UIElement> = this.getUniqueUIElements(
-				scenario.getVariants()
-			);
-			feature.setUiElements(uiElements);
-
 			unloadMessageExtra.feature = classToPlain(feature);
 
 			unloadMessageExtra.analysisElementPath = getPathTo(analysisElement);
@@ -222,17 +199,17 @@ export class FeatureGenerator {
 		if (variantAnalyzed && variantAnalyzed.isValid()) {
 			scenario.addVariant(variantAnalyzed);
 
-			// if true, starts analyzing the buttons after the final action button if the variant just found it
-			if (!feature.analysesBtnsAfterFinalActionBtn) {
-				feature.analysesBtnsAfterFinalActionBtn = this.checksIfContainsOnlyneFinalActionButton(
+			// if true, starts analyzing the clicables after the final action clicable if the variant just found it
+			if (!feature.analysesClicablesAfterFinalActionClicable) {
+				feature.analysesClicablesAfterFinalActionClicable = this.checksIfContainsOnlyneFinalActionClicable(
 					variantAnalyzed
 				);
 			}
 
-			if (feature.analysesBtnsAfterFinalActionBtn) {
-				// if true, starts analyzing only the cancel buttons
-				feature.analysesOnlyCancelBtns = this.checksIfAnalysesOnlyCancelBtns(
-					feature.btnsAfterFinalActionBtn,
+			if (feature.analysesClicablesAfterFinalActionClicable) {
+				// if true, starts analyzing only the cancel clicables
+				feature.analysesOnlyCancelClicables = this.checksIfAnalysesOnlyCancelClicables(
+					feature.clicablesAfterFinalActionClicable,
 					feature.interactedElements
 				);
 			}
@@ -246,45 +223,6 @@ export class FeatureGenerator {
 
 	private needsNewVariants(feature: Feature): boolean {
 		return feature.getVariantsCount() < feature.getMaxVariantsCount() ? true : false;
-	}
-
-	private getUniqueUIElements(variants: Variant[]):Array<UIElement> {
-		let allUIElements: Array<UIElement> = [];
-
-		for (let variant of variants) {
-			variant.getSentences().forEach((sentence) => {
-				if (sentence.uiElement) {
-					allUIElements.push(sentence.uiElement);
-				}
-			});
-		}
-
-		let uniqueUIElementsNames = [...new Set(allUIElements.map((uie) => uie.getName()))];
-
-		let uniqueUIElements: Array<UIElement> = [];
-
-		for (let nameUI of uniqueUIElementsNames) {
-			let UiElementsOfName = allUIElements.filter((uiElm) => uiElm.getName() === nameUI);
-
-			if (UiElementsOfName.length == 0) {
-				continue;
-			}
-
-			let uniqueUIElm: UIElement = UiElementsOfName[0];
-
-			if (UiElementsOfName.length > 1) {
-				uniqueUIElm = UiElementsOfName.reduce((uiElmWithMoreProperties, uiElm) => {
-					return uiElm.getProperties().length >
-						uiElmWithMoreProperties.getProperties().length
-						? uiElm
-						: uiElmWithMoreProperties;
-				}, uniqueUIElm);
-			}
-
-			uniqueUIElements.push(uniqueUIElm);
-		}
-
-		return uniqueUIElements;
 	}
 
 	private discoverElementMaxVariantCount(
@@ -322,15 +260,15 @@ export class FeatureGenerator {
 				variantCountByRadios > variantsMaxCount ? variantCountByRadios : variantsMaxCount;
 		}
 
-		// analyze buttons and anchors
+		// analyze clicables and anchors
 		const elms = Array.from(element.querySelectorAll('button, input, a'));
-		const buttons = this.buttonsFilter(elms);
+		const clicables = this.clicablesFilter(elms);
 
-		if (buttons.length > 0) {
-			const variantCountByButtons = this.discoverVariantCountByButtons(buttons);
+		if (clicables.length > 0) {
+			const variantCountByClicables = this.discoverVariantCountByClicables(clicables);
 
 			variantsMaxCount =
-				variantCountByButtons > variantsMaxCount ? variantCountByButtons : variantsMaxCount;
+				variantCountByClicables > variantsMaxCount ? variantCountByClicables : variantsMaxCount;
 		}
 
 		return variantsMaxCount;
@@ -359,7 +297,7 @@ export class FeatureGenerator {
 		return maxCountGroup ? maxCountGroup : 1;
 	}
 
-	private buttonsFilter(elms) {
+	private clicablesFilter(elms) {
 		return elms.filter((elm) => {
 			let htmlElm = elm as HTMLElement;
 
@@ -374,61 +312,61 @@ export class FeatureGenerator {
 		});
 	}
 
-	private discoverVariantCountByButtons(buttons): number {
-		let variantCountByButton = 0;
+	private discoverVariantCountByClicables(clicables): number {
+		let variantCountByClicable = 0;
 
-		for (let button of buttons) {
+		for (let clicable of clicables) {
 			if (
-				!button.disabled &&
-				!button.hidden &&
-				button.style.display !== 'none' &&
-				button.style.visibility !== 'hidden'
+				!clicable.disabled &&
+				!clicable.hidden &&
+				clicable.style.display !== 'none' &&
+				clicable.style.visibility !== 'hidden'
 			) {
-				variantCountByButton++;
+				variantCountByClicable++;
 			}
 		}
 
-		return variantCountByButton;
+		return variantCountByClicable;
 	}
 
 	/**
-	 * checks that the variant only contains a button element and it is the final action button
+	 * checks that the variant only contains a clicable element and it is the final action clicable
 	 */
-	private checksIfContainsOnlyneFinalActionButton(variant: Variant): boolean {
-		if (!variant.finalActionButtonFound) {
+	private checksIfContainsOnlyneFinalActionClicable(variant: Variant): boolean {
+		if (!variant.finalActionClicableFound) {
 			return false;
 		}
 
-		let variantBtnElements = variant.getButtonsElements();
+		let variantClicableElements = variant.getClicablesElements();
 
-		if (variantBtnElements.length != 1) {
+		if (variantClicableElements.length != 1) {
 			return false;
 		}
 
 		const variantGeneratorUtil = new VariantGeneratorUtil();
 
-		const isFinalActionBtn = variantGeneratorUtil.isFinalActionButton(variantBtnElements[0]);
+		const isFinalActionClicable = variantGeneratorUtil.isFinalActionClicable(variantClicableElements[0]);
 
-		return isFinalActionBtn;
+		return isFinalActionClicable;
 	}
 
 	/**
-	 * checks whether only cancel buttons should be analyzed
-	 * this happens when there are only cancel buttons to be analyzed
+	 * checks whether only cancel clicables should be analyzed
+	 * this happens when there are only cancel clicables to be analyzed
 	 */
-	public checksIfAnalysesOnlyCancelBtns(btnsAfterFinalActionBtn, interactedElements): boolean {
-		if (btnsAfterFinalActionBtn.length <= 0) {
+	public checksIfAnalysesOnlyCancelClicables(clicablesAfterFinalActionClicable, interactedElements): boolean {
+		if (clicablesAfterFinalActionClicable.length <= 0) {
 			return false;
 		}
 
-		// checks if there is any button after the final action button that is not a cancel button and has not been analyzed
-		const anyOtherBtn = btnsAfterFinalActionBtn.some((btn) => {
-			if (btn.isCancelButton) {
+		// checks if there is any clicable after the final action clicables that is not a cancel clicable and has not been analyzed
+		const anyOtherClicable = clicablesAfterFinalActionClicable.some((clb) => {
+			if (clb.isCancelClicable) {
 				return false;
 			}
 
 			const analysed = interactedElements.some(
-				(interactedElm) => interactedElm.xpath === btn.xpath
+				(interactedElm) => interactedElm.xpath === clb.xpath
 			);
 
 			if (!analysed) {
@@ -436,7 +374,7 @@ export class FeatureGenerator {
 			}
 		});
 
-		if (anyOtherBtn) {
+		if (anyOtherClicable) {
 			return false;
 		}
 

@@ -20,7 +20,6 @@ import { UIElementGenerator } from '../src/content-script/spec-analyser/UIElemen
 import { VariantSentencesGenerator } from '../src/content-script/spec-analyser/VariantSentencesGenerator';
 import { VariantGenerator } from '../src/content-script/spec-analyser/VariantGenerator';
 import { ElementAnalysisStatus } from '../src/content-script/crawler/ElementAnalysisStatus';
-import { IndexedDBObjectStorage } from '../src/content-script/storage/IndexedDBObjectStorage';
 import { LocalObjectStorage } from '../src/content-script/storage/LocalObjectStorage';
 import { ElementInteraction } from '../src/content-script/crawler/ElementInteraction';
 import { getDictionary } from '../src/content-script/dictionary';
@@ -30,6 +29,8 @@ import { Feature } from '../src/content-script/spec-analyser/Feature';
 import { VariantGeneratorUtil } from '../src/content-script/spec-analyser/VariantGeneratorUtil';
 import { Interactor } from '../src/content-script/crawler/Interactor';
 import { Variant } from '../src/content-script/spec-analyser/Variant';
+import { PageAnalysisStorage } from '../src/content-script/storage/PageAnalysisStorage';
+import { InMemoryStorage } from '../src/content-script/storage/InMemoryStorage';
 
 const chrome = new ChromeMock();
 
@@ -89,7 +90,7 @@ describe('Crawler', () => {
 
 		if (link1Element) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
+			const analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
@@ -135,7 +136,7 @@ describe('Crawler', () => {
 
 		if (link1ParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
+			const analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
@@ -181,7 +182,7 @@ describe('Crawler', () => {
 
 		if (link1Element) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
+			const analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
 			const analyzedElement = new ElementAnalysis(
 				link1Element,
 				new URL(window.location.href),
@@ -227,7 +228,7 @@ describe('Crawler', () => {
 
 		if (link1ParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
+			const analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentElement,
 				new URL(window.location.href),
@@ -278,7 +279,7 @@ describe('Crawler', () => {
 
 		if (link1ParentParentElement) {
 			const localStorage = new LocalStorageMock();
-			const analyzedElementStorage = new ElementAnalysisStorage(localStorage);
+			const analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
 			const analyzedElement = new ElementAnalysis(
 				link1ParentParentElement,
 				new URL(window.location.href),
@@ -380,10 +381,6 @@ describe('Crawler', () => {
 
 		const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
-		const pageStorage = new IndexedDBObjectStorage<string>('engenharia-reversa-web', 'pages');
-
-		const graphStorage: GraphStorage = new GraphStorage(new ChromeCommunicationChannel(new ChromeMock()));
-
 		const elementInteracationStorage = new LocalObjectStorage<ElementInteraction<HTMLElement>>(
 			window.localStorage,
 			ElementInteraction
@@ -393,14 +390,7 @@ describe('Crawler', () => {
 		const featureStorage = new LocalObjectStorage<Feature>(window.localStorage, Feature);
 		const spec: Spec = new Spec(language, featureStorage);
 		const dictionary = getDictionary(language);
-
-		let analyzedElementStorage: ElementAnalysisStorage;
-		if (options.analyzedElementStorage) {
-			analyzedElementStorage = options.analyzedElementStorage;
-		} else {
-			analyzedElementStorage = new ElementAnalysisStorage(new LocalStorageMock());
-		}
-
+		
 		let communicationChannel: CommunicationChannel;
 		if (options.communicationChannel) {
 			communicationChannel =
@@ -409,11 +399,24 @@ describe('Crawler', () => {
 			communicationChannel = new ChromeCommunicationChannel(chrome);
 		}
 
+		const pageStorage = new InMemoryStorage<string>(communicationChannel);
+		const graphStorage: GraphStorage = new GraphStorage(communicationChannel);
+
+		let analyzedElementStorage: ElementAnalysisStorage;
+		if (options.analyzedElementStorage) {
+			analyzedElementStorage = options.analyzedElementStorage;
+		} else {
+			analyzedElementStorage = new ElementAnalysisStorage(communicationChannel);
+		}
+
+		const pageAnalysisStorage = new PageAnalysisStorage(communicationChannel);
+
 		const elementInteractionGraph = new ElementInteractionGraph(
 			tabId,
 			elementInteracationStorage,
 			analyzedElementStorage,
-			graphStorage
+			graphStorage,
+			pageAnalysisStorage
 		);
 
 		const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
@@ -440,7 +443,6 @@ describe('Crawler', () => {
 		const variantGenerator: VariantGenerator = new VariantGenerator(
 			elementInteractionGenerator,
 			elementInteractionExecutor,
-			elementInteractionGraph,
 			featureUtil,
 			variantGeneratorUtil
 		);
@@ -456,7 +458,7 @@ describe('Crawler', () => {
 			browserContext,
 			elementInteractionGraph,
 			variantStorage,
-			featureStorage
+			dictionary
 		);
 
 		const pageAnalyzer = new PageAnalyzer(
@@ -465,7 +467,9 @@ describe('Crawler', () => {
 			browserContext,
 			featureStorage,
 			elementInteractionExecutor,
-			elementInteractionGraph
+			elementInteractionGraph,
+			communicationChannel,
+			pageAnalysisStorage
 		);
 
 		const analysisElementXPathStorage = new LocalObjectStorage<string>(window.localStorage);
@@ -483,7 +487,8 @@ describe('Crawler', () => {
 			featureStorage,
 			specStorage,
 			specMutex,
-			analysisElementXPathStorage
+			analysisElementXPathStorage,
+			pageAnalysisStorage
 		);
 
 		return crawler;

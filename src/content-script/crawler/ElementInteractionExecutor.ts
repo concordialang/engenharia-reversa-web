@@ -33,7 +33,7 @@ export class ElementInteractionExecutor {
 				inputType == HTMLInputType.Button ||
 				inputType == HTMLInputType.Reset
 			) {
-				result = await this.interactor.executeButton(
+				result = await this.interactor.executeClicable(
 					<ElementInteraction<HTMLButtonElement>>interaction,
 					redirectionCallback
 				);
@@ -43,7 +43,7 @@ export class ElementInteractionExecutor {
 				);
 			}
 		} else if (type == HTMLElementType.BUTTON || type == HTMLElementType.A) {
-			result = await this.interactor.executeButton(
+			result = await this.interactor.executeClicable(
 				<ElementInteraction<HTMLButtonElement | HTMLAnchorElement>>interaction,
 				redirectionCallback
 			);

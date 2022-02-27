@@ -7,6 +7,7 @@ import { VariantSentenceActions } from '../content-script/enums/VariantSentenceA
 import { Scenario } from '../content-script/spec-analyser/Scenario';
 import { UIElement } from '../content-script/spec-analyser/UIElement';
 import { PropertyTypes } from '../content-script/enums/PropertyTypes';
+import { formatToFirstCapitalLetter } from '../content-script/util';
 
 const spaceTab = '\t';
 const doubleSpaceTab = '\t\t';
@@ -17,10 +18,21 @@ export class FeatureFileGenerator {
 	public async generate(spec) {
 		const zip = new JSZip();
 
+		console.log('getFeatures', spec.getFeatures())
 		for (let feature of spec.getFeatures()) {
-			const contentFile = await this.generateFeatureFile(feature, spec.language);
+			const fileContent = await this.generateFeatureFile(feature, spec.language);
+			
+			let folderName = feature.url ? feature.url.pathname : '';
 
-			zip.file(feature.getName().toLowerCase() + '.feature', contentFile);
+			if(folderName){
+				let folderNameArr = folderName.split('.')[0].split('/').filter((position) => position != '');
+				folderName = folderNameArr.join('/');
+			}
+
+			const fileName = feature.getName().toLowerCase() + '.feature';
+			const pathFile = folderName ? folderName + '/' + fileName : fileName; 
+
+			zip.file(pathFile, fileContent);
 		}
 
 		zip.generateAsync({ type: 'blob' }).then((content) => {
@@ -42,7 +54,7 @@ export class FeatureFileGenerator {
 		content += `${dictionary.scenario}: ${mainScenario.getName()}` + doubleLineBreak;
 
 		// variants
-		content = await this.generateVariants(content, mainScenario, dictionary);
+		content = await this.generateVariants(content, mainScenario, dictionary, feature?.url);
 
 		// uiElements
 		content = await this.generateUiElements(content, feature.getUiElements(), dictionary);
@@ -53,8 +65,11 @@ export class FeatureFileGenerator {
 	private async generateVariants(
 		content: string,
 		scenario: Scenario,
-		dictionary
+		dictionary,
+		url: URL | undefined
 	): Promise<string> {
+		const urlStr = url && url.href ? url.href : '';
+
 		// variants
 		for (let variant of scenario.getVariants()) {
 			content += spaceTab + `${dictionary.variant}: ${variant.getName()}` + lineBreak;
@@ -79,12 +94,12 @@ export class FeatureFileGenerator {
 				content += `${dictionary.I} ${sentenceActionDictionary} `;
 
 				if (sentence.type === VariantSentenceType.GIVEN) {
-					content += `${dictionary.inThe} "${sentence.url}"` + lineBreak;
+					content += `${dictionary.inThe} "${urlStr}"` + lineBreak;
 				} else if (sentence.type === VariantSentenceType.THEN) {
 					content += `~${sentence.statePostCondition}~` + doubleLineBreak;
 				} else {
 					if (sentence.action === VariantSentenceActions.CLICK) {
-						content += `${dictionary.on} `;
+						content += `${dictionary.inThe} `;
 					}
 
 					let innerTextValue = sentence.uiElement?.getInnexTextValue();
@@ -106,31 +121,41 @@ export class FeatureFileGenerator {
 		uiElements: UIElement[],
 		dictionary
 	): Promise<string> {
-		for (let uiElm of uiElements) {
-			content += `${dictionary.uiElement}: ${uiElm.getName()}` + lineBreak;
+		for (let i in uiElements) {
+			let uiElm = uiElements[i];
 
-			for (let property of uiElm.getProperties()) {
-				let propName = property.getName();
+			if(!uiElm.onlyDisplayValue){
+				let uiElmName = uiElm.getName() != '' ? uiElm.getName() : formatToFirstCapitalLetter(dictionary.element) + ' ' + i;
 
-				const propertyNameDictionary =
-					dictionary.uiElmPropertiestypes[propName.toLocaleLowerCase()];
+				content += `${dictionary.uiElement}: ${uiElmName}` + lineBreak;
+	
+				for (let property of uiElm.getProperties()) {
+					let propName = property.getName();
+	
+					const propertyNameDictionary =
+						dictionary.uiElmPropertiestypes[propName.toLocaleLowerCase()];
+	
+					let value = property.getValue();
+	
+					if (
+						propName === PropertyTypes.FORMAT ||
+						(propName === PropertyTypes.VALUE && typeof value === 'string')
+					) {
+						value = `'${value}'`;
+					} else if (propName === PropertyTypes.ID) {
+						value = property.isXPathIdProp() ? `'//${value}'` : `'#${value}'`;
+					}
 
-				let value = property.getValue();
-
-				if (
-					propName === PropertyTypes.FORMAT ||
-					(propName === PropertyTypes.VALUE && typeof value === 'string')
-				) {
-					value = `'${value}'`;
-				} else if (propName === PropertyTypes.ID) {
-					value = property.isXPathIdProp() ? `'//${value}'` : `'#${value}'`;
+					if(propName === PropertyTypes.EDITABLE || propName === PropertyTypes.REQUIRED){
+						content += spaceTab + '- ' + propertyNameDictionary + lineBreak;
+					} else {
+						content +=
+							spaceTab + `- ${propertyNameDictionary} ${dictionary.is} ${value}` + lineBreak;
+					}
 				}
-
-				content +=
-					spaceTab + `- ${propertyNameDictionary} ${dictionary.is} ${value}` + lineBreak;
+	
+				content += lineBreak;
 			}
-
-			content += lineBreak;
 		}
 
 		return content;
