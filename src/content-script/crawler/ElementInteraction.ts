@@ -31,7 +31,6 @@ export class ElementInteraction<T extends HTMLElement> {
 		eventType: HTMLEventType,
 		pageUrl: URL,
 		value: string | boolean | null = null,
-		//FIXME Remover esse argumento, pois id é gerado internamente
 		id: string | null = null,
 		elementSelector?: string | null,
 		variant?: Variant | null,

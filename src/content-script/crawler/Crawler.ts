@@ -6,8 +6,6 @@ import { VisitedURLGraph } from './VisitedURLGraph';
 import { PageAnalyzer } from './PageAnalyzer';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { maxWaitTimeForUnload } from '../config';
-import { Message } from '../../shared/comm/Message';
-import { Command } from '../../shared/comm/Command';
 import {
 	commonAncestorElement,
 	getDiff,
@@ -23,13 +21,13 @@ import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { Spec } from '../spec-analyser/Spec';
 import { Feature } from '../spec-analyser/Feature';
-import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 import Mutex from '../mutex/Mutex';
 import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
 import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
-import { ElementAnalysis } from './ElementAnalysis';
 import { PageAnalysis } from './PageAnalysis';
+import { Message } from '../../shared/comm/Message';
+import { Command } from '../../shared/comm/Command';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -65,7 +63,7 @@ export class Crawler {
 				//A callback being called when a redirect was detected on VariantGenerator was not working, so it had to be done here
 			});
 
-			//obtem ultima interacao que não está dentro do contexto já analisado
+			// get the last interaction that is not within the context already analyzed
 			let lastUnanalyzed = await this.getMostRecentInteractionFromUnfinishedAnalysis(
 				this.elementInteractionGraph
 			);
@@ -80,8 +78,6 @@ export class Crawler {
 					return false;
 				}
 			}
-
-			 console.log("lastUnanalyzed CRAWLER", lastUnanalyzed);
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
 
@@ -109,8 +105,6 @@ export class Crawler {
 
 			const previousDocument = await this.getPreviousDocument();
 			const analysisElement = await this.getAnalysisElement(document, previousDocument);
-
-			console.log('analysisElement CRAWLER', analysisElement);
 
 			// const messageResponse = await this.communicationChannel.sendMessageToAll(
 			// 	new Message([Command.GetNumberOfAvailableTabs])
@@ -156,9 +150,7 @@ export class Crawler {
 				this.elementInteractionGraph
 			);
 
-			console.log('lastUnanalyzed FINAL', lastUnanalyzed);
-	
-			//se ultima interacao que não está dentro do contexto já analisado está em outra página, ir para essa página
+			// if the last interaction that is not within the context already analyzed is on another page, go to that page
 			if (
 				lastUnanalyzed &&
 				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
@@ -209,49 +201,6 @@ export class Crawler {
 		this.pageStorage.remove(this.lastPageKey);
 	}
 
-	// private async getMostRecentInteractionFromUnfinishedAnalysis(
-	// 	elementInteractionGraph: ElementInteractionGraph,
-	// 	fromUnfinishedFeatureOnSameUrl: boolean
-	// ): Promise<ElementInteraction<HTMLElement> | null> {
-	// 	const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
-	// 	if (currentInteraction) {
-	// 		if(!fromUnfinishedFeatureOnSameUrl){
-	// 			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
-	// 				currentInteraction.getPageUrl()
-	// 			);
-	// 			if (analysisStatus != PageAnalysisStatus.Done) {
-	// 				return currentInteraction;
-	// 			}
-	// 		}
-	// 		let path : ElementInteraction<HTMLElement>[] = [];
-	// 		if(fromUnfinishedFeatureOnSameUrl){
-	// 			path = await elementInteractionGraph.pathToInteraction(
-	// 				currentInteraction,
-	// 				true,
-	// 				{interactionUrl: this.browserContext.getUrl(), isEqual: true},
-	// 				null,
-	// 				false,
-	// 				undefined,
-	// 				true
-	// 			);
-	// 		} else {
-	// 			path = await elementInteractionGraph.pathToInteraction(
-	// 				currentInteraction,
-	// 				true,
-	// 				null,
-	// 				null,
-	// 				false
-	// 			);
-	// 		}
-	// 		const lastUnanalyzed = path.pop();
-	// 		if (lastUnanalyzed) {
-	// 			return lastUnanalyzed;
-	// 		}
-	// 	}
-
-	// 	return null;
-	// }
-
 	public async getMostRecentInteractionFromUnfinishedAnalysis(
 		elementInteractionGraph: ElementInteractionGraph
 	): Promise<ElementInteraction<HTMLElement> | null> {
@@ -279,49 +228,6 @@ export class Crawler {
 		return null;
 	}
 
-	// private async getMostRecentInteractionFromUnfinishedAnalysis(
-	// 	elementInteractionGraph: ElementInteractionGraph,
-	// 	fromUnfinishedFeatureOnSameUrl: boolean
-	// ): Promise<ElementInteraction<HTMLElement> | null> {
-	// 	const currentInteraction = await this.elementInteractionGraph.getLastInteraction();
-	// 	if (currentInteraction) {
-	// 		if(!fromUnfinishedFeatureOnSameUrl){
-	// 			const analysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(
-	// 				currentInteraction.getPageUrl()
-	// 			);
-	// 			if (analysisStatus != PageAnalysisStatus.Done) {
-	// 				return currentInteraction;
-	// 			}
-	// 		}
-	// 		let path : ElementInteraction<HTMLElement>[] = [];
-	// 		if(fromUnfinishedFeatureOnSameUrl){
-	// 			path = await elementInteractionGraph.pathToInteraction(
-	// 				currentInteraction,
-	// 				true,
-	// 				{interactionUrl: this.browserContext.getUrl(), isEqual: true},
-	// 				null,
-	// 				false,
-	// 				undefined,
-	// 				true
-	// 			);
-	// 		} else {
-	// 			path = await elementInteractionGraph.pathToInteraction(
-	// 				currentInteraction,
-	// 				true,
-	// 				null,
-	// 				null,
-	// 				false
-	// 			);
-	// 		}
-	// 		const lastUnanalyzed = path.pop();
-	// 		if (lastUnanalyzed) {
-	// 			return lastUnanalyzed;
-	// 		}
-	// 	}
-
-	// 	return null;
-	// }
-
 	private async getPreviousDocument(): Promise<Document | null> {
 		const previousHTML: string | null = await this.pageStorage.get(this.lastPageKey);
 		if (previousHTML) {
@@ -330,13 +236,6 @@ export class Crawler {
 			return previousDoc;
 		}
 		return null;
-	}
-
-	private async getHtmlElementFromString(element: string): Promise<Node> {
-		const template = document.createElement('template');
-		const html = element.trim();
-		template.innerHTML = html;
-		return template.content;
 	}
 
 	private async getAnalysisElement(
@@ -393,9 +292,7 @@ export class Crawler {
 
 		const formElements: NodeListOf<Element> = getFormElements(analysisContext);
 
-		/*if (formElements.length >= 1) {
-			ancestorElement = commonAncestorElement(Array.from(formElements));
-		} else*/ if (formElements.length == 0) {
+		if (formElements.length == 0) {
 			const inputFieldTags = analysisContext.querySelectorAll(
 				'input, select, textarea, button, a'
 			);

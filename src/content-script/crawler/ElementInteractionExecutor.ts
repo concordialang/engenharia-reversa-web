@@ -1,6 +1,6 @@
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLInputType } from '../enums/HTMLInputType';
-import { getPathTo, sleep } from '../util';
+import { sleep } from '../util';
 import { ElementInteraction } from './ElementInteraction';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
@@ -19,7 +19,6 @@ export class ElementInteractionExecutor {
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
 		await sleep(timeBetweenInteractions);
-		console.log(interaction);
 
 		const element = interaction.getElement();
 		const type = element.tagName;

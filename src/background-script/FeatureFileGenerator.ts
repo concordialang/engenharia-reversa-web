@@ -18,7 +18,6 @@ export class FeatureFileGenerator {
 	public async generate(spec) {
 		const zip = new JSZip();
 
-		console.log('getFeatures', spec.getFeatures())
 		for (let feature of spec.getFeatures()) {
 			const fileContent = await this.generateFeatureFile(feature, spec.language);
 			

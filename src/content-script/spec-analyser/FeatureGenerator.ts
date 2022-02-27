@@ -41,8 +41,6 @@ export class FeatureGenerator {
 			feature = this.initializeNewFeature(spec, analysisElement, ignoreFormElements, url);
 		}
 
-		console.log('feature a ser analisada FEATUREGENERATOR', feature);
-
 		const scenario = feature.getGeneralScenario();
 
 		let observer: MutationObserverManager = new MutationObserverManager(
@@ -90,34 +88,14 @@ export class FeatureGenerator {
 				pathsOfElementsToIgnore
 			);
 
-			console.log('variantAnalyzed return FEATUREGENERATOR', variantAnalyzed);
-
 			if (variantAnalyzed) {
-
-				console.log('variant analisada com sucesso FEATUREGENERATOR');
-
 				this.addVariantToScenario(variantAnalyzed, scenario, feature);
 				this.variantStorage.set(variantAnalyzed.getId(), variantAnalyzed);
 				await spec.addFeature(feature);
 				if (feature.needNewVariants && variantAnalyzed.isValid()) {
-					
-					// if(
-					// 	variantAnalyzed.getSentences().some(sentence => sentence.uiElement?.getId() == "/html/body/table/tbody/tr/td[1]/div/div[1]/div[2]/a") &&
-					// 	window.location.href.includes("product/index.php")
-					// ){
-					// 	console.log('variantAnalyzed novo produto', variantAnalyzed);
-					// }
-
-					// if(variantAnalyzed.causedRedirect){
-					// 	throw new ForcingExecutionStoppageErrorFromInteraction('SAINDO DO RELOAD');
-					// }
-
-					console.log('reload da página no fim da variant FEATUREGENERATOR');
-
 					this.browserContext.getWindow().location.reload();
 					throw new ForcingExecutionStoppageError('Forcing execution to stop');
 				} else {
-					console.log('analysisElement como done FEATUREGENERATOR', analysisElement);
 					this.setElementAnalysisAsDone(analysisElement);
 				}
 			}
@@ -127,7 +105,6 @@ export class FeatureGenerator {
 
 		if (feature.getVariantsCount() == 0) {
 			this.setElementAnalysisAsDone(analysisElement);
-			// return null;
 		}
 
 		return feature;
@@ -182,8 +159,6 @@ export class FeatureGenerator {
 			unloadMessageExtra.feature = classToPlain(feature);
 
 			unloadMessageExtra.analysisElementPath = getPathTo(analysisElement);
-
-			console.log('redirecionamento CALLBACK 2 FEATUREGENERATOR feature:', feature);
 
 			if (redirectionCallback) {
 				await redirectionCallback(feature, unloadMessageExtra);

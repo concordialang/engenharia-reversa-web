@@ -43,7 +43,6 @@ export class Graph {
 		return nodesIds;
 	}
 
-	//FIXME Remover essa função após refatoração
 	public depthFirstSearch(): Array<string> {
 		const nodesIds: string[] = [];
 		const nodes = this.graph.nodes();

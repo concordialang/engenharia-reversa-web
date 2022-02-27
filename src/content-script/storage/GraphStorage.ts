@@ -1,6 +1,5 @@
 import { Graph } from '../graph/Graph';
 import { InMemoryStorage } from './InMemoryStorage';
-import { LocalObjectStorage } from './LocalObjectStorage';
 
 export class GraphStorage extends InMemoryStorage<Graph> {
 	protected serialize(obj: Graph): {} {

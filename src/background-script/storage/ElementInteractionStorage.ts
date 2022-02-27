@@ -1,6 +1,3 @@
-import { InMemoryStorage } from './InMemoryStorage';
-import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
-import { InMemoryDatabase } from '../extension/InMemoryDatabase';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { ObjectStorage } from '../../shared/storage/ObjectStorage';
 import { Variant } from '../../content-script/spec-analyser/Variant';
@@ -9,7 +6,6 @@ import { Feature } from '../extension/Feature';
 import { IndexedDBObjectStorage } from '../../shared/storage/IndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 
-// TODO Trocar o nome da classe
 export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInteraction<HTMLElement>> {
 	constructor(
 		private featureStorage: ObjectStorage<Feature>,
@@ -69,7 +65,6 @@ export class ElementInteractionStorage extends IndexedDBObjectStorage<ElementInt
 			elementInteraction.setVariant(variant);
 		} else if(variant) {
 			if(variant.constructor.name != "Variant"){
-				// console.log(variant);
 				//@ts-ignore
 				variant = plainToClass(Variant, variant);
 			}

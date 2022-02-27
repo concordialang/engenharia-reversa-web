@@ -56,24 +56,6 @@ export class DiffDomManager {
 		return diffDom;
 	}
 
-	// private getOutermostElementDiff() {
-	// 	let outermostElementDiff = this.diffDom.find(
-	// 		(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
-	// 	);
-
-	// 	if (!outermostElementDiff) return null;
-
-	// 	for (let diff of this.diffDom) {
-	// 		outermostElementDiff =
-	// 			diff.route.length <= outermostElementDiff.route.length &&
-	// 			(diff.action == 'replaceElement' || diff.action == 'addElement')
-	// 				? diff
-	// 				: outermostElementDiff;
-	// 	}
-
-	// 	return outermostElementDiff;
-	// }
-
 	private electedElementsDiff() {
 		let newElementsDiff = this.diffDom.filter(
 			(diff) => diff.action == 'replaceElement' || diff.action == 'addElement'
@@ -110,6 +92,7 @@ export class DiffDomManager {
 			if(diff.route.length < elected.route.length) {
 				let childrenDiff = diff.elm.querySelectorAll(strHtmlTagsForDiff);
 
+				// checks if the element will be disregarded
 				if(childrenDiff.length >= minimumChildNodesNumberForDiff){
 					elected = diff;
 				}

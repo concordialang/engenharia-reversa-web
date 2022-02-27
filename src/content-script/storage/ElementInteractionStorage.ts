@@ -1,9 +1,7 @@
-import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Feature } from '../spec-analyser/Feature';
 import { ObjectStorage } from './ObjectStorage';
 import { Variant } from '../spec-analyser/Variant';
-import { InMemoryStorage } from './InMemoryStorage';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';

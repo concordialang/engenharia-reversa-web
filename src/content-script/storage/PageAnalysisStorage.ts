@@ -22,7 +22,6 @@ export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 		url: URL
 	): Promise<PageAnalysisStatus> {
 		const analysis = await this.get(getURLWithoutQueries(url));
-		console.log('analysis in storage', analysis);
 		if(analysis instanceof PageAnalysis) {
 			return analysis.getStatus();
 		}

@@ -83,8 +83,6 @@ export class ExtensionFacade {
 					_this.openedTabs.push(tab);
 					_this.tabFinished.set(tab.getId(), false);
 					_this.openedTabsCounter++;
-					console.log("still has ajax to complete");
-					//console.log(_this.tabStillHasAjaxToComplete(tab));
 					// while(_this.tabStillHasAjaxToComplete(tab)){
 					// 	await sleep(5);
 					// }
@@ -123,7 +121,6 @@ export class ExtensionFacade {
 			} else if (message.includesAction(Command.GetValueFromMemoryDatabase)) {
 				const data = message.getExtra();
 				if (data) {
-					console.log(_this.inMemoryDatabase);
 					const key = data.key;
 					let value = _this.inMemoryDatabase.get(key);
 					if (responseCallback) {
@@ -136,7 +133,6 @@ export class ExtensionFacade {
 			} else if (message.includesAction(Command.RemoveValueFromMemoryDatabase)) {
 				const data = message.getExtra();
 				if (data) {
-					console.log(_this.inMemoryDatabase);
 					const key = data.key;
 					_this.inMemoryDatabase.remove(key);
 					if (responseCallback) {
@@ -158,20 +154,16 @@ export class ExtensionFacade {
 				const data = message.getExtra();
 				if (data) {
 					const key = data.key;
-					console.log(key);
 					const storage = new IndexedDBObjectStorage(data.dbName, data.storeName);
 					let value = await storage.get(key);
-					console.log(value);
 					if (responseCallback) {
 						if(value instanceof Graph){
 							value = value.serialize();
 						}
-						console.log("enviou");
 						responseCallback(new Message([], value));
 					}
 				}
 			} else if (message.includesAction(Command.GetInteractionFromBackgroundIndexedDB)) {
-				console.log(message);
 				const data = message.getExtra();
 				if (data) {
 					const key = data.key;
@@ -188,7 +180,6 @@ export class ExtensionFacade {
 					const storage = new ElementInteractionStorage(featureStorage, variantStorage);
 					let value = await storage.get(key);
 					if (responseCallback) {
-						console.log("enviou");
 						//@ts-ignore
 						responseCallback(new Message([], classToPlain(value, ElementInteraction)));
 					}
@@ -233,41 +224,23 @@ export class ExtensionFacade {
 						const url = sender.getURL();
 						if(url){
 							if(url.host != _this.initialHost){
-								console.log("hosts diferentes:", url.host, _this.initialHost);
 								_this.extension.sendMessageToTab(
 									sender.getId(),
 									new Message([Command.CrawlRejected])
 								);
 							}
-							console.log(url.href);
 						} else {
 							throw new Error("url is null");
 						}
 
-						console.log("graph:");
 						let graph = _this.inMemoryDatabase.get('interactions-graph-tab-'+sender.getId());
 						if(graph instanceof Graph){
 							graph = graph.serialize();
 						}
-						if(graph){
-							console.log(graph);
-							if(graph.links){
-								console.log("size links:");
-								console.log(graph.links.length);
-							}
-							if(graph.nodes){
-								console.log("size:");
-								console.log(graph.nodes.length);
-								for(let node of graph.nodes){
-									console.log(node);
-								}
-							}							
-						}
+						
 						while(_this.tabLocked.get(sender.getId())){
 							await sleep(5);
 						}
-						console.log("still has ajax to complete");
-						console.log(_this.tabStillHasAjaxToComplete(sender));
 						while(_this.tabStillHasAjaxToComplete(sender)){
 							await sleep(5);
 						}
@@ -278,11 +251,8 @@ export class ExtensionFacade {
 								new Message([], _this.openedTabsLimit - _this.openedTabsCounter)
 							);
 					} else if (message.includesAction(AppEvent.Finished)) {
-						console.log("tabs:",_this.tabFinished);
 						_this.tabFinished.set(sender.getId(), true);
-						console.log(_this.allTabsFinished());
 						if(_this.allTabsFinished()){
-							// const specStorage = JSON.parse(message.getExtra());
 							const specObj = _this.inMemoryDatabase.get(Spec.getStorageKey());
 							let spec;
 							if(!(specObj instanceof Spec)){
@@ -291,9 +261,6 @@ export class ExtensionFacade {
 								spec = specObj;
 							}
 							spec.setMutex(_this.specMutex);
-							// const specStorage = JSON.parse(message.getExtra());
-							// const specObj = JSON.parse(specStorage.localStorage.Spec);
-							// const spec = plainToClass(Spec, specObj);
 
 							const concordiaFiles = new FeatureFileGenerator();
 							concordiaFiles.generate(spec);
@@ -320,15 +287,12 @@ export class ExtensionFacade {
 						//@ts-ignore
 						const url = interaction.getPageUrl();
 
-						console.log("BGBG FEATURE", feature)
 						//@ts-ignore
 						if (!feature.needNewVariants) {
-							console.log("BGBG ELEMENT ANALYSIS AS DONE", analysisElementPath)
 							await _this.setElementAnalysisAsDone(analysisElementPath, sender, url);
 
 							//@ts-ignore
 							if(feature.ignoreFormElements){
-								console.log("BGBG PAGE AS DONE URL", url)
 								await _this.setPageAnalysisAsDone(url);
 							}
 						}
@@ -361,12 +325,7 @@ export class ExtensionFacade {
 
 	private async addElementInteractionToGraph(interaction: ElementInteraction<HTMLElement>, graph: ElementInteractionGraph): Promise<void> {
 		//@ts-ignore
-		console.log(interaction.getElementSelector());
-		console.log(this.inMemoryDatabase.keys());
-		//@ts-ignore
 		await graph.addElementInteractionToGraph(interaction);
-		//@ts-ignore
-		console.log(this.inMemoryDatabase.size());
 	}
 
 	private getElementInteractionGraph(sender: Tab){
@@ -397,9 +356,7 @@ export class ExtensionFacade {
 			sender.getId()
 		);
 		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
-		console.log('vai salvar como analisado');
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
-		console.log('salvou como analisado');
 	}
 
 	private async setElementAnalysisAsDone(elementPath: string, sender: Tab, url : URL): Promise<void> {
@@ -419,13 +376,8 @@ export class ExtensionFacade {
 			PageAnalysisStatus.Done,
 		);
 
-		console.log('BGBG pageAnalysis', pageAnalysis);
 		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase);
 		await pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
-		console.log('qqqqqqqqqqqqqqqqqqqqqqqqqq', pageAnalysis.getUrl());
-		const teste = await pageAnalysisStorage.getPageAnalysisStatus(pageAnalysis.getUrl());
-
-		console.log('testetesteteste', teste);
 	}
 
 	public openNewTab(url: URL): void {
@@ -446,21 +398,13 @@ export class ExtensionFacade {
 	}
 
 	private async saveFeature(feature: Feature): Promise<void> {
-		console.log("vai salvar a feature");
-
 		const featureStorage = new IndexedDBObjectStorage<Feature>(
 			IndexedDBDatabases.Features,
 			IndexedDBDatabases.Features,
 			Feature
 		);
+		
 		await featureStorage.set(feature.getId(), feature);
-		console.log(feature.interactedElements.length);
-		console.log(feature.getId());
-		console.log(feature.getName());
-
-		console.log(feature.interactedElements[feature.interactedElements.length-1]);
-
-		console.log("salvou a feature");
 	}
 
 	private async saveFeatureToSpec(feature: Feature, spec: Spec, url: URL, sender: Tab): Promise<void> {
@@ -495,13 +439,10 @@ export class ExtensionFacade {
 				const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 				await elementAnalysisStorage.set(analysis.getId(), analysis);
 			}
-			// else {
-			// 	throw new Error("UIElement source element doesn't exist");
-			// }
 		}
 	}
 
-	//temporaria
+	// temporary
 	public sendOrderToCrawlTab(tab: Tab, firstCrawl: Boolean = false) {
 		let commands: Array<Command> = [Command.Crawl];
 		if (firstCrawl) {
@@ -523,7 +464,7 @@ export class ExtensionFacade {
 		return regexp.test(key);
 	}
 
-	//teoricamente pode dar problema de concorrência
+	// teoricamente pode dar problema de concorrência
 	private removeTab(tab: Tab) {
 		for (let i: number = 0; i < this.openedTabs.length; i++) {
 			let openedTab: Tab = this.openedTabs[i];
@@ -536,7 +477,7 @@ export class ExtensionFacade {
 		if (url) this.openNewTab(url);
 	}
 
-	//temporaria
+	// temporary
 	public tabWasOpenedByThisExtension(tab: Tab) {
 		for (let openedTab of this.openedTabs) {
 			if (openedTab.getId() == tab.getId()) {
@@ -548,15 +489,12 @@ export class ExtensionFacade {
 
 	private tabStillHasAjaxToComplete(tab: Tab): boolean {
 		return false;
-		//console.log(this.getNumberOfAjaxRequestsBeingProcessed(tab));
 		// return this.getNumberOfAjaxRequestsBeingProcessed(tab) > 0;
 	}
 
 	private getNumberOfAjaxRequestsBeingProcessed(tab: Tab): number {
 		//@ts-ignore
 		const ajaxCalls = this.tabAjaxCalls.get(tab.getId());
-		console.log(this.tabAjaxCalls);
-		console.log(ajaxCalls);
 		if (ajaxCalls) {
 			return ajaxCalls.length;
 		}
@@ -573,7 +511,6 @@ export class ExtensionFacade {
 				const tabRequests = _this.tabAjaxCalls.get(details.tabId) || [];
 				tabRequests.push(details.requestId);
 				_this.tabAjaxCalls.set(details.tabId.toString(), tabRequests);
-				console.log(_this.tabAjaxCalls);
 			}
 		};
 
@@ -583,7 +520,6 @@ export class ExtensionFacade {
 				const tabRequests = _this.tabAjaxCalls.get(details.tabId) || [];
 				_this.removeFromArray(tabRequests, details.requestId);
 				_this.tabAjaxCalls.set(details.tabId.toString(), tabRequests);
-				console.log(_this.tabAjaxCalls);
 			}
 		};
 		

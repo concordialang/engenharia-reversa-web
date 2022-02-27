@@ -34,7 +34,6 @@ export class PageAnalyzer {
 		private pageAnalysisStorage: PageAnalysisStorage
 	) {
 		this.redirectCallback = async (feature: Feature, unloadMessageExtra: any) => {
-			console.log('redirecionamento CALLBACK 3 PAGEANALYZER unloadMessageExtra:', unloadMessageExtra);
 			this.communicationChannel.sendMessage(
 				new Message([Command.ProcessUnload], unloadMessageExtra)
 			);
@@ -79,9 +78,6 @@ export class PageAnalyzer {
 
 		const elementAnalysis = await this.elementAnalysisStorage.getWithXpathAndUrl(xPath, url);
 
-		console.log('feature PAGEANALYZER', feature);
-		console.log('elementAnalysis PAGEANALYZER', elementAnalysis);
-
 		let elementAnalysisStatus: ElementAnalysisStatus;
 		let analysisTab: string | null = null;
 		if (elementAnalysis) {
@@ -90,8 +86,6 @@ export class PageAnalyzer {
 		} else {
 			elementAnalysisStatus = ElementAnalysisStatus.Pending;
 		}
-
-		console.log('elementAnalysisStatus PAGEANALYZER', elementAnalysisStatus);
 
 		if (
 			elementAnalysisStatus == ElementAnalysisStatus.Pending ||
@@ -121,8 +115,6 @@ export class PageAnalyzer {
 				feature,
 				previousInteractions
 			);
-
-			console.log('feature retornada form elements PAGEANALYZER', feature);
 
 			if (contextElement.nodeName !== HTMLElementType.FORM) {
 				// generate feature for elements outside forms
@@ -157,14 +149,9 @@ export class PageAnalyzer {
 				? [analysisElement]
 				: getFormElements(analysisElement);
 
-		console.log('formElements all PAGEANALYZER', formElements);
-		
 		if (formElements.length > 0) {
 			for (let formElement of formElements) {
 				let xPathElement = getPathTo(formElement as HTMLElement);
-
-				console.log('formElement PAGEANALYZER', formElement);
-				console.log('xPathElement PAGEANALYZER', xPathElement);
 
 				if (!xPathElement) {
 					continue;
@@ -176,10 +163,7 @@ export class PageAnalyzer {
 						url
 					)) == ElementAnalysisStatus.Done;
 
-				console.log('isElementAnalyzed form PAGEANALYZER', isElementAnalyzed);
-
 				if (!isElementAnalyzed && this.spec) {
-					console.log('feature FORA DO FORM PAGEANALYZER', feature);
 					feature = await this.featureGenerator.generate(
 						this.spec,
 						formElement as HTMLElement,
@@ -189,8 +173,6 @@ export class PageAnalyzer {
 						feature,
 						previousInteractions
 					);
-
-					console.log('feature retornada formElements PAGEANALYZER', feature);
 
 					if (feature) {
 						await this.saveFeatureToSpec(feature);
@@ -263,9 +245,6 @@ export class PageAnalyzer {
 				);
 				this.elementAnalysisStorage.set(analysis.getId(), analysis);
 			}
-			// else {
-			// 	throw new Error("UIElement source element doesn't exist");
-			// }
 		}
 	}
 }

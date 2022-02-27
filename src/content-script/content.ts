@@ -30,12 +30,12 @@ import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
 import { BackgroundIndexedDBObjectStorage } from './storage/BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../shared/storage/IndexedDBDatabases';
+import { language } from './config';
+
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
 getTabId(communicationChannel).then((tabId) => {
 	tabId = 'tab-' + tabId;
-
-	console.log("url href:",window.location.href);
 
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
 
@@ -65,7 +65,6 @@ getTabId(communicationChannel).then((tabId) => {
 		variantStorage
 	);
 
-	const language = 'pt';
 	const dictionary = getDictionary(language);
 
 	const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
@@ -109,9 +108,7 @@ getTabId(communicationChannel).then((tabId) => {
 		variantGeneratorUtil,
  	);
 
-	//const specStorage = new LocalObjectStorage<Spec>(window.localStorage, Spec);
 	const specStorage = new InMemoryStorage<Spec>(communicationChannel, Spec);
-
 
 	const featureGenerator = new FeatureGenerator(
 		variantGenerator,
@@ -151,7 +148,6 @@ getTabId(communicationChannel).then((tabId) => {
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {
-		// console.log(message);
 		if (message.includesAction(Command.CleanGraph)) {
 			clean();
 		}
@@ -166,7 +162,6 @@ getTabId(communicationChannel).then((tabId) => {
 			}
 		}
 		if (message.includesAction(Command.CrawlRejected)) {
-			//alert("dsadsadsa");
 			let lastUnanalyzed = await crawler.getMostRecentInteractionFromUnfinishedAnalysis(
 				elementInteractionGraph
 			);

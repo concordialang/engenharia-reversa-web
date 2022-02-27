@@ -1,7 +1,6 @@
 import { Graph } from '../graph/Graph';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ElementInteraction } from './ElementInteraction';
-import Mutex from '../mutex/Mutex';
 import { GraphStorage } from '../storage/GraphStorage';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { ObjectStorage } from '../storage/ObjectStorage';
@@ -77,7 +76,6 @@ export class ElementInteractionGraph {
 			}
 			//@ts-ignore
 			const links = graph.serialize().links;
-			//console.log(graph.serialize());
 		}
 
 		if (!currentInteractionId) {

@@ -2,9 +2,8 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLEventType } from '../enums/HTMLEventType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
-import { getPathTo, sleep } from '../util';
+import { sleep } from '../util';
 import { InteractionResult } from './InteractionResult';
-import { ForcingExecutionStoppageError } from './ForcingExecutionStoppageError';
 import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
 
 export class Interactor {
@@ -24,7 +23,6 @@ export class Interactor {
 			this.fillStringInput(interaction);
 		}
 
-		//refatorar para verificar se causou redirecionamento
 		return new InteractionResult(false);
 	}
 
@@ -103,7 +101,6 @@ export class Interactor {
 		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
 			if (!triggeredUnload && !alreadyExitedFunction) {
 				triggeredUnload = true;
-				console.log('unload INTERACTOR elm', element)
 				if (redirectionCallback) await redirectionCallback(interaction);
 			}
 		});
@@ -117,14 +114,12 @@ export class Interactor {
 		const timeBetweenChecks = 5;
 		while (timePassed < timeLimit) {
 			if (triggeredUnload) {
-				console.log('força stop redirecionamento INTERACTOR elm', element);
 				throw new ForcingExecutionStoppageErrorFromInteraction("Redirecionou clicando");
 			}
 			timePassed += timeBetweenChecks;
 			await sleep(timeBetweenChecks);
 		}
 		alreadyExitedFunction = true;
-		console.log("não redirecionou");
 		return new InteractionResult(false);
 	}
 

@@ -6,11 +6,10 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo, sleep } from '../util';
+import { getPathTo } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
-import { ForcingExecutionStoppageErrorFromInteraction } from '../crawler/ForcingExecutionStoppageErrorFromInteraction';
 
 export class VariantGenerator {
 	constructor(
@@ -70,8 +69,6 @@ export class VariantGenerator {
 		if (thenTypeSentence) {
 			variant.setVariantSentence(thenTypeSentence);
 		}
-
-		console.log('variante finalizada VARIANTGENERATOR', variant)
 
 		return variant;
 	}
@@ -167,8 +164,6 @@ export class VariantGenerator {
 		);
 
 		// interacts with the element
-		console.log('interaction VARIANTGENERATOR', interaction);
-		console.log('elemento interagido VARIANTGENERATOR', elm);
 		const result = await this.elementInteractionExecutor.execute(interaction, callback, true);
 		if (!result) {
 			variant.lastAnalysisInputFieldFound = this.varUtil.isLastFieldAnalyzed(
@@ -181,7 +176,6 @@ export class VariantGenerator {
 			}
 			return;
 		} else if (result.getTriggeredRedirection()) {
-			console.log('elemento redirecionamento FORA DA CALLBACK VARIANTGENERATOR', elm);
 			return;
 		}
 
@@ -658,8 +652,6 @@ export class VariantGenerator {
 		const _this = this;
 		return async (interactionThatTriggeredRedirect: ElementInteraction<HTMLElement>) => {
 			const elm = interactionThatTriggeredRedirect.getElement();
-
-			console.log('redirecionamento CALLBACK 1 VARIANTGENERATOR elm:', elm);
 
 			const unloadMessageExtra = {interaction: classToPlain(interactionThatTriggeredRedirect)};
 

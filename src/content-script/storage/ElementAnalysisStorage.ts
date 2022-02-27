@@ -1,9 +1,7 @@
 import { getPathTo, getURLWithoutQueries } from '../util';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
-import { LocalObjectStorage } from './LocalObjectStorage';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { BrowserContext } from '../crawler/BrowserContext';
-import { InMemoryStorage } from './InMemoryStorage';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
