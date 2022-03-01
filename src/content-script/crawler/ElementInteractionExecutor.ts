@@ -6,6 +6,8 @@ import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { Interactor } from './Interactor';
 import { timeBetweenInteractions } from '../config';
+import { HTMLEventType } from '../enums/HTMLEventType';
+import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
 
 export class ElementInteractionExecutor {
 	constructor(
@@ -19,6 +21,20 @@ export class ElementInteractionExecutor {
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
 		await sleep(timeBetweenInteractions);
+		let timePassed = 0;
+		let timeLimit = 300;
+		let triggeredUnload = false;
+		let alreadyExitedFunction = false;
+		window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
+			if (!triggeredUnload && !alreadyExitedFunction) {
+				triggeredUnload = true;
+				if (redirectionCallback) await redirectionCallback(interaction);
+			}
+		});
+		window.addEventListener(HTMLEventType.Submit, async (event) => {
+			timePassed = 0;
+			timeLimit = 20000;
+		});
 
 		const element = interaction.getElement();
 		const type = element.tagName;
@@ -64,10 +80,20 @@ export class ElementInteractionExecutor {
 			);
 		}
 
+		const timeBetweenChecks = 5;
+		while (timePassed < timeLimit) {
+			if (triggeredUnload) {
+				throw new ForcingExecutionStoppageErrorFromInteraction("Redirected on click");
+			}
+			timePassed += timeBetweenChecks;
+			await sleep(timeBetweenChecks);
+		}
+		alreadyExitedFunction = true;
+
 		if (saveInteractionInGraph) {
 			await this.elementInteractionGraph.addElementInteractionToGraph(interaction);
 		}
 
-		return result;
+		return new InteractionResult(false);
 	}
 }

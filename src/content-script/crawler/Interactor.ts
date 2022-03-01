@@ -93,33 +93,8 @@ export class Interactor {
 		interaction: ElementInteraction<HTMLButtonElement | HTMLInputElement | HTMLAnchorElement>,
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>
 	): Promise<InteractionResult> {
-		let timePassed = 0;
-		let timeLimit = 300;
 		const element = interaction.getElement();
-		let triggeredUnload = false;
-		let alreadyExitedFunction = false;
-		this.window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
-			if (!triggeredUnload && !alreadyExitedFunction) {
-				triggeredUnload = true;
-				if (redirectionCallback) await redirectionCallback(interaction);
-			}
-		});
-		this.window.addEventListener(HTMLEventType.Submit, async (event) => {
-			timePassed = 0;
-			timeLimit = 20000;
-		});
-
 		element.click();
-
-		const timeBetweenChecks = 5;
-		while (timePassed < timeLimit) {
-			if (triggeredUnload) {
-				throw new ForcingExecutionStoppageErrorFromInteraction("Redirected on click");
-			}
-			timePassed += timeBetweenChecks;
-			await sleep(timeBetweenChecks);
-		}
-		alreadyExitedFunction = true;
 		return new InteractionResult(false);
 	}
 
