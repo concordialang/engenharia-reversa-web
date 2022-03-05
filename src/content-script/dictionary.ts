@@ -139,6 +139,7 @@ const dictionary = {
 			'Pesquisar',
 			'Sim',
 			'Enviar',
+			'Guardar'
 		],
 		stringsCancelClicables: [
 			'Cancelar',
