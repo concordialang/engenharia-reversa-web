@@ -1,5 +1,6 @@
 import { DiffDomManager } from './diff-dom/DiffDomManager';
 import { ValidUiElementsNodes } from './enums/ValidUiElementsNodes';
+import { considerFullUrl } from './config';
 import getXPath from 'get-xpath';
 import RandExp from 'randexp';
 
@@ -199,6 +200,21 @@ export function isIterable(obj): boolean {
 
 export default clearElement;
 
-export function getURLWithoutQueries(url: URL): string {
-	return url.origin + url.pathname;
+export function getURLasString(url: URL): string {
+	if(isURLToBeConsideredFull(url)){
+		return url.href;
+	} else {
+		return url.origin + url.pathname;
+	}
+}
+
+function isURLToBeConsideredFull(url: URL): boolean {
+	for(let fullUrl of considerFullUrl){
+		if(url.href.includes(fullUrl.href)){
+			console.log("url:", url.href, true);
+			return true;
+		}
+	}
+	console.log("url:", url.href, false);
+	return false;
 }

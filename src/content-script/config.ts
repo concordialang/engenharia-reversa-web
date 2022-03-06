@@ -14,7 +14,9 @@ export const strHtmlTagsForDiff = 'form, div, label, span, input, select, textar
 
 export const maxWaitTimeForUnload = 5000;
 
-
+export const considerFullUrl : URL[] = [
+    new URL('http://localhost/htdocs/product/fiche.php?leftmenu=service&action=create&type=1')
+];
 
 
 

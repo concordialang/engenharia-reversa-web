@@ -1,5 +1,5 @@
 import { TransformHTMLElement, TransformURL } from '../decorators';
-import { getPathTo, getURLWithoutQueries } from '../util';
+import { getPathTo, getURLasString } from '../util';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
 export class ElementAnalysis {
@@ -41,7 +41,7 @@ export class ElementAnalysis {
 	public getId(): string {
 		if (!this.id) {
 			const pathToElement = this.getPathToElement();
-			const id = getURLWithoutQueries(this.pageUrl) + ':' + pathToElement;
+			const id = getURLasString(this.pageUrl) + ':' + pathToElement;
 			this.id = id;
 			return id;
 		} else {

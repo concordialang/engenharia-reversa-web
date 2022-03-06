@@ -2,7 +2,7 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { FeatureGenerator } from '../spec-analyser/FeatureGenerator';
 import { Spec } from '../spec-analyser/Spec';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
-import { getFormElements, getPathTo, getURLWithoutQueries } from '../util';
+import { getFormElements, getPathTo, getURLasString } from '../util';
 import { ElementAnalysis } from './ElementAnalysis';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 import { BrowserContext } from './BrowserContext';
@@ -50,7 +50,7 @@ export class PageAnalyzer {
 		const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
 		if(pageAnalysisStatus === PageAnalysisStatus.Pending){
 			const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.InProgress);
-			await this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+			await this.pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl()), pageAnalysis);
 		} else if(pageAnalysisStatus === PageAnalysisStatus.Done) {
 			return;
 		}
@@ -68,7 +68,7 @@ export class PageAnalyzer {
 
 		if (
 			lastInteraction &&
-			getURLWithoutQueries(lastInteraction.getPageUrl()) === getURLWithoutQueries(this.browserContext.getUrl())
+			getURLasString(lastInteraction.getPageUrl()) === getURLasString(this.browserContext.getUrl())
 		) {
 			feature = await this.recoveryFeatureOfLastInteraction(lastInteraction);
 			if(!feature?.needNewVariants){
@@ -129,7 +129,7 @@ export class PageAnalyzer {
 				);
 
 				const pageAnalysis = new PageAnalysis(url, PageAnalysisStatus.Done);
-				this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+				this.pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl()), pageAnalysis);
 
 				if (featureOuterFormElements) {
 					await this.saveFeatureToSpec(featureOuterFormElements);

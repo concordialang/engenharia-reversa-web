@@ -16,7 +16,7 @@ import { GraphStorage } from '../storage/GraphStorage';
 import { ElementInteractionGraph } from '../graph/ElementInteractionGraph';
 import { ElementInteraction } from '../../content-script/crawler/ElementInteraction';
 import { Graph } from '../../content-script/graph/Graph';
-import { getURLWithoutQueries, sleep } from '../../content-script/util';
+import { getURLasString, sleep } from '../../content-script/util';
 import { ElementAnalysisStatus } from '../../content-script/crawler/ElementAnalysisStatus';
 import { ElementAnalysisStorage as ElementAnalysisStorageBackground }  from '../../background-script/storage/ElementAnalysisStorage';
 import { PageAnalysisStorage as PageAnalysisStorageBackground }  from '../../background-script/storage/PageAnalysisStorage';
@@ -93,7 +93,7 @@ export class ExtensionFacade {
 			}
 		);
 		
-		this.listenToAjaxCalls();
+		//this.listenToAjaxCalls();
 
 		this.communicationChannel.setMessageListener(async function (
 			message: Message,
@@ -377,7 +377,7 @@ export class ExtensionFacade {
 		);
 
 		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase);
-		await pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);
+		await pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl()), pageAnalysis);
 	}
 
 	public openNewTab(url: URL): void {

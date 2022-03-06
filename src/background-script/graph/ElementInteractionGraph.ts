@@ -2,7 +2,7 @@ import { ElementAnalysisStatus } from "../../content-script/crawler/ElementAnaly
 import { ElementInteraction } from "../../content-script/crawler/ElementInteraction";
 import { Graph } from "../../content-script/graph/Graph";
 import { ElementAnalysisStorage } from "../../content-script/storage/ElementAnalysisStorage";
-import { getURLWithoutQueries } from "../../content-script/util";
+import { getURLasString } from "../../content-script/util";
 import { ObjectStorage } from "../../shared/storage/ObjectStorage";
 import { GraphStorage } from "../storage/GraphStorage";
 
@@ -141,8 +141,8 @@ export class ElementInteractionGraph {
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean }
 	): boolean {
-		const interactionUrl = getURLWithoutQueries(interaction.getPageUrl());
-		const url = getURLWithoutQueries(urlCriteria.interactionUrl);
+		const interactionUrl = getURLasString(interaction.getPageUrl());
+		const url = getURLasString(urlCriteria.interactionUrl);
 		const urlIsEqual = urlCriteria.isEqual;
 		if (
 			(urlIsEqual && url != interactionUrl) ||
@@ -205,7 +205,7 @@ export class ElementInteractionGraph {
 	): Promise<boolean> {
 		const nextInteraction = await this.getNextInteraction(interaction);
 		if (nextInteraction) {
-			return getURLWithoutQueries(nextInteraction.getPageUrl()) != getURLWithoutQueries(interaction.getPageUrl());
+			return getURLasString(nextInteraction.getPageUrl()) != getURLasString(interaction.getPageUrl());
 		}
 		return false;
 	}

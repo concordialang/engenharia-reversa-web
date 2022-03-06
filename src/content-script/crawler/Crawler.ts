@@ -12,7 +12,7 @@ import {
 	getElementByXpath,
 	getFormElements,
 	getPathTo,
-	getURLWithoutQueries,
+	getURLasString,
 	sleep,
 } from '../util';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
@@ -70,7 +70,7 @@ export class Crawler {
 
 			if(
 				lastUnanalyzed?.getCausedRedirection() && 
-				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+				getURLasString(lastUnanalyzed.getPageUrl()) != getURLasString(this.browserContext.getUrl())
 			){
 				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
 				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
@@ -83,7 +83,7 @@ export class Crawler {
 
 			if (
 				lastUnanalyzed &&
-				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) == getURLWithoutQueries(this.browserContext.getUrl())
+				getURLasString(lastUnanalyzed.getPageUrl()) == getURLasString(this.browserContext.getUrl())
 			) {
 				const urlCriteria = { interactionUrl: this.browserContext.getUrl(), isEqual: true };
 				previousInteractions = await this.elementInteractionGraph.pathToInteraction(
@@ -153,7 +153,7 @@ export class Crawler {
 			// if the last interaction that is not within the context already analyzed is on another page, go to that page
 			if (
 				lastUnanalyzed &&
-				getURLWithoutQueries(lastUnanalyzed.getPageUrl()) != getURLWithoutQueries(this.browserContext.getUrl())
+				getURLasString(lastUnanalyzed.getPageUrl()) != getURLasString(this.browserContext.getUrl())
 			) {
 				window.location.href = lastUnanalyzed.getPageUrl().href;
 				return false;
@@ -245,7 +245,7 @@ export class Crawler {
 		let analysisElement: HTMLElement | null = null;
 
 		const savedAnalysisElementXPath = await this.analysisElementXPathStorage.get(
-			getURLWithoutQueries(this.browserContext.getUrl())
+			getURLasString(this.browserContext.getUrl())
 		);
 		if (savedAnalysisElementXPath) {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
@@ -254,7 +254,7 @@ export class Crawler {
 				console.error("n achou o elemento");
 
 				const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
-				this.pageAnalysisStorage.set(getURLWithoutQueries(pageAnalysis.getUrl()), pageAnalysis);				
+				this.pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl()), pageAnalysis);				
 				
 				return null;
 			}
@@ -277,7 +277,7 @@ export class Crawler {
 		}
 
 		await this.analysisElementXPathStorage.set(
-			getURLWithoutQueries(this.browserContext.getUrl()),
+			getURLasString(this.browserContext.getUrl()),
 			getPathTo(analysisElement)
 		);
 
@@ -317,7 +317,7 @@ export class Crawler {
 		const interactionAfter = await this.elementInteractionGraph.getNextInteraction(interaction);
 		if (interactionAfter) {
 			const interactionsAreOnSamePage =
-			getURLWithoutQueries(interactionAfter.getPageUrl()) == getURLWithoutQueries(interaction.getPageUrl());
+			getURLasString(interactionAfter.getPageUrl()) == getURLasString(interaction.getPageUrl());
 
 			const elementOfInteractionAfter = interactionAfter.getElement();
 

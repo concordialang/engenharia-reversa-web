@@ -1,6 +1,6 @@
 import { PageAnalysis } from "../../content-script/crawler/PageAnalysis";
 import { PageAnalysisStatus } from "../../content-script/crawler/PageAnalysisStatus";
-import { getURLWithoutQueries } from "../../content-script/util";
+import { getURLasString } from "../../content-script/util";
 import { InMemoryStorage } from "./InMemoryStorage";
 import { InMemoryDatabase } from "../extension/InMemoryDatabase"
 
@@ -21,7 +21,7 @@ export class PageAnalysisStorage extends InMemoryStorage<PageAnalysis> {
 	public async getPageAnalysisStatus(
 		url: URL
 	): Promise<PageAnalysisStatus> {
-		const analysis = await this.get(getURLWithoutQueries(url));
+		const analysis = await this.get(getURLasString(url));
 		if(analysis instanceof PageAnalysis) {
 			return analysis.getStatus();
 		}
