@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="button.css">
+  </head>
+  <body>
+    <div>
+        <input id="start" type="button" data-status="0" value="Iniciar"></input><br><br>
+
+        <label for="variant-limit">Variant Limit:</label>
+        <input type="text" id="variant-limit" name="variant-limit"><br>
+
+        <label for="min-child-node-diff">Min Child Nodes Diff:</label>
+        <input type="text" id="min-child-node-diff" name="min-child-node-diff"><br>
+
+        <label for="html-tags-for-diff">HTML Tags for Diff:</label>
+        <input type="text" id="html-tags-for-diff" name="html-tags-for-diff"><br>
+
+        <label for="max-wait-time-unload">Max Wait Time for Unload (ms):</label>
+        <input type="text" id="max-wait-time-unload" name="max-wait-time-unload"><br>
+
+        <label for="consider-full-url">Consider full URL:</label>
+        <textarea id="consider-full-url" name="consider-full-url"></textarea>
+
+    </div>
+    <script src="dist/popup.js"></script>
+  </body>
+</html>

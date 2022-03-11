@@ -14,9 +14,9 @@ import { Scenario } from './Scenario';
 import { Spec } from './Spec';
 import { Variant } from './Variant';
 import { VariantGenerator } from './VariantGenerator';
-import { limitOfVariants } from '../config';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
+import { Config } from '../../shared/config';
 
 export class FeatureGenerator {
 	constructor(
@@ -26,6 +26,7 @@ export class FeatureGenerator {
 		private browserContext: BrowserContext,
 		private elementInteractionGraph: ElementInteractionGraph,
 		private variantStorage: ObjectStorage<Variant>,
+		private config: Config,
 	) {}
 
 	public async generate(
@@ -99,7 +100,7 @@ export class FeatureGenerator {
 					this.setElementAnalysisAsDone(analysisElement);
 				}
 			}
-		} while (feature.needNewVariants && feature.getVariantsCount() < limitOfVariants);
+		} while (feature.needNewVariants && feature.getVariantsCount() < this.config.limitOfVariants);
 
 		observer.disconnect();
 
@@ -115,7 +116,8 @@ export class FeatureGenerator {
 			element,
 			this.browserContext.getUrl(),
 			ElementAnalysisStatus.Done,
-			this.browserContext.getTabId()
+			this.browserContext.getTabId(),
+			this.config
 		);
 		this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 	}

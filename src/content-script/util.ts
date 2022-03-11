@@ -1,8 +1,9 @@
 import { DiffDomManager } from './diff-dom/DiffDomManager';
 import { ValidUiElementsNodes } from './enums/ValidUiElementsNodes';
-import { considerFullUrl } from './config';
 import getXPath from 'get-xpath';
 import RandExp from 'randexp';
+import { ObjectStorage } from './storage/ObjectStorage';
+import { Config } from '../shared/config';
 
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -41,11 +42,13 @@ export function getElementByXpath(path: string, document: Document): HTMLElement
 
 export async function getDiff(
 	currentDocument: Document,
-	previousDocument: Document
+	previousDocument: Document,
+	config: Config
 ): Promise<HTMLElement> {
 	const diffDomManager: DiffDomManager = new DiffDomManager(
 		previousDocument.body,
-		currentDocument.body
+		currentDocument.body,
+		config
 	);
 
 	const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
@@ -200,16 +203,16 @@ export function isIterable(obj): boolean {
 
 export default clearElement;
 
-export function getURLasString(url: URL): string {
-	if(isURLToBeConsideredFull(url)){
+export function getURLasString(url: URL, config: Config): string {
+	if(isURLToBeConsideredFull(url, config)){
 		return url.href;
 	} else {
 		return url.origin + url.pathname;
 	}
 }
 
-function isURLToBeConsideredFull(url: URL): boolean {
-	for(let fullUrl of considerFullUrl){
+function isURLToBeConsideredFull(url: URL, config: Config): boolean {
+	for(let fullUrl of config.considerFullUrl){
 		if(url.href.includes(fullUrl.href)){
 			console.log("url:", url.href, true);
 			return true;
@@ -217,4 +220,55 @@ function isURLToBeConsideredFull(url: URL): boolean {
 	}
 	console.log("url:", url.href, false);
 	return false;
+}
+
+export async function getConfig(configStorage : ObjectStorage<string>){
+	let savedVariantLimit = await configStorage.get("variant-limit");
+	let limitOfVariants: number|undefined = undefined;
+	if(savedVariantLimit){
+		limitOfVariants = parseInt(savedVariantLimit);
+	}
+
+	const savedMinimumChildNodesNumberForDiff = await configStorage.get("min-child-node-diff");
+	let minimumChildNodesNumberForDiff: number|undefined = undefined;
+	if(savedMinimumChildNodesNumberForDiff){
+		minimumChildNodesNumberForDiff = parseInt(savedMinimumChildNodesNumberForDiff);
+	}
+
+	const savedStrHtmlTagsForDiff = await configStorage.get("html-tags-for-diff");
+	let strHtmlTagsForDiff: string|undefined = undefined;
+	if(savedStrHtmlTagsForDiff){
+		strHtmlTagsForDiff = savedStrHtmlTagsForDiff;
+	}
+
+	const savedMaxWaitTimeForUnload = await configStorage.get("max-wait-time-unload");
+	let maxWaitTimeForUnload: number|undefined = undefined;
+	if(savedMaxWaitTimeForUnload){
+		maxWaitTimeForUnload = parseInt(savedMaxWaitTimeForUnload);
+	}
+	
+	let savedConsiderFullUrl = await configStorage.get("consider-full-url");
+	let considerFullUrl: URL[] = [];
+	if(savedConsiderFullUrl){
+		let a = savedConsiderFullUrl.split('\n');
+		let b = a.filter((link) => {
+			try{
+				let url = new URL(link);
+			} catch (e){
+				return false;
+			}
+			return true;
+		});
+		considerFullUrl = b.map((url) => new URL(url));
+	}
+	
+	return new Config(
+		undefined,
+		undefined,
+		limitOfVariants,
+		minimumChildNodesNumberForDiff,
+		strHtmlTagsForDiff,
+		maxWaitTimeForUnload,
+		considerFullUrl
+	);
 }

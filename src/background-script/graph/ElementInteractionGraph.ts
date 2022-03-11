@@ -3,6 +3,7 @@ import { ElementInteraction } from "../../content-script/crawler/ElementInteract
 import { Graph } from "../../content-script/graph/Graph";
 import { ElementAnalysisStorage } from "../../content-script/storage/ElementAnalysisStorage";
 import { getURLasString } from "../../content-script/util";
+import { Config } from "../../shared/config";
 import { ObjectStorage } from "../../shared/storage/ObjectStorage";
 import { GraphStorage } from "../storage/GraphStorage";
 
@@ -14,13 +15,15 @@ export class ElementInteractionGraph {
 		private id: string,
 		private elementInteractionStorage: ObjectStorage<ElementInteraction<HTMLElement>>,
 		private elementAnalysisStorage: ElementAnalysisStorage,
-		private graphStorage: GraphStorage 
+		private graphStorage: GraphStorage ,
+		private config: Config,
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
 		this.elementAnalysisStorage = elementAnalysisStorage;
 		this.elementInteractionGraphKey = 'interactions-graph-' + this.id;
 		this.lastInteractionKey = 'last-interaction-' + this.id;
+		this.config = config;
 	}
 
 	public async addElementInteractionToGraph(
@@ -141,8 +144,8 @@ export class ElementInteractionGraph {
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean }
 	): boolean {
-		const interactionUrl = getURLasString(interaction.getPageUrl());
-		const url = getURLasString(urlCriteria.interactionUrl);
+		const interactionUrl = getURLasString(interaction.getPageUrl(), this.config);
+		const url = getURLasString(urlCriteria.interactionUrl, this.config);
 		const urlIsEqual = urlCriteria.isEqual;
 		if (
 			(urlIsEqual && url != interactionUrl) ||
@@ -205,7 +208,7 @@ export class ElementInteractionGraph {
 	): Promise<boolean> {
 		const nextInteraction = await this.getNextInteraction(interaction);
 		if (nextInteraction) {
-			return getURLasString(nextInteraction.getPageUrl()) != getURLasString(interaction.getPageUrl());
+			return getURLasString(nextInteraction.getPageUrl(), this.config) != getURLasString(interaction.getPageUrl(), this.config);
 		}
 		return false;
 	}

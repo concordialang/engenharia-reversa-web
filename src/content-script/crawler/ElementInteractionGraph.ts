@@ -8,6 +8,7 @@ import { PageAnalysisStorage } from '../storage/PageAnalysisStorage';
 import { PageAnalysisStatus } from './PageAnalysisStatus';
 import { getURLasString } from '../util';
 import { Feature } from '../spec-analyser/Feature';
+import { Config } from '../../shared/config';
 
 export class ElementInteractionGraph {
 	private elementInteractionGraphKey: string;
@@ -20,6 +21,7 @@ export class ElementInteractionGraph {
 		private graphStorage: GraphStorage,
 		private pageAnalysisStorage: PageAnalysisStorage,
 		private featureStorage: ObjectStorage<Feature>,
+		private config: Config,
 	) {
 		this.id = id;
 		this.elementInteractionStorage = elementInteractionStorage;
@@ -28,6 +30,7 @@ export class ElementInteractionGraph {
 		this.lastInteractionKey = 'last-interaction-' + this.id;
 		this.pageAnalysisStorage = pageAnalysisStorage;
 		this.featureStorage = featureStorage;
+		this.config = config;
 	}
 
 	public async addElementInteractionToGraph(
@@ -176,8 +179,8 @@ export class ElementInteractionGraph {
 		interaction: ElementInteraction<HTMLElement>,
 		urlCriteria: { interactionUrl: URL; isEqual: boolean }
 	): boolean {
-		const interactionUrl = getURLasString(interaction.getPageUrl());
-		const url = getURLasString(urlCriteria.interactionUrl);
+		const interactionUrl = getURLasString(interaction.getPageUrl(), this.config);
+		const url = getURLasString(urlCriteria.interactionUrl, this.config);
 		const urlIsEqual = urlCriteria.isEqual;
 		if (
 			(urlIsEqual && url != interactionUrl) ||
@@ -282,7 +285,7 @@ export class ElementInteractionGraph {
 	): Promise<boolean> {
 		const nextInteraction = await this.getNextInteraction(interaction);
 		if (nextInteraction) {
-			return getURLasString(nextInteraction.getPageUrl()) != getURLasString(interaction.getPageUrl());
+			return getURLasString(nextInteraction.getPageUrl(), this.config) != getURLasString(interaction.getPageUrl(), this.config);
 		}
 		return false;
 	}

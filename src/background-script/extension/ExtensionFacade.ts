@@ -30,6 +30,7 @@ import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 import { deleteDB } from 'idb';
 import { PageAnalysis } from '../../content-script/crawler/PageAnalysis';
 import { PageAnalysisStatus } from '../../content-script/crawler/PageAnalysisStatus';
+import { Config } from '../../shared/config';
 
 export class ExtensionFacade {
 	private openedTabs: Array<Tab>;
@@ -45,12 +46,14 @@ export class ExtensionFacade {
 	private tabAjaxCalls: Map<string, string[]>;
 	private specMutex: Mutex;
 	private initialHost: string|null;
+	private config: Config;
 
 	constructor(
 		extension: Extension,
 		communicationChannel: CommunicationChannel,
 		inMemoryDatabase: InMemoryDatabase,
-		openedTabsLimit: number
+		openedTabsLimit: number,
+		config: Config,
 	) {
 		this.openedTabs = [];
 		this.extension = extension;
@@ -65,34 +68,13 @@ export class ExtensionFacade {
 		this.tabAjaxCalls = new Map<string, string[]>();
 		this.specMutex = new Mutex('spec-mutex');
 		this.initialHost = null;
+		this.config = config;
 	}
 
 	public async setup(): Promise<void> {
 		let _this = this;
 		await this.deleteIDBDatabases();
-		this.extension.setBrowserActionListener(
-			ExtensionBrowserAction.ExtensionIconClicked,
-			async function (tab: Tab) {
-				if (!_this.extensionIsEnabled) {
-					if(!tab.getURL()){
-						throw new Error("Tab has no URL");
-					}
-					//@ts-ignore
-					_this.initialHost = tab.getURL().host;
-					_this.extensionIsEnabled = true;
-					_this.openedTabs.push(tab);
-					_this.tabFinished.set(tab.getId(), false);
-					_this.openedTabsCounter++;
-					// while(_this.tabStillHasAjaxToComplete(tab)){
-					// 	await sleep(5);
-					// }
-					_this.sendOrderToCrawlTab(tab, true);
-				} else {
-					_this.extension.reload();
-				}
-			}
-		);
-		
+
 		//this.listenToAjaxCalls();
 
 		this.communicationChannel.setMessageListener(async function (
@@ -107,8 +89,41 @@ export class ExtensionFacade {
 			) {
 				if (responseCallback) responseCallback(new Message([], sender.getId()));
 			}
-
-			if (message.includesAction(Command.SetValueInMemoryDatabase)) {
+			console.log(message);
+			if (message.includesAction(Command.Start)){
+				if (!_this.extensionIsEnabled) {
+					chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+						if(!tabs[0].id || !tabs[0].url){
+							return false;
+						}
+						var activeTab = new Tab(tabs[0].id.toString(), new URL(tabs[0].url));
+						if(!activeTab.getURL()){
+							throw new Error("Tab has no URL");
+						}
+						//@ts-ignore
+						_this.initialHost = activeTab.getURL().host;
+						_this.setExtensionRunningStatus(true);
+						_this.openedTabs.push(activeTab);
+						_this.tabFinished.set(activeTab.getId(), false);
+						_this.openedTabsCounter++;
+						// while(_this.tabStillHasAjaxToComplete(tab)){
+						// 	await sleep(5);
+						// }
+						_this.sendOrderToCrawlTab(activeTab, true);
+					 });
+					
+				} else {
+					_this.extension.reload();
+				}
+			} else if (message.includesAction(Command.GetRunningStatus)) {
+				const data = message.getExtra();
+				if (data) {
+					if (responseCallback) {
+						responseCallback(new Message([], _this.extensionIsEnabled));
+					}
+				}
+			}
+			else if (message.includesAction(Command.SetValueInMemoryDatabase)) {
 				const data = message.getExtra();
 				if (data) {
 					const key = data.key;
@@ -265,7 +280,7 @@ export class ExtensionFacade {
 							const concordiaFiles = new FeatureFileGenerator();
 							concordiaFiles.generate(spec);
 
-							_this.extensionIsEnabled = false;
+							_this.setExtensionRunningStatus(false);
 						}
 					} else if (message.includesAction(Command.ProcessUnload)) {
 						_this.tabLocked.set(sender.getId(), true);
@@ -342,9 +357,9 @@ export class ExtensionFacade {
 			Variant
 		);
 		const elementInteractionStorage = new ElementInteractionStorage(featureStorage, variantStorage);
-		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
+		const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel, this.config);
 		const graphStorage = new GraphStorage(this.inMemoryDatabase);
-		return new ElementInteractionGraph('tab-' + id, elementInteractionStorage, elementAnalysisStorage, graphStorage);
+		return new ElementInteractionGraph('tab-' + id, elementInteractionStorage, elementAnalysisStorage, graphStorage, this.config);
 	}
 
 	private async setInteractionElementAsAnalyzed(interaction: ElementInteraction<HTMLElement>, sender: Tab): Promise<void> {
@@ -353,7 +368,8 @@ export class ExtensionFacade {
 			interaction.getElementSelector(),
 			interaction.getPageUrl(),
 			ElementAnalysisStatus.Done,
-			sender.getId()
+			sender.getId(),
+			this.config
 		);
 		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
@@ -364,7 +380,8 @@ export class ExtensionFacade {
 			elementPath,
 			url,
 			ElementAnalysisStatus.Done,
-			sender.getId()
+			sender.getId(),
+			this.config
 		);
 		const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 		await elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
@@ -376,8 +393,8 @@ export class ExtensionFacade {
 			PageAnalysisStatus.Done,
 		);
 
-		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase);
-		await pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl()), pageAnalysis);
+		const pageAnalysisStorage = new PageAnalysisStorageBackground(this.inMemoryDatabase, this.config);
+		await pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl(), this.config), pageAnalysis);
 	}
 
 	public openNewTab(url: URL): void {
@@ -434,7 +451,8 @@ export class ExtensionFacade {
 					element,
 					url,
 					ElementAnalysisStatus.Done,
-					sender.getId()
+					sender.getId(),
+					this.config
 				);
 				const elementAnalysisStorage = new ElementAnalysisStorageBackground(this.inMemoryDatabase);
 				await elementAnalysisStorage.set(analysis.getId(), analysis);
@@ -552,6 +570,12 @@ export class ExtensionFacade {
 		for(let dbName in IndexedDBDatabases){
 			await deleteDB(IndexedDBDatabases[dbName]);
 		}
+	}
+
+	private async setExtensionRunningStatus(status : boolean){
+		this.extensionIsEnabled = status;
+		const runningStatusStorage = new IndexedDBObjectStorage<boolean>(IndexedDBDatabases.RunningStatus, IndexedDBDatabases.RunningStatus);
+		runningStatusStorage.set('status', status);
 	}
 
 }
