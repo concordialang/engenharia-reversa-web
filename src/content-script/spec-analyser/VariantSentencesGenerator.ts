@@ -2,7 +2,7 @@ import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
 import { VariantSentenceActions } from '../enums/VariantSentenceActions';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
-import { getValidUiElementsNodes, isIterable } from '../util';
+import { getValidUiElementsNodes, isIterable, isVisible } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 
@@ -286,9 +286,13 @@ export class VariantSentencesGenerator {
 			if(validsUiElmNodes){
 				if(isIterable(validsUiElmNodes)){
 					for (let node of validsUiElmNodes) {
-						uiElement = this.uiElementGenerator.createFromElement(node as HTMLElement);
-						if (uiElement) {
-							sentences.push(new VariantSentence(type, action, uiElement, attr));
+						let elm = node as HTMLElement;
+
+						if(isVisible(elm)){
+							uiElement = this.uiElementGenerator.createFromElement(elm);
+							if (uiElement) {
+								sentences.push(new VariantSentence(type, action, uiElement, attr));
+							}
 						}
 					}
 				} else {
