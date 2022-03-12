@@ -5,9 +5,10 @@ export class MutationObserverManager {
 	constructor(element: HTMLElement) {
 		this.observer = new MutationObserver((mutations) => {
 			this.mutations = mutations;
+			console.log("TESTESTESTESTE", mutations);
 		});
 
-		let config = {
+		const config = {
 			attributes: true,
 			childList: true,
 			characterData: true,

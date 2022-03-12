@@ -6,7 +6,7 @@ import { ElementInteraction } from '../crawler/ElementInteraction';
 import { Variant } from './Variant';
 import { FeatureUtil } from './FeatureUtil';
 import { VariantSentence } from './VariantSentence';
-import { getPathTo } from '../util';
+import { getPathTo, sleep } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
@@ -108,8 +108,8 @@ export class VariantGenerator {
 
 		let checksChildsTableRow: boolean | null = true;
 		
-		// interact with table rows if is not a form
-		if(feature.ignoreFormElements){
+		const isListingTableInteractable = this.isListingTableInteractable(feature);
+		if(isListingTableInteractable){
 			checksChildsTableRow = await this.treatTableRow(elm, variant, feature, observer);
 
 			if(checksChildsTableRow === null){
@@ -646,6 +646,12 @@ export class VariantGenerator {
 		}
 
 		return isCancelClicable;
+	}
+
+	private isListingTableInteractable(feature: Feature){
+		let isListingTableInteractable = feature.ignoreFormElements;
+
+		return isListingTableInteractable;
 	}
 
 	private async generatesCallBack(variant, feature, observer, redirectionCallback) {

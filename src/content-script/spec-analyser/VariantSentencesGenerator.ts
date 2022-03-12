@@ -135,26 +135,32 @@ export class VariantSentencesGenerator {
 	private buildChildListSentence(mutation): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 
-		let addedNodes = Object.values(mutation.addedNodes);
 		let removedNodes = Object.values(mutation.removedNodes);
+		let addedNodes = Object.values(mutation.addedNodes);
+
+		if (removedNodes && removedNodes.length > 0) {
+			for(let node of removedNodes){
+				let nodeSentences = this.createSentencesForMutations(
+					node as any,
+					VariantSentenceType.AND,
+					VariantSentenceActions.REMOVE,
+				)
+
+				sentences = sentences.concat(nodeSentences);
+			}
+		}
 
 		if (addedNodes && addedNodes.length > 0) {
-			const node: any = addedNodes[0];
+			for(let node of addedNodes){
+				let nodeSentences = this.createSentencesForMutations(
+					node as any,
+					VariantSentenceType.AND,
+					VariantSentenceActions.APPEND,
+				)
 
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.APPEND,
-			);
-		} else if (removedNodes && removedNodes.length > 0) {
-			const node: any = removedNodes[0];
-
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.REMOVE,
-			);
-		}
+				sentences = sentences.concat(nodeSentences);
+			}
+		} 
 
 		return sentences;
 	}
