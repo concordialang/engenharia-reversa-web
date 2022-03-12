@@ -4,7 +4,7 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
 import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppageError';
-import { MutationSenteceHandler } from './MutationObserverManager';
+import { MutationSenteceHandler } from './MutationSentencesHandler';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { getPathTo } from '../util';

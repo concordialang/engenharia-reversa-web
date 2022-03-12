@@ -1,5 +1,5 @@
 import { HTMLElementType } from '../enums/HTMLElementType';
-import { MutationSenteceHandler } from './MutationObserverManager';
+import { MutationSenteceHandler } from './MutationSentencesHandler';
 import { ElementInteractionExecutor } from '../crawler/ElementInteractionExecutor';
 import { ElementInteractionGenerator } from '../crawler/ElementInteractionGenerator';
 import { ElementInteraction } from '../crawler/ElementInteraction';
@@ -466,7 +466,7 @@ private checkValidInteractableElement(elm: HTMLElement, variant: Variant, featur
 	*/
 	private canInteract(elm: HTMLElement, variant: Variant, feature: Feature): boolean {
 		const xpathElement = getPathTo(elm);
-		
+
 		// checks if the element has already received interaction in the feature
 		const wasInteracted = feature.interactedElements.some(
 			(interactedElm) => interactedElm.xpath === xpathElement
