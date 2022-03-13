@@ -45,13 +45,7 @@ async function prepareInput(elementId: string, defaultValue: string = ''){
     const input = <HTMLInputElement> document.getElementById(elementId);
     if(input){
         input.addEventListener('keyup', async () => {
-            let value;
-            if (input.tagName === "TEXTAREA") { 
-                value = input.innerHTML;
-            } else {
-                value = input.value;
-            }
-            if(value){
+            if(input.value){
                 await configStorage.set(elementId, input.value);
             }
         });
