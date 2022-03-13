@@ -5,7 +5,16 @@
   </head>
   <body>
     <div>
-        <input id="start" type="button" data-status="0" value="Iniciar"></input><br><br>
+        <input id="start" type="button" data-status="0" value="Start"></input><br><br>
+
+        <label for="language">Language:</label>
+        <select type="text" id="language" name="language">
+            <option value="pt">PT</option>
+            <option value="en">EN</option>
+        </select><br><br>
+
+        <label for="time-between-interactions">Time Between Interactions(ms):</label>
+        <input type="text" id="time-between-interactions" name="time-between-interactions"><br>
 
         <label for="variant-limit">Variant Limit:</label>
         <input type="text" id="variant-limit" name="variant-limit"><br>
