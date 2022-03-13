@@ -246,6 +246,18 @@ export async function getConfig(configStorage : ObjectStorage<string>){
 	if(savedMaxWaitTimeForUnload){
 		maxWaitTimeForUnload = parseInt(savedMaxWaitTimeForUnload);
 	}
+
+	const savedTimeBetweenInteractions = await configStorage.get("time-between-interactions");
+	let timeBetweenInteractions: number|undefined = undefined;
+	if(savedTimeBetweenInteractions){
+		timeBetweenInteractions = parseInt(savedTimeBetweenInteractions);
+	}
+
+	const savedLanguage = await configStorage.get("language");
+	let language: string|undefined = undefined;
+	if(savedLanguage){
+		language = savedLanguage;
+	}
 	
 	let savedConsiderFullUrl = await configStorage.get("consider-full-url");
 	let considerFullUrl: URL[] = [];
@@ -263,8 +275,8 @@ export async function getConfig(configStorage : ObjectStorage<string>){
 	}
 	
 	return new Config(
-		undefined,
-		undefined,
+		language,
+		timeBetweenInteractions,
 		limitOfVariants,
 		minimumChildNodesNumberForDiff,
 		strHtmlTagsForDiff,

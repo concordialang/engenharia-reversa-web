@@ -10,6 +10,7 @@ const communicationChannel = new ChromeCommunicationChannel(chrome);
 const configStorage = new IndexedDBObjectStorage<string>('config','config');
 configStorage.get('test').then(async () => {
     const config = await getConfig(configStorage);
+    prepareInput('time-between-interactions', config.timeBetweenInteractions.toString());
     prepareInput('variant-limit', config.limitOfVariants.toString());
     prepareInput('min-child-node-diff', config.minimumChildNodesNumberForDiff.toString());
     prepareInput('html-tags-for-diff', config.strHtmlTagsForDiff);
@@ -21,10 +22,21 @@ configStorage.get('test').then(async () => {
     const startButton = <HTMLInputElement> document.getElementById('start');
     if(startButton){
         const status = await runningStatusStorage.get('status');
-        startButton.value = status ? 'Parar' : 'Iniciar';
+        startButton.value = status ? 'Stop' : 'Start';
         startButton.addEventListener('click', () => {
-            startButton.value = status ? 'Iniciar' : 'Parar';
+            startButton.value = status ? 'Start' : 'Stop';
             communicationChannel.sendMessage(new Message([Command.Start]));
+        });
+    }
+
+    const language = <HTMLSelectElement> document.getElementById('language');
+    if(language){
+        language.value = config.language;
+        language.addEventListener('change', async () => {
+            var value = language.options[language.selectedIndex].value;
+            if(value){
+                await configStorage.set('language', value);
+            }
         });
     }
 });
