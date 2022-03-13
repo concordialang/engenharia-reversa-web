@@ -4,7 +4,7 @@ import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { ElementInteraction } from '../crawler/ElementInteraction';
 import { ElementInteractionGraph } from '../crawler/ElementInteractionGraph';
 import { ForcingExecutionStoppageError } from '../crawler/ForcingExecutionStoppageError';
-import { MutationObserverManager } from '../mutation-observer/MutationObserverManager';
+import { MutationSenteceHandler } from './MutationSentencesHandler';
 import { ElementAnalysisStorage } from '../storage/ElementAnalysisStorage';
 import { ObjectStorage } from '../storage/ObjectStorage';
 import { getPathTo } from '../util';
@@ -44,8 +44,10 @@ export class FeatureGenerator {
 
 		const scenario = feature.getGeneralScenario();
 
-		let observer: MutationObserverManager = new MutationObserverManager(
-			analysisElement.ownerDocument.body
+		let mutationSentenceHandler: MutationSenteceHandler = new MutationSenteceHandler(
+			analysisElement.ownerDocument.body,
+			feature,
+			this.featureUtil
 		);
 
 		const callback = await this.generatesCallBack(
@@ -82,7 +84,7 @@ export class FeatureGenerator {
 		do {
 			variantAnalyzed = await this.variantGenerator.generate(
 				analysisElement,
-				observer,
+				mutationSentenceHandler,
 				feature,
 				callback,
 				variant,
@@ -102,7 +104,7 @@ export class FeatureGenerator {
 			}
 		} while (feature.needNewVariants && feature.getVariantsCount() < this.config.limitOfVariants);
 
-		observer.disconnect();
+		mutationSentenceHandler.disconnect();
 
 		if (feature.getVariantsCount() == 0) {
 			this.setElementAnalysisAsDone(analysisElement);

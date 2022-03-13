@@ -199,7 +199,42 @@ export function isIterable(obj): boolean {
 	  return false;
 	}
 	return typeof obj[Symbol.iterator] === 'function';
-  }
+}
+
+export function isVisible(elm: HTMLElement) {
+	if (elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
+		return false;
+	}
+
+	return true;
+}
+
+export function isEnabled(
+	elm: HTMLInputElement
+	| HTMLSelectElement
+	| HTMLTextAreaElement
+	| HTMLButtonElement
+	| HTMLAnchorElement
+): boolean {
+	if (
+		(!(elm instanceof HTMLAnchorElement) && elm.disabled) 
+		|| !isVisible(elm)) 
+	{
+		return false;
+	}
+
+	if (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement) {
+		if (elm.readOnly) {
+			return false;
+		}
+
+		if (elm instanceof HTMLInputElement && elm.type === 'hidden') {
+			return false;
+		}
+	}
+
+	return true;
+}
 
 export default clearElement;
 

@@ -21,7 +21,6 @@ export class ElementInteractionExecutor {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
-		await sleep(this.config.timeBetweenInteractions);
 		let timePassed = 0;
 		let timeLimit = 300;
 		let triggeredUnload = false;
@@ -95,6 +94,8 @@ export class ElementInteractionExecutor {
 			await this.elementInteractionGraph.addElementInteractionToGraph(interaction);
 		}
 
-		return new InteractionResult(false);
+		await sleep(this.config.timeBetweenInteractions);
+
+		return result;
 	}
 }
