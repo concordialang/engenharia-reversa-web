@@ -113,6 +113,7 @@ getTabId(communicationChannel).then(async (tabId) => {
 		elementInteractionExecutor,
 		featureUtil,
 		variantGeneratorUtil,
+		config
  	);
 
 	const specStorage = new InMemoryStorage<Spec>(communicationChannel, Spec);

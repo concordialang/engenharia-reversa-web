@@ -10,6 +10,7 @@ import { getPathTo, isEnabled, isVisible } from '../util';
 import { Feature } from './Feature';
 import { VariantGeneratorUtil } from './VariantGeneratorUtil';
 import { classToPlain } from 'class-transformer';
+import { Config } from '../../shared/config';
 
 export class VariantGenerator {
 	constructor(
@@ -17,6 +18,7 @@ export class VariantGenerator {
 		private elementInteractionExecutor: ElementInteractionExecutor,
 		private featureUtil: FeatureUtil,
 		private varUtil: VariantGeneratorUtil,
+		private config: Config
 	) {}
 
 	public async generate(
@@ -52,13 +54,16 @@ export class VariantGenerator {
 			variant.setVariantSentence(givenTypeSentence);
 		}
 
+		const tableListingHandlingEnable = this.canHandleListingTable(analysisElement, feature.ignoreFormElements);
+
 		await this.analyze(
 			startElement,
 			variant,
 			feature,
 			mutationSentenceHandler,
 			redirectionCallback,
-			pathsOfElementsToIgnore
+			pathsOfElementsToIgnore,
+			tableListingHandlingEnable
 		);
 
 		const lastClicableInteracted = variant.getLastClicableInteracted();
@@ -85,7 +90,8 @@ export class VariantGenerator {
 			newVariant: Variant,
 			unloadMessageExtra: any
 		) => Promise<void>,
-		pathsOfElementsToIgnore: string[] = []
+		pathsOfElementsToIgnore: string[] = [],
+		tableListingHandlingEnable = false
 	): Promise<void> {
 		if (!elm) return;
 
@@ -96,7 +102,8 @@ export class VariantGenerator {
 				feature,
 				mutationSentenceHandler,
 				redirectionCallback,
-				pathsOfElementsToIgnore
+				pathsOfElementsToIgnore,
+				tableListingHandlingEnable
 			);
 		};
 
@@ -110,8 +117,7 @@ export class VariantGenerator {
 
 		let checksChildsTableRow: boolean | null = true;
 		
-		const isListingTableInteractable = this.isListingTableInteractable(feature);
-		if(isListingTableInteractable){
+		if(tableListingHandlingEnable){
 			checksChildsTableRow = await this.treatTableRow(elm, variant, feature, mutationSentenceHandler);
 
 			if(checksChildsTableRow === null){
@@ -624,10 +630,63 @@ private checkValidInteractableElement(elm: HTMLElement, variant: Variant, featur
 		return isCancelClicable;
 	}
 
-	private isListingTableInteractable(feature: Feature){
-		let isListingTableInteractable = feature.ignoreFormElements;
+	private canHandleListingTable(elm: HTMLElement, ignoreFormElements): boolean{
+		if(ignoreFormElements){
+			return true;
+		}
 
-		return isListingTableInteractable;
+		let tables = elm.querySelectorAll('table');
+
+		if(tables.length != 1){
+			return false;
+		}
+
+		const table = tables[0];
+
+		let firstContentRow = Array.from(table.rows).find((row) => {
+			return row.cells.length > 0 && row.cells[0].nodeName === HTMLElementType.TD
+		});
+
+		if(!firstContentRow){
+			return false;
+		}
+
+		const cells = firstContentRow.cells;
+
+		if(cells.length == 0){
+			return false;
+		}
+
+		let numberInteractableCells: number = 0;
+		for(let cell of cells){
+			let interactableElms = cell.querySelectorAll('input, select, textarea, button, a');
+
+			if(interactableElms.length > 0){
+				let hasEnableInteractableElms = Array.from(interactableElms).some(intteractableElm => {
+					const enabled = isEnabled(intteractableElm as HTMLInputElement
+						| HTMLSelectElement
+						| HTMLTextAreaElement
+						| HTMLButtonElement
+						| HTMLAnchorElement
+					)
+	
+					return enabled;
+				});
+
+				if(hasEnableInteractableElms){
+					numberInteractableCells++;
+				}
+			}
+		}
+
+		const cellsPercentageWithInteraction = Math.round((numberInteractableCells / cells.length) * 100);
+
+		let interactableCellTolerancePercent = 40;
+		if(cellsPercentageWithInteraction <= interactableCellTolerancePercent){
+			return true;
+		}
+
+		return false;
 	}
 
 	private async generatesCallBack(variant, feature, mutationSentenceHandler, redirectionCallback) {

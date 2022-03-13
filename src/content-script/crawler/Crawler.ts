@@ -252,8 +252,6 @@ export class Crawler {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
 			
 			if (!analysisElement) {
-				console.error("n achou o elemento");
-
 				const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
 				this.pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl(), this.config), pageAnalysis);				
 				
