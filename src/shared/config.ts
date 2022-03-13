@@ -21,7 +21,9 @@ export class Config {
 
         public considerFullUrl: URL[] = [
             new URL('http://localhost/htdocs/product/fiche.php?leftmenu=service&action=create&type=1')
-        ]
+        ],
+
+        public interactableCellTolerancePercent = 40,
     ) {
 
     }

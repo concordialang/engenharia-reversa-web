@@ -681,8 +681,7 @@ private checkValidInteractableElement(elm: HTMLElement, variant: Variant, featur
 
 		const cellsPercentageWithInteraction = Math.round((numberInteractableCells / cells.length) * 100);
 
-		let interactableCellTolerancePercent = 40;
-		if(cellsPercentageWithInteraction <= interactableCellTolerancePercent){
+		if(cellsPercentageWithInteraction <= this.config.interactableCellTolerancePercent){
 			return true;
 		}
 

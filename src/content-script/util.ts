@@ -293,6 +293,12 @@ export async function getConfig(configStorage : ObjectStorage<string>){
 	if(savedLanguage){
 		language = savedLanguage;
 	}
+
+	const savedInteractableCellTolerancePercent = await configStorage.get("int-cell-tolerance-percentage");
+	let interactableCellTolerancePercent: number|undefined = undefined;
+	if(savedInteractableCellTolerancePercent){
+		interactableCellTolerancePercent = parseInt(savedInteractableCellTolerancePercent);
+	}
 	
 	let savedConsiderFullUrl = await configStorage.get("consider-full-url");
 	let considerFullUrl: URL[] = [];
@@ -316,6 +322,7 @@ export async function getConfig(configStorage : ObjectStorage<string>){
 		minimumChildNodesNumberForDiff,
 		strHtmlTagsForDiff,
 		maxWaitTimeForUnload,
-		considerFullUrl
+		considerFullUrl,
+		interactableCellTolerancePercent
 	);
 }

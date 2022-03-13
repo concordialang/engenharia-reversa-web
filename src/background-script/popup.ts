@@ -15,6 +15,7 @@ configStorage.get('test').then(async () => {
     prepareInput('min-child-node-diff', config.minimumChildNodesNumberForDiff.toString());
     prepareInput('html-tags-for-diff', config.strHtmlTagsForDiff);
     prepareInput('max-wait-time-unload', config.maxWaitTimeForUnload.toString());
+    prepareInput('int-cell-tolerance-percentage', config.interactableCellTolerancePercent.toString());
     prepareInput('consider-full-url', (config.considerFullUrl.map((url) => url.href)).join('\n'));
     
     const runningStatusStorage = new IndexedDBObjectStorage<boolean>(IndexedDBDatabases.RunningStatus, IndexedDBDatabases.RunningStatus);
