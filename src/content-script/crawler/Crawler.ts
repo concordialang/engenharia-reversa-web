@@ -130,7 +130,7 @@ export class Crawler {
 
 			let spec: Spec | null = await this.specStorage.get(Spec.getStorageKey());
 			if (!spec) {
-				spec = new Spec('pt', this.featureStorage, this.specStorage, this.specMutex);
+				spec = new Spec(this.config.language, this.featureStorage, this.specStorage, this.specMutex);
 				await this.specStorage.set(Spec.getStorageKey(), spec);
 			} else {
 				spec.setFeatureStorage(this.featureStorage);
@@ -252,8 +252,6 @@ export class Crawler {
 			analysisElement = getElementByXpath(savedAnalysisElementXPath, currentDocument);
 			
 			if (!analysisElement) {
-				console.error("n achou o elemento");
-
 				const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
 				this.pageAnalysisStorage.set(getURLasString(pageAnalysis.getUrl(), this.config), pageAnalysis);				
 				
