@@ -76,8 +76,17 @@ export class Crawler {
 				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
 				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
 					window.location.href = lastUnanalyzed.getPageUrl().href;
+					// verifica se o href esta salvo como ultima url redirecionado
+					// se nao, salvar novo href como "ultima url redirecionada", com contador 1
+					// se sim, incrementar o contador
+						// se contador >= 5 (exemplo)
+							// salvar pagina com status DONE
+							// salvar elemento como analisado (para ele nao ser mais localizado no lastUnanalyzed)
 					return false;
 				}
+			}
+			else {
+				// zera o contador do ultimo href redirecionado
 			}
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
