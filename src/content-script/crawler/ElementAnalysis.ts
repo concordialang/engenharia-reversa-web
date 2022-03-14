@@ -1,5 +1,7 @@
+import { Exclude } from 'class-transformer';
+import { Config } from '../../shared/config';
 import { TransformHTMLElement, TransformURL } from '../decorators';
-import { getPathTo, getURLWithoutQueries } from '../util';
+import { getPathTo, getURLasString } from '../util';
 import { ElementAnalysisStatus } from './ElementAnalysisStatus';
 
 export class ElementAnalysis {
@@ -16,11 +18,15 @@ export class ElementAnalysis {
 
 	private tabId: string;
 
-	constructor(element: HTMLElement, pageUrl: URL, status: ElementAnalysisStatus, tabId: string) {
+	@Exclude()
+	private config: Config;
+
+	constructor(element: HTMLElement, pageUrl: URL, status: ElementAnalysisStatus, tabId: string, config: Config) {
 		this.element = element;
 		this.pageUrl = pageUrl;
 		this.status = status;
 		this.tabId = tabId;
+		this.config = config;
 	}
 
 	public getPathToElement(): string {
@@ -41,7 +47,7 @@ export class ElementAnalysis {
 	public getId(): string {
 		if (!this.id) {
 			const pathToElement = this.getPathToElement();
-			const id = getURLWithoutQueries(this.pageUrl) + ':' + pathToElement;
+			const id = getURLasString(this.pageUrl, this.config) + ':' + pathToElement;
 			this.id = id;
 			return id;
 		} else {

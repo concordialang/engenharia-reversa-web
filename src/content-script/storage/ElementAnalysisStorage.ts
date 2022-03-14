@@ -1,27 +1,32 @@
-import { getPathTo, getURLWithoutQueries } from '../util';
+import { getPathTo, getURLasString } from '../util';
 import { ElementAnalysis } from '../crawler/ElementAnalysis';
 import { ElementAnalysisStatus } from '../crawler/ElementAnalysisStatus';
 import { BrowserContext } from '../crawler/BrowserContext';
 import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
+import { Config } from '../../shared/config';
 
 // TODO Trocar o nome da classe
 export class ElementAnalysisStorage extends BackgroundIndexedDBObjectStorage<ElementAnalysis> {
-	constructor(communicationChannel: CommunicationChannel) {
+
+	private config: Config;
+
+	constructor(communicationChannel: CommunicationChannel, config: Config) {
 		super(
 			IndexedDBDatabases.ElementAnalysis,
 			IndexedDBDatabases.ElementAnalysis,
 			communicationChannel, 
 			ElementAnalysis,
 		);
+		this.config = config;
 	}
 
 	public async getWithXpathAndUrl(
 		xPathToElement: string,
 		url: URL
 	): Promise<ElementAnalysis | null> {
-		const key = getURLWithoutQueries(url) + ':' + xPathToElement;
+		const key = getURLasString(url, this.config) + ':' + xPathToElement;
 		return this.get(key);
 	}
 

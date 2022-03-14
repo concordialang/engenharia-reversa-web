@@ -1,14 +1,15 @@
 import { DiffDOM } from 'diff-dom';
+import { Config } from '../../shared/config';
 import { HTMLElementType } from '../enums/HTMLElementType';
 import { getPathTo } from '../util';
-import { minimumChildNodesNumberForDiff, strHtmlTagsForDiff } from '../config';
 
 export class DiffDomManager {
 	private diffDom: DiffDOM;
 	private previousHtml: HTMLElement;
 	private currentHtml: HTMLElement;
+	private config: Config;
 
-	constructor(previousHtml: HTMLElement, currentHtml: HTMLElement) {
+	constructor(previousHtml: HTMLElement, currentHtml: HTMLElement, config: Config) {
 		let dd = new DiffDOM({ valueDiffing: false });
 
 		this.previousHtml = this.formatedHtml(previousHtml);
@@ -16,6 +17,8 @@ export class DiffDomManager {
 
 		let diffDom = dd.diff(this.previousHtml.outerHTML, this.currentHtml.outerHTML);
 		this.diffDom = this.formatArrayDiffDom(diffDom);
+
+		this.config = config;
 	}
 
 	private formatedHtml(html: HTMLElement): HTMLElement {
@@ -90,10 +93,10 @@ export class DiffDomManager {
 
 		for(let diff of newElementsDiffHtml){
 			if(diff.route.length < elected.route.length) {
-				let childrenDiff = diff.elm.querySelectorAll(strHtmlTagsForDiff);
+				let childrenDiff = diff.elm.querySelectorAll(this.config.strHtmlTagsForDiff);
 
 				// checks if the element will be disregarded
-				if(childrenDiff.length >= minimumChildNodesNumberForDiff){
+				if(childrenDiff.length >= this.config.minimumChildNodesNumberForDiff){
 					elected = diff;
 				}
 			}

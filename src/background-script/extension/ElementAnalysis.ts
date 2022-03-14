@@ -1,6 +1,8 @@
+import { Exclude } from "class-transformer";
 import { ElementAnalysisStatus } from "../../content-script/crawler/ElementAnalysisStatus";
 import { TransformURL } from "../../content-script/decorators";
-import { getURLWithoutQueries } from "../../content-script/util";
+import { getURLasString } from "../../content-script/util";
+import { Config } from "../../shared/config";
 
 export class ElementAnalysis {
 	private id?: string;
@@ -13,11 +15,15 @@ export class ElementAnalysis {
 
 	private tabId: string;
 
-	constructor(pathToElement: string, pageUrl: URL, status: ElementAnalysisStatus, tabId: string) {
+	@Exclude()
+	private config: Config;
+
+	constructor(pathToElement: string, pageUrl: URL, status: ElementAnalysisStatus, tabId: string, config: Config) {
 		this.pathToElement = pathToElement;
 		this.pageUrl = pageUrl;
 		this.status = status;
 		this.tabId = tabId;
+		this.config = config;
 	}
 
 	public getPathToElement(): string {
@@ -27,7 +33,7 @@ export class ElementAnalysis {
 	public getId(): string {
 		if (!this.id) {
 			const pathToElement = this.getPathToElement();
-			const id = getURLWithoutQueries(this.pageUrl) + ':' + pathToElement;
+			const id = getURLasString(this.pageUrl, this.config) + ':' + pathToElement;
 			this.id = id;
 			return id;
 		} else {
