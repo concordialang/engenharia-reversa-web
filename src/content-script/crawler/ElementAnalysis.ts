@@ -70,4 +70,8 @@ export class ElementAnalysis {
 	public getTabId(): string {
 		return this.tabId;
 	}
+
+	public setPathToElement(pathToElement: string): void {
+		this.pathToElement = pathToElement;
+	}
 }

@@ -142,6 +142,12 @@ getTabId(communicationChannel).then(async (tabId) => {
 
 	const specMutex: Mutex = new Mutex('spec-mutex');
 
+	const lastPageRedirectStorage = new BackgroundIndexedDBObjectStorage<number>(
+		IndexedDBDatabases.LastPageRedirect, 
+		IndexedDBDatabases.LastPageRedirect, 
+		communicationChannel
+	);
+
 	const crawler: Crawler = new Crawler(
 		browserContext,
 		pageStorage,
@@ -155,7 +161,8 @@ getTabId(communicationChannel).then(async (tabId) => {
 		specMutex,
 		analysisElementXPathStorage,
 		pageAnalysisStorage,
-		config
+		config,
+		lastPageRedirectStorage
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {

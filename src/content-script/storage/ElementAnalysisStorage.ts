@@ -6,6 +6,8 @@ import { CommunicationChannel } from '../../shared/comm/CommunicationChannel';
 import { BackgroundIndexedDBObjectStorage } from './BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../../shared/storage/IndexedDBDatabases';
 import { Config } from '../../shared/config';
+import { Command } from '../../shared/comm/Command';
+import { Message } from '../../shared/comm/Message';
 
 // TODO Trocar o nome da classe
 export class ElementAnalysisStorage extends BackgroundIndexedDBObjectStorage<ElementAnalysis> {

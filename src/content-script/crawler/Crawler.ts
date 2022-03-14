@@ -28,6 +28,7 @@ import { PageAnalysis } from './PageAnalysis';
 import { Message } from '../../shared/comm/Message';
 import { Command } from '../../shared/comm/Command';
 import { Config } from '../../shared/config';
+import { ElementAnalysis } from './ElementAnalysis';
 
 export class Crawler {
 	private lastPageKey: string;
@@ -45,7 +46,8 @@ export class Crawler {
 		private specMutex: Mutex,
 		private analysisElementXPathStorage: ObjectStorage<string>,
 		private pageAnalysisStorage: PageAnalysisStorage,
-		private config: Config
+		private config: Config,
+		private lastPageRedirectStorage: ObjectStorage<number>
 	) {
 		this.lastPageKey = 'last-page';
 	}
@@ -75,8 +77,38 @@ export class Crawler {
 			){
 				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
 				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
+					const amountRedirect = await this.lastPageRedirectStorage.get(getURLasString(lastUnanalyzed.getPageUrl(), this.config));
+					if(amountRedirect != null){
+						const newAmount = amountRedirect + 1;
+						await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), newAmount);
+						if(newAmount >= 5){
+							const pageAnalysis = new PageAnalysis(lastUnanalyzed.getPageUrl(), PageAnalysisStatus.Done);
+							await this.pageAnalysisStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), pageAnalysis);
+							const elementAnalysis = new ElementAnalysis(
+								document.body, 
+								lastUnanalyzed.getPageUrl(), 
+								ElementAnalysisStatus.Done, 
+								this.browserContext.getTabId(),
+								this.config
+							);
+							const elementSelector = lastUnanalyzed.getElementSelector();
+							if(elementSelector){
+								elementAnalysis.setPathToElement(elementSelector);
+							} else {
+								throw new Error('ElementSelector was null');
+							}
+							await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
+						}
+					} else {
+						await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), 1);
+					}
 					window.location.href = lastUnanalyzed.getPageUrl().href;
 					return false;
+				}
+			}
+			else {
+				if(lastUnanalyzed){
+					await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), 0);
 				}
 			}
 
