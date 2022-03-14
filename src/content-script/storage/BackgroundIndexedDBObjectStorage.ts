@@ -10,8 +10,8 @@ export class BackgroundIndexedDBObjectStorage<Type> implements ObjectStorage<Typ
 		classe no construtor também 
 	*/
 	constructor(
-		private dbName: string,
-		private storeName: string,
+		protected dbName: string,
+		protected storeName: string,
 		private communicationChannel: CommunicationChannel,
 		private typeConstructor?: ClassConstructor<unknown>,
 		private getCommand: Command = Command.GetValueFromBackgroundIndexedDB

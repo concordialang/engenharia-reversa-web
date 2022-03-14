@@ -5,4 +5,5 @@ export enum IndexedDBDatabases {
     ElementAnalysis = 'element-analysis',
     PageAnalysis = 'page-analysis',
     RunningStatus = 'running-status',
+    LastPageRedirect = 'last-page-redirect',
 }
