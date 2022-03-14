@@ -249,11 +249,9 @@ export function getURLasString(url: URL, config: Config): string {
 function isURLToBeConsideredFull(url: URL, config: Config): boolean {
 	for(let fullUrl of config.considerFullUrl){
 		if(url.href.includes(fullUrl.href)){
-			console.log("url:", url.href, true);
 			return true;
 		}
 	}
-	console.log("url:", url.href, false);
 	return false;
 }
 

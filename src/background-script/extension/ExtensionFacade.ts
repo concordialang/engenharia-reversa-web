@@ -89,7 +89,6 @@ export class ExtensionFacade {
 			) {
 				if (responseCallback) responseCallback(new Message([], sender.getId()));
 			}
-			console.log(message);
 			if (message.includesAction(Command.Start)){
 				if (!_this.extensionIsEnabled) {
 					chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
