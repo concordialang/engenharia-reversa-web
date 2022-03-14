@@ -77,14 +77,13 @@ export class Crawler {
 			){
 				const pageAnalysisStatus = await this.pageAnalysisStorage.getPageAnalysisStatus(this.browserContext.getUrl());
 				if(pageAnalysisStatus != PageAnalysisStatus.Pending){
-					window.location.href = lastUnanalyzed.getPageUrl().href;
 					const amountRedirect = await this.lastPageRedirectStorage.get(getURLasString(lastUnanalyzed.getPageUrl(), this.config));
 					if(amountRedirect != null){
 						const newAmount = amountRedirect + 1;
 						await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), newAmount);
 						if(newAmount >= 5){
-							const pageAnalysis = new PageAnalysis(this.browserContext.getUrl(), PageAnalysisStatus.Done);
-							await this.pageAnalysisStorage.set(getURLasString(this.browserContext.getUrl(), this.config), pageAnalysis);
+							const pageAnalysis = new PageAnalysis(lastUnanalyzed.getPageUrl(), PageAnalysisStatus.Done);
+							await this.pageAnalysisStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), pageAnalysis);
 							const elementAnalysis = new ElementAnalysis(
 								document.body, 
 								lastUnanalyzed.getPageUrl(), 
@@ -98,16 +97,19 @@ export class Crawler {
 							} else {
 								throw new Error('ElementSelector was null');
 							}
+							await this.elementAnalysisStorage.set(elementAnalysis.getId(), elementAnalysis);
 						}
 					} else {
 						await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), 1);
 					}
-					
+					window.location.href = lastUnanalyzed.getPageUrl().href;
 					return false;
 				}
 			}
 			else {
-				// zera o contador do ultimo href redirecionado
+				if(lastUnanalyzed){
+					await this.lastPageRedirectStorage.set(getURLasString(lastUnanalyzed.getPageUrl(), this.config), 0);
+				}
 			}
 
 			let previousInteractions: ElementInteraction<HTMLElement>[] = [];
