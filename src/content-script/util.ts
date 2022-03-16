@@ -202,7 +202,7 @@ export function isIterable(obj): boolean {
 }
 
 export function isVisible(elm: HTMLElement) {
-	if (elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
+	if (!elm || elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
 		return false;
 	}
 
