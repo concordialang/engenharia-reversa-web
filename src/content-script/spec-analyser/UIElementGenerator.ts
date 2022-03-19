@@ -76,7 +76,9 @@ export class UIElementGenerator {
 			}
 
 			// editabled
-			uiElm.setProperty(new UIProperty(PropertyTypes.EDITABLE, true));
+			if(elm.disabled || elm.readOnly){
+				uiElm.setProperty(new UIProperty(PropertyTypes.EDITABLE, false));
+			}
 		}
 
 		// required
@@ -300,12 +302,8 @@ export class UIElementGenerator {
 		return uiElmType;
 	}
 
-	private gerateDataType(elm: HTMLElement): string {
-		let uiElmDataType = '';
-
-		if (elm.nodeName == ValidUiElementsNodes.TEXTAREA) {
-			uiElmDataType = DataTypes.STRING;
-		}
+	private gerateDataType(elm: HTMLElement): string | null{
+		let uiElmDataType: string | null = null;
 
 		if (elm.nodeName == ValidUiElementsNodes.INPUT) {
 			let inputType = (elm as HTMLInputElement).type;
@@ -316,8 +314,6 @@ export class UIElementGenerator {
 				uiElmDataType = DataTypes.TIME;
 			} else if (inputType == HTMLInputType.DateTimeLocal) {
 				uiElmDataType = DataTypes.DATETIME;
-			} else {
-				uiElmDataType = DataTypes.STRING;
 			}
 		}
 
