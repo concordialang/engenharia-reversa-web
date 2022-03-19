@@ -2,9 +2,7 @@ import { HTMLElementType } from '../enums/HTMLElementType';
 import { HTMLEventType } from '../enums/HTMLEventType';
 import { HTMLInputType } from '../enums/HTMLInputType';
 import { ElementInteraction } from './ElementInteraction';
-import { sleep } from '../util';
 import { InteractionResult } from './InteractionResult';
-import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
 
 export class Interactor {
 	constructor(private window: Window) {}

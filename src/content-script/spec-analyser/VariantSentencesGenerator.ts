@@ -5,6 +5,7 @@ import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { getValidUiElementsNodes, isIterable, isVisible } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
+import { HTMLElementType } from '../enums/HTMLElementType';
 
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
@@ -117,6 +118,7 @@ export class VariantSentencesGenerator {
 						VariantSentenceType.AND,
 						VariantSentenceActions.NOTSEE,
 						[{ property: property, value: value }],
+						false
 					);
 				} else {
 					sentences = this.createSentencesForMutations(
@@ -262,7 +264,8 @@ export class VariantSentencesGenerator {
 				node,
 				VariantSentenceType.AND,
 				action,
-				[{ property: 'hidden', value: node.hidden }]
+				[{ property: 'hidden', value: node.hidden }],
+				false
 			);
 		}
 
@@ -274,10 +277,22 @@ export class VariantSentencesGenerator {
 		type: VariantSentenceType,
 		action: string,
 		attr: Array<{ property: string; value: string }> = [],
+		checkVisibility = true
 	): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 
-		let uiElement: UIElement | null = this.uiElementGenerator.createFromElement(element);
+		let uiElement: UIElement | null = null;
+
+		if(checkVisibility){
+			uiElement = 
+				!(element instanceof Text) && isVisible(element) 
+					? this.uiElementGenerator.createFromElement(element)
+					: null
+		}
+		else {
+			uiElement = this.uiElementGenerator.createFromElement(element);
+		}
+
 		if (uiElement) {
 			sentences.push(new VariantSentence(type, action, uiElement, attr));
 		} else {
