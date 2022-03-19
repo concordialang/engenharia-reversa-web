@@ -2,7 +2,7 @@ import { UIElement } from './UIElement';
 import { VariantSentence } from './VariantSentence';
 import { VariantSentenceActions } from '../enums/VariantSentenceActions';
 import { VariantSentenceType } from '../enums/VariantSentenceType';
-import { getValidUiElementsNodes, isIterable } from '../util';
+import { getValidUiElementsNodes, isIterable, isVisible } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
 
@@ -135,26 +135,32 @@ export class VariantSentencesGenerator {
 	private buildChildListSentence(mutation): VariantSentence[] {
 		let sentences: VariantSentence[] = [];
 
-		let addedNodes = Object.values(mutation.addedNodes);
 		let removedNodes = Object.values(mutation.removedNodes);
+		let addedNodes = Object.values(mutation.addedNodes);
+
+		if (removedNodes && removedNodes.length > 0) {
+			for(let node of removedNodes){
+				let nodeSentences = this.createSentencesForMutations(
+					node as any,
+					VariantSentenceType.AND,
+					VariantSentenceActions.REMOVE,
+				)
+
+				sentences = sentences.concat(nodeSentences);
+			}
+		}
 
 		if (addedNodes && addedNodes.length > 0) {
-			const node: any = addedNodes[0];
+			for(let node of addedNodes){
+				let nodeSentences = this.createSentencesForMutations(
+					node as any,
+					VariantSentenceType.AND,
+					VariantSentenceActions.APPEND,
+				)
 
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.APPEND,
-			);
-		} else if (removedNodes && removedNodes.length > 0) {
-			const node: any = removedNodes[0];
-
-			sentences = this.createSentencesForMutations(
-				node,
-				VariantSentenceType.AND,
-				VariantSentenceActions.REMOVE,
-			);
-		}
+				sentences = sentences.concat(nodeSentences);
+			}
+		} 
 
 		return sentences;
 	}
@@ -280,9 +286,13 @@ export class VariantSentencesGenerator {
 			if(validsUiElmNodes){
 				if(isIterable(validsUiElmNodes)){
 					for (let node of validsUiElmNodes) {
-						uiElement = this.uiElementGenerator.createFromElement(node as HTMLElement);
-						if (uiElement) {
-							sentences.push(new VariantSentence(type, action, uiElement, attr));
+						let elm = node as HTMLElement;
+
+						if(isVisible(elm)){
+							uiElement = this.uiElementGenerator.createFromElement(elm);
+							if (uiElement) {
+								sentences.push(new VariantSentence(type, action, uiElement, attr));
+							}
 						}
 					}
 				} else {

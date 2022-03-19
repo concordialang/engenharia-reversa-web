@@ -5,14 +5,15 @@ import { ElementInteraction } from './ElementInteraction';
 import { InteractionResult } from './InteractionResult';
 import { ElementInteractionGraph } from './ElementInteractionGraph';
 import { Interactor } from './Interactor';
-import { timeBetweenInteractions } from '../config';
 import { HTMLEventType } from '../enums/HTMLEventType';
 import { ForcingExecutionStoppageErrorFromInteraction } from './ForcingExecutionStoppageErrorFromInteraction';
+import { Config } from '../../shared/config';
 
 export class ElementInteractionExecutor {
 	constructor(
 		private interactor: Interactor,
-		private elementInteractionGraph: ElementInteractionGraph
+		private elementInteractionGraph: ElementInteractionGraph,
+		private config: Config
 	) {}
 
 	public async execute(
@@ -20,9 +21,13 @@ export class ElementInteractionExecutor {
 		redirectionCallback?: (interaction: ElementInteraction<HTMLElement>) => Promise<void>,
 		saveInteractionInGraph: boolean = true
 	): Promise<InteractionResult | null> {
-		await sleep(timeBetweenInteractions);
+		const halfTimeBetweenInteractions = Math.round(this.config.timeBetweenInteractions / 2);
+
+		// time before interaction
+		await sleep(halfTimeBetweenInteractions);
+
 		let timePassed = 0;
-		let timeLimit = 300;
+		let timeLimit = 150;
 		let triggeredUnload = false;
 		let alreadyExitedFunction = false;
 		window.addEventListener(HTMLEventType.BeforeUnload, async (event) => {
@@ -94,6 +99,9 @@ export class ElementInteractionExecutor {
 			await this.elementInteractionGraph.addElementInteractionToGraph(interaction);
 		}
 
-		return new InteractionResult(false);
+		// time after interaction
+		await sleep(halfTimeBetweenInteractions);
+
+		return result;
 	}
 }

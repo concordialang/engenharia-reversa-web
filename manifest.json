@@ -18,8 +18,10 @@
 		}
 	],
 	"browser_action": {
-		"default_icon": "/assets/icon.png"
+		"default_icon": "/assets/icon.png",
+		"default_popup": "popup.html"
 	},
-	"permissions": ["webRequest", "tabs", "<all_urls>"],
+	"permissions": ["webRequest", "tabs", "<all_urls>", "declarativeContent", "storage", "activeTab", "scripting"],
 	"web_accessible_resources": ["node_modules/hacktimer/HackTimer.min.js"]
+    
 }

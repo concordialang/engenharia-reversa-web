@@ -4,4 +4,6 @@ export enum IndexedDBDatabases {
     Variants = 'variants',
     ElementAnalysis = 'element-analysis',
     PageAnalysis = 'page-analysis',
+    RunningStatus = 'running-status',
+    LastPageRedirect = 'last-page-redirect',
 }

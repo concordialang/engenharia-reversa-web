@@ -7,6 +7,8 @@ import { CodeChangeMonitor } from './extension/CodeChangeMonitor';
 import { InMemoryDatabase } from './extension/InMemoryDatabase';
 import { CommunicationChannel } from '../shared/comm/CommunicationChannel';
 import { ChromeCommunicationChannel } from '../shared/comm/ChromeCommunicationChannel';
+import { IndexedDBObjectStorage } from '../shared/storage/IndexedDBObjectStorage';
+import { getConfig } from '../content-script/util';
 
 const extension: Extension = new ChromeExtension(chrome);
 
@@ -23,10 +25,13 @@ extension.searchTab({ url: 'http://localhost/*' }).then((tabs) => {
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 const inMemoryDatabase = new InMemoryDatabase();
-const manager: ExtensionFacade = new ExtensionFacade(
-	extension,
-	communicationChannel,
-	inMemoryDatabase,
-	4
-);
-manager.setup();
+getConfig(new IndexedDBObjectStorage<string>('config', 'config')).then((config) => {
+	const manager: ExtensionFacade = new ExtensionFacade(
+		extension,
+		communicationChannel,
+		inMemoryDatabase,
+		4,
+		config
+	);
+	manager.setup();
+});

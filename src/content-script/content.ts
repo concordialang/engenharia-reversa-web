@@ -30,11 +30,12 @@ import { InMemoryStorage } from '../content-script/storage/InMemoryStorage';
 import { PageAnalysisStorage } from './storage/PageAnalysisStorage';
 import { BackgroundIndexedDBObjectStorage } from './storage/BackgroundIndexedDBObjectStorage';
 import { IndexedDBDatabases } from '../shared/storage/IndexedDBDatabases';
-import { language } from './config';
+import { ObjectStorage } from './storage/ObjectStorage';
+import { getConfig } from './util';
 
 const communicationChannel: CommunicationChannel = new ChromeCommunicationChannel(chrome);
 
-getTabId(communicationChannel).then((tabId) => {
+getTabId(communicationChannel).then(async (tabId) => {
 	tabId = 'tab-' + tabId;
 
 	const visitedPagesGraphMutex: Mutex = new Mutex('visited-pages-graph-mutex');
@@ -65,11 +66,15 @@ getTabId(communicationChannel).then((tabId) => {
 		variantStorage
 	);
 
-	const dictionary = getDictionary(language);
+	const configStorage = new BackgroundIndexedDBObjectStorage<string>('config', 'config', communicationChannel);
 
-	const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel);
+	const config = await getConfig(configStorage);
 
-	const pageAnalysisStorage = new PageAnalysisStorage(communicationChannel);
+	const dictionary = getDictionary(config.language);
+
+	const elementAnalysisStorage = new ElementAnalysisStorage(communicationChannel, config);
+
+	const pageAnalysisStorage = new PageAnalysisStorage(communicationChannel, config);
 
 	const elementInteractionGraph = new ElementInteractionGraph(
 		tabId,
@@ -78,6 +83,7 @@ getTabId(communicationChannel).then((tabId) => {
 		graphStorage,
 		pageAnalysisStorage,
 		featureStorage,
+		config
 	);
 
 	const visitedURLGraph = new VisitedURLGraph(graphStorage, visitedPagesGraphMutex);
@@ -86,7 +92,8 @@ getTabId(communicationChannel).then((tabId) => {
 
 	const elementInteractionExecutor = new ElementInteractionExecutor(
 		interactor,
-		elementInteractionGraph
+		elementInteractionGraph,
+		config
 	);
 
 	const pageUrl: URL = new URL(window.location.href);
@@ -106,6 +113,7 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionExecutor,
 		featureUtil,
 		variantGeneratorUtil,
+		config
  	);
 
 	const specStorage = new InMemoryStorage<Spec>(communicationChannel, Spec);
@@ -117,6 +125,7 @@ getTabId(communicationChannel).then((tabId) => {
 		browserContext,
 		elementInteractionGraph,
 		variantStorage,
+		config
 	);
 
 	const pageAnalyzer = new PageAnalyzer(
@@ -127,10 +136,17 @@ getTabId(communicationChannel).then((tabId) => {
 		elementInteractionExecutor,
 		elementInteractionGraph,
 		communicationChannel,
-		pageAnalysisStorage
+		pageAnalysisStorage,
+		config
 	);
 
 	const specMutex: Mutex = new Mutex('spec-mutex');
+
+	const lastPageRedirectStorage = new BackgroundIndexedDBObjectStorage<number>(
+		IndexedDBDatabases.LastPageRedirect, 
+		IndexedDBDatabases.LastPageRedirect, 
+		communicationChannel
+	);
 
 	const crawler: Crawler = new Crawler(
 		browserContext,
@@ -144,7 +160,9 @@ getTabId(communicationChannel).then((tabId) => {
 		specStorage,
 		specMutex,
 		analysisElementXPathStorage,
-		pageAnalysisStorage
+		pageAnalysisStorage,
+		config,
+		lastPageRedirectStorage
 	);
 
 	communicationChannel.setMessageListener(async function (message: Message) {

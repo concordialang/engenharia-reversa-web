@@ -14,4 +14,6 @@ export enum Command {
 	RemoveValueFromBackgroundIndexedDB = 'remove-value-from-background-indexed-db',
 	GetInteractionsGraphs = 'get-interactions-graphs',
 	ProcessUnload = 'process-unload',
+	Start = 'start',
+	GetRunningStatus = 'get-running-status',
 }

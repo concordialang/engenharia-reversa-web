@@ -2,6 +2,8 @@ import { DiffDomManager } from './diff-dom/DiffDomManager';
 import { ValidUiElementsNodes } from './enums/ValidUiElementsNodes';
 import getXPath from 'get-xpath';
 import RandExp from 'randexp';
+import { ObjectStorage } from './storage/ObjectStorage';
+import { Config } from '../shared/config';
 
 export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,11 +42,13 @@ export function getElementByXpath(path: string, document: Document): HTMLElement
 
 export async function getDiff(
 	currentDocument: Document,
-	previousDocument: Document
+	previousDocument: Document,
+	config: Config
 ): Promise<HTMLElement> {
 	const diffDomManager: DiffDomManager = new DiffDomManager(
 		previousDocument.body,
-		currentDocument.body
+		currentDocument.body,
+		config
 	);
 
 	const xPathParentElementDiff = diffDomManager.getParentXPathOfTheOutermostElementDiff();
@@ -195,10 +199,130 @@ export function isIterable(obj): boolean {
 	  return false;
 	}
 	return typeof obj[Symbol.iterator] === 'function';
-  }
+}
+
+export function isVisible(elm: HTMLElement) {
+	if (elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
+		return false;
+	}
+
+	return true;
+}
+
+export function isEnabled(
+	elm: HTMLInputElement
+	| HTMLSelectElement
+	| HTMLTextAreaElement
+	| HTMLButtonElement
+	| HTMLAnchorElement
+): boolean {
+	if (
+		(!(elm instanceof HTMLAnchorElement) && elm.disabled) 
+		|| !isVisible(elm)) 
+	{
+		return false;
+	}
+
+	if (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement) {
+		if (elm.readOnly) {
+			return false;
+		}
+
+		if (elm instanceof HTMLInputElement && elm.type === 'hidden') {
+			return false;
+		}
+	}
+
+	return true;
+}
 
 export default clearElement;
 
-export function getURLWithoutQueries(url: URL): string {
-	return url.origin + url.pathname;
+export function getURLasString(url: URL, config: Config): string {
+	if(isURLToBeConsideredFull(url, config)){
+		return url.href;
+	} else {
+		return url.origin + url.pathname;
+	}
+}
+
+function isURLToBeConsideredFull(url: URL, config: Config): boolean {
+	for(let fullUrl of config.considerFullUrl){
+		if(url.href.includes(fullUrl.href)){
+			console.log("url:", url.href, true);
+			return true;
+		}
+	}
+	console.log("url:", url.href, false);
+	return false;
+}
+
+export async function getConfig(configStorage : ObjectStorage<string>){
+	let savedVariantLimit = await configStorage.get("variant-limit");
+	let limitOfVariants: number|undefined = undefined;
+	if(savedVariantLimit){
+		limitOfVariants = parseInt(savedVariantLimit);
+	}
+
+	const savedMinimumChildNodesNumberForDiff = await configStorage.get("min-child-node-diff");
+	let minimumChildNodesNumberForDiff: number|undefined = undefined;
+	if(savedMinimumChildNodesNumberForDiff){
+		minimumChildNodesNumberForDiff = parseInt(savedMinimumChildNodesNumberForDiff);
+	}
+
+	const savedStrHtmlTagsForDiff = await configStorage.get("html-tags-for-diff");
+	let strHtmlTagsForDiff: string|undefined = undefined;
+	if(savedStrHtmlTagsForDiff){
+		strHtmlTagsForDiff = savedStrHtmlTagsForDiff;
+	}
+
+	const savedMaxWaitTimeForUnload = await configStorage.get("max-wait-time-unload");
+	let maxWaitTimeForUnload: number|undefined = undefined;
+	if(savedMaxWaitTimeForUnload){
+		maxWaitTimeForUnload = parseInt(savedMaxWaitTimeForUnload);
+	}
+
+	const savedTimeBetweenInteractions = await configStorage.get("time-between-interactions");
+	let timeBetweenInteractions: number|undefined = undefined;
+	if(savedTimeBetweenInteractions){
+		timeBetweenInteractions = parseInt(savedTimeBetweenInteractions);
+	}
+
+	const savedLanguage = await configStorage.get("language");
+	let language: string|undefined = undefined;
+	if(savedLanguage){
+		language = savedLanguage;
+	}
+
+	const savedInteractableCellTolerancePercent = await configStorage.get("int-cell-tolerance-percentage");
+	let interactableCellTolerancePercent: number|undefined = undefined;
+	if(savedInteractableCellTolerancePercent){
+		interactableCellTolerancePercent = parseInt(savedInteractableCellTolerancePercent);
+	}
+	
+	let savedConsiderFullUrl = await configStorage.get("consider-full-url");
+	let considerFullUrl: URL[] = [];
+	if(savedConsiderFullUrl){
+		let a = savedConsiderFullUrl.split('\n');
+		let b = a.filter((link) => {
+			try{
+				let url = new URL(link);
+			} catch (e){
+				return false;
+			}
+			return true;
+		});
+		considerFullUrl = b.map((url) => new URL(url));
+	}
+	
+	return new Config(
+		language,
+		timeBetweenInteractions,
+		limitOfVariants,
+		minimumChildNodesNumberForDiff,
+		strHtmlTagsForDiff,
+		maxWaitTimeForUnload,
+		considerFullUrl,
+		interactableCellTolerancePercent
+	);
 }

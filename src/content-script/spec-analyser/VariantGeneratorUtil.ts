@@ -5,13 +5,6 @@ import { formatToFirstCapitalLetter } from '../util';
 import { Feature } from './Feature';
 import { UIElement } from './UIElement';
 
-type InteractableElement =
-	| HTMLInputElement
-	| HTMLSelectElement
-	| HTMLTextAreaElement
-	| HTMLButtonElement
-	| HTMLAnchorElement;
-
 export class VariantGeneratorUtil {
 	private analysisElement?: HTMLElement;
 	private lastAnalysisInputField?: HTMLElement;
@@ -103,35 +96,6 @@ export class VariantGeneratorUtil {
 		}
 
 		return false;
-	}
-
-	public isVisible(elm: HTMLElement) {
-		if (elm.hidden || elm.style.display === 'none' || elm.style.visibility === 'hidden') {
-			return false;
-		}
-
-		return true;
-	}
-
-	public isEnabled(elm: InteractableElement): boolean {
-		if (
-			(!(elm instanceof HTMLAnchorElement) && elm.disabled) 
-			|| !this.isVisible(elm)) 
-		{
-			return false;
-		}
-
-		if (elm instanceof HTMLInputElement || elm instanceof HTMLTextAreaElement) {
-			if (elm.readOnly) {
-				return false;
-			}
-
-			if (elm instanceof HTMLInputElement && elm.type === 'hidden') {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	public areSimilar(text1: string, text2: string, options?): boolean {
