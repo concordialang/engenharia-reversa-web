@@ -25,14 +25,14 @@ export class FeatureUtil {
 		feature.setName(featureName);
 		feature.url = url;
 
-		const scenario = this.createScenario(featureName);
+		const scenario = this.createScenario();
 		feature.addScenario(scenario);
 
 		return feature;
 	}
 
-	createScenario(featureName: string): Scenario {
-		const scenario = new Scenario(featureName + ' - ' + this.dictionary.scenarioDefaultName);
+	createScenario(): Scenario {
+		const scenario = new Scenario(this.dictionary.scenarioDefaultName);
 
 		return scenario;
 	}
