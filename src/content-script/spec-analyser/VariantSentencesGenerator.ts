@@ -31,7 +31,7 @@ export class VariantSentencesGenerator {
 				action = VariantSentenceActions.SELECT;
 				break;
 			case UiElementsTypes.Radio:
-				action = VariantSentenceActions.SELECT;
+				action = VariantSentenceActions.CLICK;
 				break;
 			case UiElementsTypes.Button:
 				action = VariantSentenceActions.CLICK;
