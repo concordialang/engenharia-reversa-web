@@ -5,7 +5,6 @@ import { VariantSentenceType } from '../enums/VariantSentenceType';
 import { getValidUiElementsNodes, isIterable, isVisible } from '../util';
 import { UIElementGenerator } from './UIElementGenerator';
 import { UiElementsTypes } from '../enums/UiElementsTypes';
-import { HTMLElementType } from '../enums/HTMLElementType';
 
 export class VariantSentencesGenerator {
 	constructor(private uiElementGenerator: UIElementGenerator) {}
